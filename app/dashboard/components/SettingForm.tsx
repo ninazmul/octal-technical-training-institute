@@ -95,31 +95,15 @@ export const settingSchema = z.object({
       weDoNotGiveYou: [],
     }),
 
-  howToIdentify: z
-    .object({
-      badge: optionalString,
-      title: optionalString,
-      description: optionalString,
-      image: optionalString,
-      features: z.array(z.string()).default([]),
-    })
-    .default({
-      badge: "",
-      title: "",
-      description: "",
-      image: "",
-      features: [],
-    }),
-
   testimonials: z
     .object({
       badge: optionalString,
       title: optionalString,
       description: optionalString,
 
-      totalCustomers: z.number().default(0),
-      totalDistricts: z.number().default(0),
-      totalReOrders: z.number().default(0),
+      totalEnrollment: z.number().default(0),
+      totalSucceededStudents: z.number().default(0),
+      totalIndustryExperts: z.number().default(0),
 
       feedbacks: z
         .array(
@@ -136,9 +120,9 @@ export const settingSchema = z.object({
       badge: "",
       title: "",
       description: "",
-      totalCustomers: 0,
-      totalDistricts: 0,
-      totalReOrders: 0,
+      totalEnrollment: 0,
+      totalSucceededStudents: 0,
+      totalIndustryExperts: 0,
       feedbacks: [],
     }),
 
@@ -729,107 +713,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
             </AccordionContent>
           </AccordionItem>
 
-          {/* ===== How to Identify ===== */}
-          <AccordionItem value="identify">
-            <AccordionTrigger>How to Identify</AccordionTrigger>
-            <AccordionContent className="space-y-4">
-              {(["badge", "title", "description", "image"] as const).map(
-                (key) => (
-                  <FormField
-                    key={key}
-                    control={form.control}
-                    name={`howToIdentify.${key}`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{key}</FormLabel>
-                        <FormControl>
-                          {key === "description" ? (
-                            <RichTextEditor
-                              value={field.value || ""}
-                              onChange={(val) => {
-                                field.onChange(val);
-                                saveField();
-                              }}
-                            />
-                          ) : key === "image" ? (
-                            <FileUploader
-                              imageUrl={field.value || ""}
-                              onFieldChange={async (_blobUrl, files) => {
-                                if (files?.length) {
-                                  const uploaded = await startUpload(files);
-                                  if (uploaded?.[0]) {
-                                    form.setValue(
-                                      `howToIdentify.${key}`,
-                                      uploaded[0].url,
-                                      {
-                                        shouldValidate: true,
-                                      },
-                                    );
-                                    saveField();
-                                  }
-                                }
-                              }}
-                              setFiles={() => {}}
-                            />
-                          ) : (
-                            <Input {...field} onBlur={saveField} />
-                          )}
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ),
-              )}
-
-              {/* Features List */}
-              <div className="space-y-2">
-                <h4 className="font-semibold">Features</h4>
-                {form.watch("howToIdentify.features").map((feature, index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <Input
-                      value={feature}
-                      onChange={(e) =>
-                        form.setValue(
-                          `howToIdentify.features.${index}`,
-                          e.target.value,
-                        )
-                      }
-                      onBlur={saveField}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const current = form.getValues(
-                          "howToIdentify.features",
-                        );
-                        form.setValue(
-                          "howToIdentify.features",
-                          current.filter((_, i) => i !== index),
-                        );
-                        saveField();
-                      }}
-                      className="btn btn-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const current = form.getValues("howToIdentify.features");
-                    form.setValue("howToIdentify.features", [...current, ""]);
-                    saveField();
-                  }}
-                  className="btn btn-sm"
-                >
-                  Add Feature
-                </button>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
           {/* ===== Testimonials ===== */}
           <AccordionItem value="testimonials">
             <AccordionTrigger>Testimonials</AccordionTrigger>
@@ -875,14 +758,14 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   />
                 ))}
 
-                {/* totalCustomers, totalDistricts, totalReOrders */}
+                {/* totalEnrollment, totalSucceededStudents, totalIndustryExperts */}
                 <div className="flex flex-wrap gap-4">
                   <FormField
                     control={form.control}
-                    name="testimonials.totalCustomers"
+                    name="testimonials.totalEnrollment"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total Customers</FormLabel>
+                        <FormLabel>Total Enrollments</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -900,10 +783,10 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
                   <FormField
                     control={form.control}
-                    name="testimonials.totalDistricts"
+                    name="testimonials.totalSucceededStudents"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total Districts</FormLabel>
+                        <FormLabel>Total Succeeded Students</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -921,10 +804,10 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
                   <FormField
                     control={form.control}
-                    name="testimonials.totalReOrders"
+                    name="testimonials.totalIndustryExperts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Total ReOrders</FormLabel>
+                        <FormLabel>Total Industry Experts</FormLabel>
                         <FormControl>
                           <Input
                             type="number"

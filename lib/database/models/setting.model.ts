@@ -11,9 +11,9 @@ export interface ITestimonial {
   badge?: string;
   title?: string;
   description?: string;
-  totalCustomers?: number;
-  totalDistricts?: number;
-  totalReOrders?: number;
+  totalEnrollment?: number;
+  totalSucceededStudents?: number;
+  totalIndustryExperts?: number;
   feedbacks?: IFeedback[];
 }
 
@@ -36,14 +36,6 @@ export interface IFeatures {
   image?: string;
   weGiveYou?: string[];
   weDoNotGiveYou?: string[];
-}
-
-export interface IHowToIdentify {
-  badge?: string;
-  title?: string;
-  description?: string;
-  image?: string;
-  features?: string[];
 }
 
 export interface ISetting extends Document {
@@ -83,9 +75,6 @@ export interface ISetting extends Document {
 
   // Features (single object with arrays inside)
   features?: IFeatures;
-
-  // How To Identify (single object with arrays inside)
-  howToIdentify?: IHowToIdentify;
 
   // Testimonials (single object with feedbacks array)
   testimonials?: ITestimonial;
@@ -136,21 +125,13 @@ const SettingSchema = new Schema<ISetting>(
       weDoNotGiveYou: { type: [String], default: [] },
     },
 
-    howToIdentify: {
-      badge: { type: String, default: "" },
-      title: { type: String, default: "" },
-      description: { type: String, default: "" },
-      image: { type: String, default: "" },
-      features: { type: [String], default: [] },
-    },
-
     testimonials: {
       badge: { type: String, default: "" },
       title: { type: String, default: "" },
       description: { type: String, default: "" },
-      totalCustomers: { type: Number, default: 0 },
-      totalDistricts: { type: Number, default: 0 },
-      totalReOrders: { type: Number, default: 0 },
+      totalEnrollment: { type: Number, default: 0 },
+      totalSucceededStudents: { type: Number, default: 0 },
+      totalIndustryExperts: { type: Number, default: 0 },
       feedbacks: [
         {
           name: { type: String, default: "" },

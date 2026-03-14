@@ -63,27 +63,27 @@ function Feedback({ setting }: { setting: ISetting }) {
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalCustomers}+
+            {setting.testimonials?.totalEnrollment}+
           </p>
-          <p className="text-xs md:text-sm">Satisfied Customers</p>
+          <p className="text-xs md:text-sm">Total Enrollments</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <p
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalDistricts}
+            {setting.testimonials?.totalSucceededStudents}
           </p>
-          <p className="text-xs md:text-sm">District Deliveries</p>
+          <p className="text-xs md:text-sm">Successful Students</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <p
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalReOrders}%
+            {setting.testimonials?.totalIndustryExperts}%
           </p>
-          <p className="text-xs md:text-sm">Repeat Orders</p>
+          <p className="text-xs md:text-sm">Industry Experts</p>
         </div>
       </motion.div>
 

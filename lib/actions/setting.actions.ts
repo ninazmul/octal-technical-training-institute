@@ -64,21 +64,13 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     weDoNotGiveYou: [],
   },
 
-  howToIdentify: {
-    badge: "",
-    title: "",
-    description: "",
-    image: "",
-    features: [],
-  },
-
   testimonials: {
     badge: "",
     title: "",
     description: "",
-    totalCustomers: 0,
-    totalDistricts: 0,
-    totalReOrders: 0,
+    totalEnrollment: 0,
+    totalSucceededStudents: 0,
+    totalIndustryExperts: 0,
     feedbacks: [],
   },
 
