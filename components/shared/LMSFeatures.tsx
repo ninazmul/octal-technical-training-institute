@@ -1,32 +1,32 @@
 "use client";
 
 import { ISetting } from "@/lib/database/models/setting.model";
-import { FaCheckCircle, FaHeadset, FaShieldAlt, FaTruck } from "react-icons/fa";
+import { FaBookOpen, FaChalkboardTeacher, FaCertificate, FaUsers } from "react-icons/fa";
 import { motion } from "framer-motion";
 
-function RiskFreeOrder({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#000000";
+function LMSFeatures({ setting }: { setting: ISetting }) {
+  const themeColor = setting.theme || "#1a1a1a";
 
   const items = [
     {
-      icon: <FaTruck className="w-10 h-10 p-2 text-blue-600" />,
-      title: "Check on Delivery",
-      desc: "Inspect the product before accepting it",
+      icon: <FaBookOpen className="w-10 h-10 p-2 text-blue-600" />,
+      title: "Rich Course Library",
+      desc: "Access a wide range of curated courses anytime.",
     },
     {
-      icon: <FaShieldAlt className="w-10 h-10 p-2 text-emerald-500" />,
-      title: "100% Money-Back Guarantee",
-      desc: "Full refund if not satisfied",
+      icon: <FaChalkboardTeacher className="w-10 h-10 p-2 text-emerald-500" />,
+      title: "Expert Instructors",
+      desc: "Learn directly from industry professionals.",
     },
     {
-      icon: <FaHeadset className="w-10 h-10 p-2 text-yellow-500" />,
-      title: "24/7 Customer Support",
-      desc: "Quick help for any issues",
+      icon: <FaUsers className="w-10 h-10 p-2 text-yellow-500" />,
+      title: "Collaborative Learning",
+      desc: "Engage with peers through discussions and projects.",
     },
     {
-      icon: <FaCheckCircle className="w-10 h-10 p-2 text-green-500" />,
-      title: "Premium Quality Assured",
-      desc: "Delivered after strict quality checks",
+      icon: <FaCertificate className="w-10 h-10 p-2 text-green-500" />,
+      title: "Certified Achievements",
+      desc: "Earn recognized certificates to boost your career.",
     },
   ];
 
@@ -43,13 +43,13 @@ function RiskFreeOrder({ setting }: { setting: ISetting }) {
         className="flex flex-col items-center gap-4"
       >
         <div className="text-white border rounded-full px-4 py-2 text-sm shadow-md flex items-center gap-2 w-max font-semibold bg-black/25">
-          Risk-Free Order
+          LMS Features
         </div>
         <h2 className="text-white text-3xl md:text-5xl font-bold">
-          Place a Risk-Free Order
+          Empower Your Learning Journey
         </h2>
         <p className="max-w-3xl text-white text-lg md:text-xl">
-          Test the product on delivery – return it immediately if not satisfied!
+          Explore courses, connect with experts, and achieve certifications with ease.
         </p>
       </motion.div>
 
@@ -74,4 +74,4 @@ function RiskFreeOrder({ setting }: { setting: ISetting }) {
   );
 }
 
-export default RiskFreeOrder;
+export default LMSFeatures;
