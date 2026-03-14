@@ -27,41 +27,59 @@ import {
 } from "@/components/ui/accordion";
 import { HexColorPicker } from "react-colorful";
 
+/* ---------- helpers ---------- */
+
+const optionalString = z.preprocess(
+  (v) => (v === null || v === "" ? undefined : v),
+  z.string().optional()
+);
+
+const optionalEmail = z.preprocess(
+  (v) => (v === null || v === "" ? undefined : v),
+  z.string().email().optional()
+);
+
+const optionalUrl = z.preprocess(
+  (v) => (v === null || v === "" ? undefined : v),
+  z.string().url().optional()
+);
+
 // ================= Zod Schema =================
 export const settingSchema = z.object({
-  logo: z.string().optional(),
-  favicon: z.string().optional(),
-  name: z.string().optional(),
-  tagline: z.string().optional(),
-  description: z.string().optional(),
-  email: z.string().email().optional(),
-  phoneNumber: z.string().optional(),
-  address: z.string().optional(),
-  theme: z.string().optional(),
+  logo: optionalString,
+  favicon: optionalString,
+  name: optionalString,
+  tagline: optionalString,
+  description: optionalString,
+
+  email: optionalEmail,
+  phoneNumber: optionalString,
+  address: optionalString,
+  theme: optionalString,
 
   deliveryCharge: z
     .object({
-      insideDhaka: z.string().optional(),
-      outSideDhaka: z.string().optional(),
-      PickupPoint: z.string().optional(),
+      insideDhaka: optionalString,
+      outSideDhaka: optionalString,
+      PickupPoint: optionalString,
     })
     .optional(),
 
-  facebook: z.string().url().optional(),
-  instagram: z.string().url().optional(),
-  twitter: z.string().url().optional(),
-  facebookGroup: z.string().url().optional(),
-  youtube: z.string().url().optional(),
+  facebook: optionalUrl,
+  instagram: optionalUrl,
+  twitter: optionalUrl,
+  facebookGroup: optionalUrl,
+  youtube: optionalUrl,
 
-  returnPolicy: z.string().optional(),
-  termsOfService: z.string().optional(),
-  privacyPolicy: z.string().optional(),
+  returnPolicy: optionalString,
+  termsOfService: optionalString,
+  privacyPolicy: optionalString,
 
   hero: z
     .object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
+      title: optionalString,
+      description: optionalString,
+      image: optionalString,
       offerStartDate: z.coerce.date().optional(),
       offerEndDate: z.coerce.date().optional(),
     })
@@ -69,10 +87,10 @@ export const settingSchema = z.object({
 
   features: z
     .object({
-      badge: z.string().optional(),
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
+      badge: optionalString,
+      title: optionalString,
+      description: optionalString,
+      image: optionalString,
       weGiveYou: z.array(z.string()).default([]),
       weDoNotGiveYou: z.array(z.string()).default([]),
     })
@@ -87,10 +105,10 @@ export const settingSchema = z.object({
 
   howToIdentify: z
     .object({
-      badge: z.string().optional(),
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
+      badge: optionalString,
+      title: optionalString,
+      description: optionalString,
+      image: optionalString,
       features: z.array(z.string()).default([]),
     })
     .default({
@@ -103,20 +121,22 @@ export const settingSchema = z.object({
 
   testimonials: z
     .object({
-      badge: z.string().optional(),
-      title: z.string().optional(),
-      description: z.string().optional(),
+      badge: optionalString,
+      title: optionalString,
+      description: optionalString,
+
       totalCustomers: z.number().default(0),
       totalDistricts: z.number().default(0),
       totalReOrders: z.number().default(0),
+
       feedbacks: z
         .array(
           z.object({
-            name: z.string().optional(),
-            photo: z.string().optional(),
+            name: optionalString,
+            photo: optionalString,
             rating: z.number().optional(),
-            comment: z.string().optional(),
-          }),
+            comment: optionalString,
+          })
         )
         .default([]),
     })
@@ -132,15 +152,15 @@ export const settingSchema = z.object({
 
   faqs: z
     .object({
-      badge: z.string().optional(),
-      title: z.string().optional(),
-      description: z.string().optional(),
+      badge: optionalString,
+      title: optionalString,
+      description: optionalString,
       items: z
         .array(
           z.object({
-            question: z.string().optional(),
-            answer: z.string().optional(),
-          }),
+            question: optionalString,
+            answer: optionalString,
+          })
         )
         .default([]),
     })
