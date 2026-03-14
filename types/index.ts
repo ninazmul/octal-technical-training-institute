@@ -43,6 +43,18 @@ export interface Feedback {
   comment?: string;
 }
 
+export interface Mentor {
+  name?: string;
+  photo?: string;
+  expertise?: string;
+  social?: {
+    facebook?: string;
+    linkedIn?: string;
+    twitter?: string;
+    other?: string;
+  };
+}
+
 export interface Testimonial {
   badge?: string;
   title?: string;
@@ -51,6 +63,13 @@ export interface Testimonial {
   totalDistricts?: number;
   totalReOrders?: number;
   feedbacks?: Feedback[];
+}
+
+export interface OurMentors {
+  badge?: string;
+  title?: string;
+  description?: string;
+  mentors?: Mentor[];
 }
 
 export interface FaqItem {
@@ -120,11 +139,11 @@ export interface SettingParams {
   // ===== Features =====
   features?: Features; // single object
 
-  // ===== How To Identify =====
-  howToIdentify?: HowToIdentify; // single object
-
   // ===== Testimonials =====
   testimonials?: Testimonial; // single object with feedbacks array
+
+  // ===== Our Mentors =====
+  ourMentors?: OurMentors; // single object with mentors array
 
   // ===== FAQs =====
   faqs?: Faq; // single object with items array

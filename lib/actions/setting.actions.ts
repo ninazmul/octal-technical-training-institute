@@ -74,6 +74,13 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     feedbacks: [],
   },
 
+  ourMentors: {
+    badge: "",
+    title: "",
+    description: "",
+    mentors: [],
+  },
+
   faqs: {
     badge: "",
     title: "",

@@ -126,6 +126,34 @@ export const settingSchema = z.object({
       feedbacks: [],
     }),
 
+  ourMentors: z
+    .object({
+      badge: optionalString,
+      title: optionalString,
+      description: optionalString,
+      mentors: z
+        .array(
+          z.object({
+            name: optionalString,
+            photo: optionalString,
+            expertise: optionalString,
+            social: z.object({
+              facebook: optionalUrl,
+              linkedIn: optionalUrl,
+              twitter: optionalUrl,
+              other: optionalUrl,
+            }),
+          }),
+        )
+        .default([]),
+    })
+    .default({
+      badge: "",
+      title: "",
+      description: "",
+      mentors: [],
+    }),
+
   faqs: z
     .object({
       badge: optionalString,
@@ -162,10 +190,22 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
-    defaultValues: settingSchema.parse({
+    defaultValues: {
       ...settingSchema.parse({}),
       ...initialData,
-    }),
+      ourMentors: {
+        ...settingSchema.parse({}).ourMentors,
+        ...initialData?.ourMentors,
+      },
+      testimonials: {
+        ...settingSchema.parse({}).testimonials,
+        ...initialData?.testimonials,
+      },
+      faqs: {
+        ...settingSchema.parse({}).faqs,
+        ...initialData?.faqs,
+      },
+    },
   });
 
   // Testimonials.feedbacks array
@@ -176,6 +216,16 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   } = useFieldArray({
     control: form.control,
     name: "testimonials.feedbacks",
+  });
+
+  // OurMentors.mentors array
+  const {
+    fields: mentorFields,
+    append: appendMentor,
+    remove: removeMentor,
+  } = useFieldArray({
+    control: form.control,
+    name: "ourMentors.mentors",
   });
 
   // FAQs.items array
@@ -958,6 +1008,243 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     className="btn btn-sm text-green-600"
                   >
                     Add Feedback
+                  </button>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ===== Our Mentors ===== */}
+          <AccordionItem value="ourMentors">
+            <AccordionTrigger>Our Mentors</AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              <div className="border p-4 rounded space-y-2">
+                {/* Badge, Title, Description */}
+                {["badge", "title", "description"].map((key) => (
+                  <FormField
+                    key={key}
+                    control={form.control}
+                    name={`ourMentors.${key}` as keyof SettingFormValues}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{key}</FormLabel>
+                        <FormControl>
+                          {key === "description" ? (
+                            <RichTextEditor
+                              value={
+                                typeof field.value === "string"
+                                  ? field.value
+                                  : ""
+                              }
+                              onChange={(val) => {
+                                field.onChange(val);
+                                saveField();
+                              }}
+                            />
+                          ) : (
+                            <Input
+                              {...field}
+                              value={
+                                typeof field.value === "string"
+                                  ? field.value
+                                  : ""
+                              }
+                              onBlur={saveField}
+                            />
+                          )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+
+                {/* Mentors */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg">Mentors</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {mentorFields.map((mentor, fIndex) => (
+                      <div
+                        key={mentor.id}
+                        className="border p-4 rounded space-y-4 bg-gray-50"
+                      >
+                        {/* Photo */}
+                        <FormField
+                          control={form.control}
+                          name={`ourMentors.mentors.${fIndex}.photo`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Photo</FormLabel>
+                              <FormControl>
+                                <FileUploader
+                                  imageUrl={field.value || ""}
+                                  onFieldChange={async (_blobUrl, files) => {
+                                    if (files?.length) {
+                                      const uploaded = await startUpload(files);
+                                      if (uploaded?.[0]) {
+                                        form.setValue(
+                                          `ourMentors.mentors.${fIndex}.photo`,
+                                          uploaded[0].url,
+                                          { shouldValidate: true },
+                                        );
+                                        await saveField();
+                                      }
+                                    }
+                                  }}
+                                  setFiles={() => {}}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4">
+                          {/* Name */}
+                          <FormField
+                            control={form.control}
+                            name={`ourMentors.mentors.${fIndex}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Mentor Name"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Expertise */}
+                          <FormField
+                            control={form.control}
+                            name={`ourMentors.mentors.${fIndex}.expertise`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Expertise</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Expertise"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Social Links */}
+                          <FormField
+                            control={form.control}
+                            name={`ourMentors.mentors.${fIndex}.social.facebook`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Facebook</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Facebook URL"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`ourMentors.mentors.${fIndex}.social.linkedIn`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>LinkedIn</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="LinkedIn URL"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`ourMentors.mentors.${fIndex}.social.twitter`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Twitter</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Twitter URL"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`ourMentors.mentors.${fIndex}.social.other`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Other Social</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Other Social URL"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            removeMentor(fIndex);
+                            await saveField();
+                          }}
+                          className="btn btn-sm text-red-500"
+                        >
+                          Remove Mentor
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      appendMentor({
+                        name: "",
+                        photo: "",
+                        expertise: "",
+                        social: {
+                          facebook: "",
+                          linkedIn: "",
+                          twitter: "",
+                          other: "",
+                        },
+                      });
+                      await saveField();
+                    }}
+                    className="btn btn-sm text-green-600"
+                  >
+                    Add Mentor
                   </button>
                 </div>
               </div>

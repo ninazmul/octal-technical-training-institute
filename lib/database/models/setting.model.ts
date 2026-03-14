@@ -7,6 +7,18 @@ export interface IFeedback {
   comment?: string;
 }
 
+export interface IMentor {
+  name?: string;
+  photo?: string;
+  expertise?: string;
+  social?: {
+    facebook?: string;
+    linkedIn?: string;
+    twitter?: string;
+    other?: string;
+  };
+}
+
 export interface ITestimonial {
   badge?: string;
   title?: string;
@@ -15,6 +27,13 @@ export interface ITestimonial {
   totalSucceededStudents?: number;
   totalIndustryExperts?: number;
   feedbacks?: IFeedback[];
+}
+
+export interface IOurMentors {
+  badge?: string;
+  title?: string;
+  description?: string;
+  mentors?: IMentor[];
 }
 
 export interface IFaqItem {
@@ -79,6 +98,9 @@ export interface ISetting extends Document {
   // Testimonials (single object with feedbacks array)
   testimonials?: ITestimonial;
 
+  // Our Mentors (single object with mentors array)
+  ourMentors?: IOurMentors;
+
   // FAQs (single object with items array)
   faqs?: IFaq;
 
@@ -138,6 +160,25 @@ const SettingSchema = new Schema<ISetting>(
           photo: { type: String, default: "" },
           rating: { type: Number, default: 0 },
           comment: { type: String, default: "" },
+        },
+      ],
+    },
+
+    ourMentors: {
+      badge: { type: String, default: "" },
+      title: { type: String, default: "" },
+      description: { type: String, default: "" },
+      mentors: [
+        {
+          name: { type: String, default: "" },
+          photo: { type: String, default: "" },
+          expertise: { type: Number, default: "" },
+          social: {
+            facebook: { type: String, default: "" },
+            linkedIn: { type: String, default: "" },
+            twitter: { type: String, default: "" },
+            other: { type: String, default: "" },
+          },
         },
       ],
     },
