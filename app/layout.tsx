@@ -118,7 +118,7 @@ export default async function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${inter.variable} ${dmSerif.variable} font-sans`}>
+        <body className={`${inter.variable} ${dmSerif.variable} font-sans bg-white`}>
           {children}
         </body>
       </html>

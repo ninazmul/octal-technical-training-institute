@@ -60,7 +60,7 @@ export default function SearchDrawer({
         {/* Fixed Header */}
         <div className="p-4 border-b sticky top-0 bg-white z-10">
           <SheetHeader>
-            <SheetTitle className="text-red-600">Search Products</SheetTitle>
+            <SheetTitle className="text-primary">Search Course</SheetTitle>
           </SheetHeader>
 
           <div className="relative mt-3">
@@ -68,9 +68,9 @@ export default function SearchDrawer({
               placeholder="Type to search..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full py-2 px-4 border-red-600 focus:ring-2 focus:ring-red-500 rounded-full"
+              className="w-full py-2 px-4 border-primary focus:ring-2 focus:ring-red-500 rounded-full"
             />
-            <FaMagnifyingGlass className="absolute right-4 top-1/2 -translate-y-1/2 text-red-600" />
+            <FaMagnifyingGlass className="absolute right-4 top-1/2 -translate-y-1/2 text-primary" />
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default function SearchDrawer({
                   <span className="font-semibold text-gray-800">
                     {item.title}
                   </span>
-                  <span className="text-red-600 text-sm font-medium">
+                  <span className="text-primary text-sm font-medium">
                     ৳{item.price}
                   </span>
                 </div>

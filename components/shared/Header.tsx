@@ -64,7 +64,7 @@ export default function Header({ openSearch }: HeaderProps) {
   }, [user?.id]);
 
   return (
-    <header className="text-white">
+    <header className="text-white bg-white">
       {/* Top support bar */}
       <div style={{ backgroundColor: themeColor }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between py-2 px-4 w-full">
@@ -173,7 +173,7 @@ export default function Header({ openSearch }: HeaderProps) {
       </div>
 
       {/* Main header */}
-      <div className="flex items-center justify-between gap-2 px-4 py-2 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between gap-2 px-4 py-2 max-w-7xl mx-auto bg-white">
         <Link href={"/"}>
           <div className="relative w-16 md:w-32 h-10 rounded-md overflow-hidden bg-primary-500">
             <Image

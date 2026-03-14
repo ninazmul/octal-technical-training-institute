@@ -8,12 +8,12 @@ import React, {
   useState,
   useMemo,
 } from "react";
-import { Phone } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { GraduationCap, Clock } from "lucide-react";
 
 function Hero({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#000000";
+  const themeColor = setting.theme || "#2563eb"; // LMS blue default
 
   const startDate = useMemo(
     () =>
@@ -47,20 +47,12 @@ function Hero({ setting }: { setting: ISetting }) {
 
   useEffect(() => {
     const updateTimer = () => setTimeLeft(calculateTimeLeft(endDate));
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") updateTimer();
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    updateTimer();
-
-    intervalRef.current = setInterval(() => {
-      if (document.visibilityState === "visible") updateTimer();
-    }, 1000);
+    intervalRef.current = setInterval(updateTimer, 1000);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, [endDate, calculateTimeLeft]);
 
@@ -77,164 +69,115 @@ function Hero({ setting }: { setting: ISetting }) {
   );
 
   return (
-    <main className="relative w-full">
-      <div className="relative w-full h-full py-12 md:py-20 flex flex-col items-center justify-center text-center px-6 md:px-12 overflow-hidden">
-        {/* Background Image */}
-        <Image
-          src={setting.hero?.image || "/assets/images/logo.png"}
-          alt="Landing hero Background"
-          fill
-          priority
-          className="object-cover opacity-40"
-        />
-
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex flex-col items-center gap-4 md:gap-6 relative z-10"
-        >
-          {/* Logo */}
+    <section className="relative w-full bg-gradient-to-r from-blue-50 to-indigo-100 overflow-hidden">
+      <div className="container mx-auto">
+        <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
+          {/* Left Content */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col w-full lg:w-1/2 gap-6 text-center lg:text-left"
           >
-            <Image
-              src={setting.logo || "/assets/images/logo.png"}
-              alt="Landing Logo"
-              height={80}
-              width={80}
-              priority
-              className=""
-            />
-          </motion.div>
+            {/* Offer Banner */}
+            {offerHours !== null && (
+              <div
+                className="mt-8 inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold shadow-md mx-auto lg:mx-0 w-max"
+                style={{
+                  backgroundColor: `${themeColor}20`,
+                  border: `1px solid ${themeColor}`,
+                  color: themeColor,
+                }}
+              >
+                <Clock size={16} />
+                Special {offerHours}-hour enrollment offer!
+              </div>
+            )}
 
-          {/* Countdown */}
-          {timeLeft && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-4 bg-black/40 border border-gray-600 rounded-full px-4 md:px-6 py-3 shadow-lg flex flex-wrap items-center justify-center gap-3"
-            >
-              <span className="text-sm md:text-2xl font-bold text-white">
-                ⏳ Offer ending soon!
-              </span>
-              <div className="flex items-center gap-2">
-                {[
-                  timeLeft.days,
-                  timeLeft.hours,
-                  timeLeft.minutes,
-                  timeLeft.seconds,
-                ].map((val, i) => (
-                  <div key={i} className="flex items-center">
-                    <p className="text-sm md:text-2xl font-bold text-white bg-white/20 px-2 md:px-3 py-1 rounded-lg border border-gray-500">
+            {/* Title */}
+            <h1 className="text-3xl md:text-6xl lg:text-6xl font-bold leading-tight text-gray-900">
+              {setting.hero?.title
+                ?.split(/[.,]/)
+                .filter(Boolean)
+                .map((part, index) => (
+                  <motion.span
+                    key={index}
+                    className="block"
+                    style={{ color: index === 1 ? themeColor : "#000000" }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 * index }}
+                  >
+                    {part.trim()}
+                  </motion.span>
+                ))}
+            </h1>
+
+            {/* Description */}
+            {setting.hero?.description && (
+              <p
+                className="text-gray-700 text-base md:text-lg lg:text-xl max-w-xl mx-auto lg:mx-0"
+                dangerouslySetInnerHTML={{ __html: setting.hero.description }}
+              />
+            )}
+
+            {/* Countdown */}
+            {timeLeft && (
+              <div className="flex justify-center lg:justify-start gap-4">
+                {Object.entries(timeLeft).map(([label, val], i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center bg-white shadow rounded-lg px-2 lg:px-4 py-1 lg:py-2"
+                  >
+                    <span className="text-2xl font-bold text-gray-900">
                       {String(val).padStart(2, "0")}
-                    </p>
-                    {i < 3 && (
-                      <span className="text-sm md:text-2xl font-bold text-white">
-                        :
-                      </span>
-                    )}
+                    </span>
+                    <span className="text-xs uppercase text-gray-500">
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            {setting.hero?.title
-              ?.split(/[.,]/)
-              .filter(Boolean)
-              .map((part, index) => (
-                <motion.span
-                  key={index}
-                  className="block"
-                  style={{ color: index === 1 ? themeColor : "#ffffff" }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 * index }}
-                >
-                  {part.trim()}
-                </motion.span>
-              ))}
-          </h1>
-
-          {/* Description */}
-          {setting.hero?.description && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="max-w-3xl text-gray-200 text-lg md:text-xl"
-              dangerouslySetInnerHTML={{ __html: setting.hero.description }}
-            />
-          )}
-
-          {/* Offer Badge + CTA */}
-          {offerHours !== null && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
-              className="mt-6 bg-white p-4 md:p-6 rounded-xl space-y-4 max-w-xl w-full shadow-lg"
+            {/* CTA */}
+            <div
+              onClick={() =>
+                document
+                  .getElementById("checkout")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-lg cursor-pointer transition-transform hover:scale-105"
+              style={{ backgroundColor: themeColor }}
             >
-              {/* Offer Badge */}
-              <div
-                className="border rounded-full px-4 py-2 text-sm shadow-md flex items-center gap-2 w-max mx-auto font-semibold"
-                style={{
-                  backgroundColor: `${themeColor}20`,
-                  borderColor: themeColor,
-                  color: "#000000",
-                }}
-              >
-                🎉 Special {offerHours}-hour offer! ⏰
-              </div>
+              <GraduationCap size={22} />
+              Enroll Now
+            </div>
 
-              {/* Feature Badges */}
-              <div className="flex flex-wrap justify-center gap-3">
-                {[
-                  "✅ 100% Genuine",
-                  "🚚 Fast Delivery",
-                  "🔒 Secure Payment",
-                ].map((text, i) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ scale: 1.05 }}
-                    className="border rounded-full px-3 py-2 text-sm shadow-md bg-gray-100 font-semibold"
-                  >
-                    {text}
-                  </motion.div>
-                ))}
-              </div>
+            {/* Contact */}
+            <div className="text-gray-800 text-sm font-medium mb-8">
+              Need help? Call: {setting.phoneNumber}
+            </div>
+          </motion.div>
 
-              {/* CTA */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                onClick={() => {
-                  document
-                    .getElementById("checkout")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-full text-black font-semibold shadow-lg cursor-pointer w-full max-w-xs mx-auto"
-                style={{ backgroundColor: themeColor }}
-              >
-                <Phone size={18} />
-                Order Now!
-              </motion.div>
-              <div className="text-black text-sm text-center font-semibold">
-                Call Now: {setting.phoneNumber}
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
+          {/* Right Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative w-full lg:w-1/2 h-[300px] md:h-[500px]"
+          >
+            <Image
+              src={setting.hero?.image || "/assets/images/lms-hero.jpg"}
+              alt="Learning Hero"
+              fill
+              className="object-cover rounded-xl"
+              priority
+            />
+          </motion.div>
+        </div>
       </div>
-    </main>
+    </section>
   );
 }
 

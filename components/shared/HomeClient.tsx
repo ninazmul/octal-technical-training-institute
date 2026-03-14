@@ -6,7 +6,6 @@ import Feature from "./Feature";
 import HowToIdentify from "./HowToIdentify";
 import RiskFreeOrder from "./RiskFreeOrder";
 import Feedback from "./Feedback";
-import Footer from "./Footer";
 import FAQ from "./FAQ";
 
 export default function Home({
@@ -22,7 +21,6 @@ export default function Home({
       <RiskFreeOrder setting={setting} />
       <Feedback setting={setting} />
       <FAQ setting={setting} />
-      <Footer setting={setting} />
     </main>
   );
 }

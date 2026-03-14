@@ -27,12 +27,12 @@ module.exports = withUt({
           200: "#ADC8FF",
           300: "#84A9FF",
           400: "#5C8CFF",
-          500: "#1559C9", // main brand color
+          500: "#0055CE", // main brand color
           600: "#0F4FBF", // darker hover
           700: "#0C3FA0",
           800: "#082F7A",
           900: "#051F54",
-          DEFAULT: "#1559C9",
+          DEFAULT: "#0055CE",
           foreground: "#FFFFFF",
         },
         coral: {
