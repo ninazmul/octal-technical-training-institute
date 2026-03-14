@@ -1,19 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
+// import { Card } from "@/components/ui/card";
 import Loader from "@/components/shared/Loader";
-import { IOrder } from "@/lib/database/models/order.model";
-import { IProduct } from "@/lib/database/models/product.model";
 import { ISetting } from "@/lib/database/models/setting.model";
-import {
-  getAllOrders,
-  getAllProducts,
-  getActiveProducts,
-  getAllAdmins,
-  getSetting,
-} from "@/lib/actions"; // ✅ single import
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import { getAllAdmins, getSetting } from "@/lib/actions"; // ✅ single import
+// import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
 import {
@@ -26,7 +18,7 @@ import {
   BarElement,
 } from "chart.js";
 
-import { Pie, Bar } from "react-chartjs-2";
+// import { Pie, Bar } from "react-chartjs-2";
 
 ChartJS.register(
   ArcElement,
@@ -37,19 +29,9 @@ ChartJS.register(
   BarElement,
 );
 
-type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
-
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<IOrder[]>([]);
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [activeProducts, setActiveProducts] = useState<IProduct[]>([]);
-  const [adminsCount, setAdminsCount] = useState(0);
+  // const [adminsCount, setAdminsCount] = useState(0);
   const [setting, setSetting] = useState<ISetting | null>(null);
 
   useEffect(() => {
@@ -57,23 +39,14 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const [
-          ordersData,
-          productsData,
-          activeProductsData,
-          admins,
+          // admins,
           siteSetting,
         ] = await Promise.all([
-          getAllOrders(),
-          getAllProducts(),
-          getActiveProducts(),
           getAllAdmins(),
           getSetting(),
         ]);
 
-        setOrders(ordersData ?? []);
-        setProducts(productsData ?? []);
-        setActiveProducts(activeProductsData ?? []);
-        setAdminsCount(admins?.length ?? 0);
+        // setAdminsCount(admins?.length ?? 0);
         setSetting(siteSetting ?? null);
       } catch (error) {
         console.error("Dashboard fetch error:", error);
@@ -86,109 +59,90 @@ const Dashboard = () => {
 
   if (loading) return <Loader />;
 
-  const deliveryCharge = setting?.deliveryCharge || {
-    insideDhaka: "120",
-    outSideDhaka: "120",
-    PickupPoint: "0",
-  };
+  // // --- Calculated Stats ---
+  // const totalRevenue = orders.reduce((sum, o) => {
+  //   return sum + o.totalPrice;
+  // }, 0);
+  // const avgOrderValue = orders.length ? totalRevenue / orders.length : 0;
+  // const outOfStock = products.filter(
+  //   (p) => !p.isActive || p.stock === 0,
+  // ).length;
+  // const lowStock = products.filter((p) => p.stock > 0 && p.stock <= 5);
 
-  const getDeliveryFee = (city?: string) => {
-    if (!city) return 0;
+  // const recentOrders = [...orders].slice(0, 5);
 
-    const normalizedCity = city.toLowerCase();
-    const isDhaka = normalizedCity === "dhaka";
+  // // --- Status Counts ---
+  // const statusCounts = orders.reduce(
+  //   (acc, o) => {
+  //     acc[o.status] = (acc[o.status] || 0) + 1;
+  //     return acc;
+  //   },
+  //   {} as Record<string, number>,
+  // );
 
-    return isDhaka
-      ? Number(deliveryCharge.insideDhaka)
-      : Number(deliveryCharge.outSideDhaka);
-  };
+  // const statusColors: Record<string, string> = {
+  //   pending: "#facc15",
+  //   confirmed: "#3b82f6",
+  //   shipped: "#8b5cf6",
+  //   delivered: "#10b981",
+  //   cancelled: "#ef4444",
+  // };
 
-  // --- Calculated Stats ---
-  const totalRevenue = orders.reduce((sum, o) => {
-    const deliveryFee = getDeliveryFee(o.city);
-    return sum + (o.totalPrice - deliveryFee);
-  }, 0);
-  const avgOrderValue = orders.length ? totalRevenue / orders.length : 0;
-  const outOfStock = products.filter(
-    (p) => !p.isActive || p.stock === 0,
-  ).length;
-  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= 5);
+  // // Pie Chart
+  // const pieData = {
+  //   labels: ["Pending", "Confirmed", "Shipped", "Delivered", "Cancelled"],
+  //   datasets: [
+  //     {
+  //       data: [
+  //         statusCounts["pending"] || 0,
+  //         statusCounts["confirmed"] || 0,
+  //         statusCounts["shipped"] || 0,
+  //         statusCounts["delivered"] || 0,
+  //         statusCounts["cancelled"] || 0,
+  //       ],
+  //       backgroundColor: [
+  //         statusColors["pending"],
+  //         statusColors["confirmed"],
+  //         statusColors["shipped"],
+  //         statusColors["delivered"],
+  //         statusColors["cancelled"],
+  //       ],
+  //     },
+  //   ],
+  // };
 
-  const recentOrders = [...orders].slice(0, 5);
+  // // Monthly Revenue Bar Chart
+  // const monthlyRevenueMap: Record<string, number> = {};
+  // orders.forEach((order) => {
+  //   const month = new Date(order.createdAt).toLocaleString("default", {
+  //     month: "short",
+  //     year: "numeric",
+  //   });
 
-  // --- Status Counts ---
-  const statusCounts = orders.reduce(
-    (acc, o) => {
-      acc[o.status] = (acc[o.status] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  //   monthlyRevenueMap[month] =
+  //     (monthlyRevenueMap[month] || 0) + (order.totalPrice || 0);
+  // });
 
-  const statusColors: Record<string, string> = {
-    pending: "#facc15",
-    confirmed: "#3b82f6",
-    shipped: "#8b5cf6",
-    delivered: "#10b981",
-    cancelled: "#ef4444",
-  };
+  // const barData = {
+  //   labels: Object.keys(monthlyRevenueMap),
+  //   datasets: [
+  //     {
+  //       label: "Revenue",
+  //       data: Object.values(monthlyRevenueMap),
+  //       backgroundColor: "#3b82f6",
+  //     },
+  //   ],
+  // };
 
-  // Pie Chart
-  const pieData = {
-    labels: ["Pending", "Confirmed", "Shipped", "Delivered", "Cancelled"],
-    datasets: [
-      {
-        data: [
-          statusCounts["pending"] || 0,
-          statusCounts["confirmed"] || 0,
-          statusCounts["shipped"] || 0,
-          statusCounts["delivered"] || 0,
-          statusCounts["cancelled"] || 0,
-        ],
-        backgroundColor: [
-          statusColors["pending"],
-          statusColors["confirmed"],
-          statusColors["shipped"],
-          statusColors["delivered"],
-          statusColors["cancelled"],
-        ],
-      },
-    ],
-  };
-
-  // Monthly Revenue Bar Chart
-  const monthlyRevenueMap: Record<string, number> = {};
-  orders.forEach((order) => {
-    const month = new Date(order.createdAt).toLocaleString("default", {
-      month: "short",
-      year: "numeric",
-    });
-    const deliveryFee = getDeliveryFee(order.city);
-
-    monthlyRevenueMap[month] =
-      (monthlyRevenueMap[month] || 0) + (order.totalPrice - deliveryFee);
-  });
-
-  const barData = {
-    labels: Object.keys(monthlyRevenueMap),
-    datasets: [
-      {
-        label: "Revenue",
-        data: Object.values(monthlyRevenueMap),
-        backgroundColor: "#3b82f6",
-      },
-    ],
-  };
-
-  // Best-selling products
-  const productSales: Record<string, number> = {};
-  orders.forEach((order) => {
-    productSales[order.productTitle] =
-      (productSales[order.productTitle] || 0) + order.quantity;
-  });
-  const topProducts = Object.entries(productSales)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  // // Best-selling products
+  // const productSales: Record<string, number> = {};
+  // orders.forEach((order) => {
+  //   productSales[order.productTitle] =
+  //     (productSales[order.productTitle] || 0) + order.quantity;
+  // });
+  // const topProducts = Object.entries(productSales)
+  //   .sort((a, b) => b[1] - a[1])
+  //   .slice(0, 5);
 
   return (
     <div className="container mx-auto p-6">
@@ -198,17 +152,17 @@ const Dashboard = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        <DashboardCard
+        {/* <DashboardCard
           title="Total Orders"
           value={orders.length}
           color="blue"
-        />
-        <DashboardCard
+        /> */}
+        {/* <DashboardCard
           title="Total Revenue"
           value={totalRevenue}
           color="green"
-        />
-        <DashboardCard
+        /> */}
+        {/* <DashboardCard
           title="Average Order"
           value={Math.round(avgOrderValue)}
           color="yellow"
@@ -218,9 +172,9 @@ const Dashboard = () => {
           value={activeProducts.length}
           color="purple"
         />
-        <DashboardCard title="Out of Stock" value={outOfStock} color="red" />
-        <DashboardCard title="Total Admins" value={adminsCount} color="teal" />
-        {(
+        <DashboardCard title="Out of Stock" value={outOfStock} color="red" /> */}
+        {/* <DashboardCard title="Total Admins" value={adminsCount} color="teal" /> */}
+        {/* {(
           [
             "pending",
             "confirmed",
@@ -235,11 +189,11 @@ const Dashboard = () => {
             value={statusCounts[status] || 0}
             color={status} // ✅ now fully type-safe
           />
-        ))}
+        ))} */}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
         <Card className="p-6 rounded-2xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">
             Order Status Distribution
@@ -251,10 +205,10 @@ const Dashboard = () => {
           <h2 className="text-xl font-semibold mb-4">Monthly Revenue</h2>
           <Bar data={barData} />
         </Card>
-      </div>
+      </div> */}
 
       {/* Top Products */}
-      <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6 rounded-2xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Top Selling Products</h2>
           <ul>
@@ -288,10 +242,10 @@ const Dashboard = () => {
             )}
           </ul>
         </Card>
-      </div>
+      </div> */}
 
       {/* Recent Orders */}
-      <div className="mt-10">
+      {/* <div className="mt-10">
         <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border rounded-lg shadow-sm">
@@ -321,47 +275,47 @@ const Dashboard = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
 
-interface DashboardCardProps {
-  title: string;
-  value: number;
-  color: "blue" | "green" | "yellow" | "purple" | "red" | "teal" | OrderStatus;
-}
+// interface DashboardCardProps {
+//   title: string;
+//   value: number;
+//   color: "blue" | "green" | "yellow" | "purple" | "red" | "teal" | OrderStatus;
+// }
 
-const DashboardCard = ({ title, value, color }: DashboardCardProps) => {
-  const colors: Record<string, string> = {
-    blue: "#3b82f6",
-    green: "#10b981",
-    yellow: "#facc15",
-    purple: "#8b5cf6",
-    red: "#ef4444",
-    teal: "#14b8a6",
-    pending: "#facc15",
-    confirmed: "#3b82f6",
-    shipped: "#8b5cf6",
-    delivered: "#10b981",
-    cancelled: "#ef4444",
-  };
-  return (
-    <Card className="rounded-2xl shadow-md p-6 flex flex-col items-center">
-      <h3 className="text-gray-500 text-xs lg:text-sm">{title}</h3>
-      <div className="mt-4 w-16 h-16">
-        <CircularProgressbar
-          value={Math.min(value, 100)}
-          text={value.toString()}
-          styles={buildStyles({
-            textColor: colors[color],
-            pathColor: colors[color],
-            trailColor: "#eee",
-          })}
-        />
-      </div>
-    </Card>
-  );
-};
+// const DashboardCard = ({ title, value, color }: DashboardCardProps) => {
+//   const colors: Record<string, string> = {
+//     blue: "#3b82f6",
+//     green: "#10b981",
+//     yellow: "#facc15",
+//     purple: "#8b5cf6",
+//     red: "#ef4444",
+//     teal: "#14b8a6",
+//     pending: "#facc15",
+//     confirmed: "#3b82f6",
+//     shipped: "#8b5cf6",
+//     delivered: "#10b981",
+//     cancelled: "#ef4444",
+//   };
+//   return (
+//     <Card className="rounded-2xl shadow-md p-6 flex flex-col items-center">
+//       <h3 className="text-gray-500 text-xs lg:text-sm">{title}</h3>
+//       <div className="mt-4 w-16 h-16">
+//         <CircularProgressbar
+//           value={Math.min(value, 100)}
+//           text={value.toString()}
+//           styles={buildStyles({
+//             textColor: colors[color],
+//             pathColor: colors[color],
+//             trailColor: "#eee",
+//           })}
+//         />
+//       </div>
+//     </Card>
+//   );
+// };
 
 export default Dashboard;
