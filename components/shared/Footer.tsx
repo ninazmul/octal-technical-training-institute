@@ -29,14 +29,13 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="text-white">
+    <footer className="text-white" style={{ backgroundColor: themeColor }}>
       {/* Top Section */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        style={{ backgroundColor: themeColor }}
-        className="px-6 md:px-10 py-12 md:py-20 grid grid-cols-1 md:grid-cols-4 gap-10"
+        className="py-12 md:py-20 grid grid-cols-1 lg:grid-cols-2 justify-items-center gap-10 max-w-7xl mx-auto"
       >
         {/* Logo/About */}
         <div className="space-y-4 text-center md:text-left">
@@ -114,42 +113,36 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Contact Info */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold">যোগাযোগ</h3>
-          {setting?.phoneNumber && (
-            <div className="flex items-start gap-2 opacity-90">
-              <Phone size={16} /> <span>{setting.phoneNumber}</span>
-            </div>
-          )}
-          {setting?.email && (
-            <div className="flex items-start gap-2 opacity-90">
-              <Mail size={16} /> <span>{setting.email}</span>
-            </div>
-          )}
-          {setting?.address && (
-            <div className="flex items-start gap-2 opacity-90">
-              <MapPin size={16} /> <span>{setting.address}</span>
-            </div>
-          )}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 justify-items-center w-full px-12">
+          {/* Contact Info */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold">Contacts</h3>
+            {setting?.phoneNumber && (
+              <div className="flex items-start gap-2 opacity-90">
+                <Phone size={16} /> <span>{setting.phoneNumber}</span>
+              </div>
+            )}
+            {setting?.email && (
+              <div className="flex items-start gap-2 opacity-90">
+                <Mail size={16} /> <span>{setting.email}</span>
+              </div>
+            )}
+            {setting?.address && (
+              <div className="flex items-start gap-2 opacity-90">
+                <MapPin size={16} /> <span>{setting.address}</span>
+              </div>
+            )}
+          </div>
 
-        {/* Popular Courses */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold">জনপ্রিয় কোর্স</h3>
-          {/* {setting?.features?.slice(0, 3).map((course, idx) => (
-            <p key={idx} className="opacity-90">{course.title}</p>
-          ))} */}
-        </div>
-
-        {/* Others */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold">অন্যান্য</h3>
-          {headerLinks.map((link, idx) => (
-            <p key={idx} className="opacity-90">
-              {link.label}
-            </p>
-          ))}
+          {/* Others */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold">Others</h3>
+            {headerLinks.map((link, idx) => (
+              <p key={idx} className="opacity-90">
+                {link.label}
+              </p>
+            ))}
+          </div>
         </div>
       </motion.div>
 
