@@ -72,13 +72,6 @@ export interface ISetting extends Document {
   termsOfService?: string;
   privacyPolicy?: string;
 
-  // Delivery Charges
-  deliveryCharge?: {
-    insideDhaka: string;
-    outSideDhaka: string;
-    PickupPoint: string;
-  };
-
   // Hero Section
   hero?: {
     title?: string;
@@ -125,12 +118,6 @@ const SettingSchema = new Schema<ISetting>(
     returnPolicy: { type: String },
     termsOfService: { type: String },
     privacyPolicy: { type: String },
-
-    deliveryCharge: {
-      insideDhaka: { type: String },
-      outSideDhaka: { type: String },
-      PickupPoint: { type: String },
-    },
 
     hero: {
       title: { type: String },

@@ -49,12 +49,6 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   termsOfService: "",
   privacyPolicy: "",
 
-  deliveryCharge: {
-    insideDhaka: "0",
-    outSideDhaka: "0",
-    PickupPoint: "0",
-  },
-
   hero: {
     title: "",
     description: "",

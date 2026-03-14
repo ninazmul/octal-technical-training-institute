@@ -57,14 +57,6 @@ export const settingSchema = z.object({
   address: optionalString,
   theme: optionalString,
 
-  deliveryCharge: z
-    .object({
-      insideDhaka: optionalString,
-      outSideDhaka: optionalString,
-      PickupPoint: optionalString,
-    })
-    .optional(),
-
   facebook: optionalUrl,
   instagram: optionalUrl,
   twitter: optionalUrl,
@@ -451,38 +443,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   </FormItem>
                 )}
               />
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* ===== Delivery Charges ===== */}
-          <AccordionItem value="delivery">
-            <AccordionTrigger>Delivery Charge</AccordionTrigger>
-            <AccordionContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(["insideDhaka", "outSideDhaka", "PickupPoint"] as const).map(
-                (key) => (
-                  <FormField
-                    key={key}
-                    control={form.control}
-                    name={`deliveryCharge.${key}`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{key}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            value={
-                              typeof field.value === "string" ? field.value : ""
-                            }
-                            onBlur={saveField}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ),
-              )}
             </AccordionContent>
           </AccordionItem>
 

@@ -65,12 +65,6 @@ export interface Faq {
   items?: FaqItem[];
 }
 
-export interface DeliveryCharge {
-  insideDhaka?: string;
-  outSideDhaka?: string;
-  PickupPoint?: string;
-}
-
 export interface Hero {
   title?: string;
   description?: string;
@@ -119,9 +113,6 @@ export interface SettingParams {
   returnPolicy?: string;
   termsOfService?: string;
   privacyPolicy?: string;
-
-  // ===== Delivery Charges =====
-  deliveryCharge?: DeliveryCharge;
 
   // ===== Hero Section =====
   hero?: Hero;
