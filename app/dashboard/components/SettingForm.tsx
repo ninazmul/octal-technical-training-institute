@@ -1017,54 +1017,63 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
           {/* ===== Our Mentors ===== */}
           <AccordionItem value="ourMentors">
             <AccordionTrigger>Our Mentors</AccordionTrigger>
+
             <AccordionContent className="space-y-4">
-              <div className="border p-4 rounded space-y-2">
-                {/* Badge, Title, Description */}
-                {["badge", "title", "description"].map((key) => (
-                  <FormField
-                    key={key}
-                    control={form.control}
-                    name={`ourMentors.${key}` as keyof SettingFormValues}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{key}</FormLabel>
-                        <FormControl>
-                          {key === "description" ? (
-                            <RichTextEditor
-                              value={
-                                typeof field.value === "string"
-                                  ? field.value
-                                  : ""
-                              }
-                              onChange={(val) => {
-                                field.onChange(val);
-                                saveField();
-                              }}
-                            />
-                          ) : (
-                            <Input
-                              {...field}
-                              value={
-                                typeof field.value === "string"
-                                  ? field.value
-                                  : ""
-                              }
-                              onBlur={saveField}
-                            />
-                          )}
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
+              <div className="border p-4 rounded space-y-4">
+                {/* Badge / Title / Description */}
+                {["badge", "title", "description"].map((key) => {
+                  const fieldName =
+                    `ourMentors.${key}` as Path<SettingFormValues>;
+
+                  return (
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={fieldName}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="capitalize">{key}</FormLabel>
+
+                          <FormControl>
+                            {key === "description" ? (
+                              <RichTextEditor
+                                value={
+                                  typeof field.value === "string"
+                                    ? field.value
+                                    : ""
+                                }
+                                onChange={(val) => {
+                                  field.onChange(val);
+                                  saveField();
+                                }}
+                              />
+                            ) : (
+                              <Input
+                                {...field}
+                                value={
+                                  typeof field.value === "string"
+                                    ? field.value
+                                    : ""
+                                }
+                                onChange={(e) => field.onChange(e.target.value)}
+                                onBlur={saveField}
+                              />
+                            )}
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  );
+                })}
 
                 {/* Mentors */}
                 <div className="space-y-4">
                   <h4 className="font-semibold text-lg">Mentors</h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {mentorFields.map((mentor, fIndex) => (
+                    {mentorFields.map((mentor, index) => (
                       <div
                         key={mentor.id}
                         className="border p-4 rounded space-y-4 bg-gray-50"
@@ -1072,7 +1081,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         {/* Photo */}
                         <FormField
                           control={form.control}
-                          name={`ourMentors.mentors.${fIndex}.photo`}
+                          name={`testimonials.feedbacks.${index}.photo`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Photo</FormLabel>
@@ -1084,7 +1093,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                       const uploaded = await startUpload(files);
                                       if (uploaded?.[0]) {
                                         form.setValue(
-                                          `ourMentors.mentors.${fIndex}.photo`,
+                                          `testimonials.feedbacks.${index}.photo`,
                                           uploaded[0].url,
                                           { shouldValidate: true },
                                         );
@@ -1099,123 +1108,108 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           )}
                         />
 
-                        <div className="grid grid-cols-1 gap-4">
-                          {/* Name */}
-                          <FormField
-                            control={form.control}
-                            name={`ourMentors.mentors.${fIndex}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Mentor Name"
-                                    value={field.value ?? ""}
-                                    onBlur={saveField}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                        {/* Name */}
+                        <FormField
+                          control={form.control}
+                          name={
+                            `ourMentors.mentors.${index}.name` as Path<SettingFormValues>
+                          }
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Name</FormLabel>
 
-                          {/* Expertise */}
-                          <FormField
-                            control={form.control}
-                            name={`ourMentors.mentors.${fIndex}.expertise`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Expertise</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Expertise"
-                                    value={field.value ?? ""}
-                                    onBlur={saveField}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Mentor Name"
+                                  value={
+                                    typeof field.value === "string"
+                                      ? field.value
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value)
+                                  }
+                                  onBlur={saveField}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
 
-                          {/* Social Links */}
-                          <FormField
-                            control={form.control}
-                            name={`ourMentors.mentors.${fIndex}.social.facebook`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Facebook</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Facebook URL"
-                                    value={field.value ?? ""}
-                                    onBlur={saveField}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                        {/* Expertise */}
+                        <FormField
+                          control={form.control}
+                          name={
+                            `ourMentors.mentors.${index}.expertise` as Path<SettingFormValues>
+                          }
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Expertise</FormLabel>
 
-                          <FormField
-                            control={form.control}
-                            name={`ourMentors.mentors.${fIndex}.social.linkedIn`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>LinkedIn</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="LinkedIn URL"
-                                    value={field.value ?? ""}
-                                    onBlur={saveField}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Mentor Expertise"
+                                  value={
+                                    typeof field.value === "string"
+                                      ? field.value
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value)
+                                  }
+                                  onBlur={saveField}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
 
-                          <FormField
-                            control={form.control}
-                            name={`ourMentors.mentors.${fIndex}.social.twitter`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Twitter</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Twitter URL"
-                                    value={field.value ?? ""}
-                                    onBlur={saveField}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                        {/* Social Links */}
+                        {["facebook", "linkedIn", "twitter", "other"].map(
+                          (social) => {
+                            const name =
+                              `ourMentors.mentors.${index}.social.${social}` as Path<SettingFormValues>;
 
-                          <FormField
-                            control={form.control}
-                            name={`ourMentors.mentors.${fIndex}.social.other`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Other Social</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Other Social URL"
-                                    value={field.value ?? ""}
-                                    onBlur={saveField}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                            return (
+                              <FormField
+                                key={social}
+                                control={form.control}
+                                name={name}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="capitalize">
+                                      {social}
+                                    </FormLabel>
 
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        placeholder={`${social} URL`}
+                                        value={
+                                          typeof field.value === "string"
+                                            ? field.value
+                                            : ""
+                                        }
+                                        onChange={(e) =>
+                                          field.onChange(e.target.value)
+                                        }
+                                        onBlur={saveField}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            );
+                          },
+                        )}
+
+                        {/* Remove Mentor */}
                         <button
                           type="button"
                           onClick={async () => {
-                            removeMentor(fIndex);
+                            removeMentor(index);
                             await saveField();
                           }}
                           className="btn btn-sm text-red-500"
@@ -1226,9 +1220,10 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     ))}
                   </div>
 
+                  {/* Add Mentor */}
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={() =>
                       appendMentor({
                         name: "",
                         photo: "",
@@ -1239,9 +1234,8 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           twitter: "",
                           other: "",
                         },
-                      });
-                      await saveField();
-                    }}
+                      })
+                    }
                     className="btn btn-sm text-green-600"
                   >
                     Add Mentor

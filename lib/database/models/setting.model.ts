@@ -172,7 +172,7 @@ const SettingSchema = new Schema<ISetting>(
         {
           name: { type: String, default: "" },
           photo: { type: String, default: "" },
-          expertise: { type: Number, default: "" },
+          expertise: { type: String, default: "" },
           social: {
             facebook: { type: String, default: "" },
             linkedIn: { type: String, default: "" },
