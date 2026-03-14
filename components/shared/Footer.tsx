@@ -13,11 +13,28 @@ import {
   Mail,
   MapPin,
 } from "lucide-react"; // professional icons
+import { useEffect, useState } from "react";
+import { getSetting } from "@/lib/actions";
 
 const currentYear = new Date().getFullYear();
 
-const Footer = ({ setting }: { setting: ISetting }) => {
-  const themeColor = setting.theme || "#000000";
+const Footer = () => {
+  const [setting, setSetting] = useState<ISetting | null>(null);
+  const themeColor = setting?.theme || "#000000";
+
+  // Fetch settings once
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const setting = await getSetting();
+        setSetting(setting);
+      } catch (err) {
+        console.error("Settings load failed", err);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   return (
     <footer className="text-white">
@@ -31,7 +48,7 @@ const Footer = ({ setting }: { setting: ISetting }) => {
       >
         <div className="flex flex-col items-center justify-center gap-4 text-center">
           <Image
-            src={setting.logo || "/assets/images/logo.png"}
+            src={setting?.logo || "/assets/images/logo.png"}
             alt="Logo"
             width={200}
             height={200}
@@ -39,43 +56,43 @@ const Footer = ({ setting }: { setting: ISetting }) => {
             className="rounded-full"
           />
           <h2 className="text-2xl md:text-3xl font-bold tracking-wide">
-            {setting.name}
+            {setting?.name}
           </h2>
-          {setting.description && (
+          {setting?.description && (
             <div
               className="text-sm md:text-base leading-relaxed opacity-90 max-w-2xl"
-              dangerouslySetInnerHTML={{ __html: setting.description }}
+              dangerouslySetInnerHTML={{ __html: setting?.description }}
             />
           )}
         </div>
 
         {/* Contact Info */}
         <div className="flex flex-col md:flex-row md:flex-wrap items-start justify-center gap-6 text-sm md:text-base text-left">
-          {setting.phoneNumber && (
+          {setting?.phoneNumber && (
             <div className="flex items-start gap-2 opacity-90">
               <Phone size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{setting.phoneNumber}</span>
+              <span>{setting?.phoneNumber}</span>
             </div>
           )}
-          {setting.email && (
+          {setting?.email && (
             <div className="flex items-start gap-2 opacity-90">
               <Mail size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{setting.email}</span>
+              <span>{setting?.email}</span>
             </div>
           )}
-          {setting.address && (
+          {setting?.address && (
             <div className="flex items-start gap-2 opacity-90">
               <MapPin size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{setting.address}</span>
+              <span>{setting?.address}</span>
             </div>
           )}
         </div>
 
         {/* Social Links */}
         <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-sm md:text-base">
-          {setting.facebook && (
+          {setting?.facebook && (
             <a
-              href={setting.facebook}
+              href={setting?.facebook}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-400 transition-colors flex items-center gap-2"
@@ -83,9 +100,9 @@ const Footer = ({ setting }: { setting: ISetting }) => {
               <Facebook size={20} /> Facebook
             </a>
           )}
-          {setting.instagram && (
+          {setting?.instagram && (
             <a
-              href={setting.instagram}
+              href={setting?.instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-pink-400 transition-colors flex items-center gap-2"
@@ -93,9 +110,9 @@ const Footer = ({ setting }: { setting: ISetting }) => {
               <Instagram size={20} /> Instagram
             </a>
           )}
-          {setting.twitter && (
+          {setting?.twitter && (
             <a
-              href={setting.twitter}
+              href={setting?.twitter}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-sky-400 transition-colors flex items-center gap-2"
@@ -103,9 +120,9 @@ const Footer = ({ setting }: { setting: ISetting }) => {
               <Twitter size={20} /> Twitter
             </a>
           )}
-          {setting.facebookGroup && (
+          {setting?.facebookGroup && (
             <a
-              href={setting.facebookGroup}
+              href={setting?.facebookGroup}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-500 transition-colors flex items-center gap-2"
@@ -113,9 +130,9 @@ const Footer = ({ setting }: { setting: ISetting }) => {
               <Users size={20} /> Facebook Group
             </a>
           )}
-          {setting.youtube && (
+          {setting?.youtube && (
             <a
-              href={setting.youtube}
+              href={setting?.youtube}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-red-500 transition-colors flex items-center gap-2"
@@ -142,7 +159,7 @@ const Footer = ({ setting }: { setting: ISetting }) => {
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"
             >
-              {setting.name}
+              {setting?.name}
             </a>
             . All rights reserved.
           </p>
