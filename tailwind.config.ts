@@ -21,13 +21,19 @@ module.exports = withUt({
     },
     extend: {
       colors: {
-       primary: {
-          50: "#FFF7ED", // orange-50 (very light)
-          500: "#F97316", // orange-500 (main orange)
-          600: "#EA580C", // orange-600 (darker)
-          900: "#7C2D12", // orange-900 (very dark)
-          DEFAULT: "#F97316", // main orange
-          foreground: "hsl(var(--primary-foreground))",
+        primary: {
+          50: "#EAF1FF", // very light blue
+          100: "#D6E4FF",
+          200: "#ADC8FF",
+          300: "#84A9FF",
+          400: "#5C8CFF",
+          500: "#1559C9", // main brand color
+          600: "#0F4FBF", // darker hover
+          700: "#0C3FA0",
+          800: "#082F7A",
+          900: "#051F54",
+          DEFAULT: "#1559C9",
+          foreground: "#FFFFFF",
         },
         coral: {
           "500": "#15BF59",
@@ -87,10 +93,7 @@ module.exports = withUt({
         sans: ["var(--font-inter)", "sans-serif"],
         serif: ["var(--font-dm-serif)", "serif"],
       },
-      backgroundImage: {
-        "dotted-pattern": "url('/assets/images/dotted-pattern.png')",
-        "hero-img": "url('/assets/images/hero.png')",
-      },
+      backgroundImage: {},
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
