@@ -72,7 +72,7 @@ function Feedback({ setting }: { setting: ISetting }) {
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalSucceededStudents}
+            {setting.testimonials?.totalSucceededStudents}%
           </p>
           <p className="text-xs md:text-sm">Successful Students</p>
         </div>
@@ -81,7 +81,7 @@ function Feedback({ setting }: { setting: ISetting }) {
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalIndustryExperts}%
+            {setting.testimonials?.totalIndustryExperts}+
           </p>
           <p className="text-xs md:text-sm">Industry Experts</p>
         </div>

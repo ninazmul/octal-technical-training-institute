@@ -42,17 +42,22 @@ function Hero({ setting }: { setting: ISetting }) {
     };
   }, []);
 
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(endDate));
+  const [timeLeft, setTimeLeft] = useState<ReturnType<
+    typeof calculateTimeLeft
+  > | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const updateTimer = () => setTimeLeft(calculateTimeLeft(endDate));
+    const updateTimer = () => {
+      setTimeLeft(calculateTimeLeft(endDate));
+    };
+
+    updateTimer(); // first run
+
     intervalRef.current = setInterval(updateTimer, 1000);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [endDate, calculateTimeLeft]);
 
@@ -67,6 +72,10 @@ function Hero({ setting }: { setting: ISetting }) {
     () => calculateOfferHours(startDate, endDate),
     [startDate, endDate],
   );
+
+  const titleParts = useMemo(() => {
+    return setting.hero?.title?.split(/[.,]/).filter(Boolean) || [];
+  }, [setting.hero?.title]);
 
   return (
     <section className="relative w-full bg-gradient-to-r from-blue-50 to-indigo-100 overflow-hidden">
@@ -95,27 +104,24 @@ function Hero({ setting }: { setting: ISetting }) {
             )}
 
             {/* Title */}
-            <h1 className="text-3xl md:text-6xl lg:text-6xl font-bold leading-tight text-gray-900">
-              {setting.hero?.title
-                ?.split(/[.,]/)
-                .filter(Boolean)
-                .map((part, index) => (
-                  <motion.span
-                    key={index}
-                    className="block"
-                    style={{ color: index === 1 ? themeColor : "#000000" }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 * index }}
-                  >
-                    {part.trim()}
-                  </motion.span>
-                ))}
+            <h1 className="text-3xl md:text-6xl lg:text-6xl font-bold leading-tight text-gray-900 space-y-2">
+              {titleParts.map((part, index) => (
+                <motion.span
+                  key={index}
+                  className="block"
+                  style={{ color: index === 1 ? themeColor : "#000000" }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 * index }}
+                >
+                  {part.trim()}
+                </motion.span>
+              ))}
             </h1>
 
             {/* Description */}
             {setting.hero?.description && (
-              <p
+              <div
                 className="text-gray-700 text-base md:text-lg lg:text-xl max-w-xl mx-auto lg:mx-0"
                 dangerouslySetInnerHTML={{ __html: setting.hero.description }}
               />
@@ -155,7 +161,7 @@ function Hero({ setting }: { setting: ISetting }) {
             </div>
 
             {/* Contact */}
-            <div className="text-gray-800 text-sm font-medium mb-8">
+            <div className="text-gray-800 text-sm font-medium mb-6">
               Need help? Call: {setting.phoneNumber}
             </div>
           </motion.div>
@@ -171,7 +177,7 @@ function Hero({ setting }: { setting: ISetting }) {
               src={setting.hero?.image || "/assets/images/lms-hero.jpg"}
               alt="Learning Hero"
               fill
-              className="object-cover rounded-xl"
+              className="object-contain"
               priority
             />
           </motion.div>

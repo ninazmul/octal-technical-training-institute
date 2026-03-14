@@ -828,119 +828,121 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                 <div className="space-y-4">
                   <h4 className="font-semibold text-lg">Feedbacks</h4>
 
-                  {feedbackFields.map((feedback, fIndex) => (
-                    <div
-                      key={feedback.id}
-                      className="border p-4 rounded space-y-4 bg-gray-50"
-                    >
-                      {/* Photo */}
-                      <FormField
-                        control={form.control}
-                        name={`testimonials.feedbacks.${fIndex}.photo`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Photo</FormLabel>
-                            <FormControl>
-                              <FileUploader
-                                imageUrl={field.value || ""}
-                                onFieldChange={async (_blobUrl, files) => {
-                                  if (files?.length) {
-                                    const uploaded = await startUpload(files);
-                                    if (uploaded?.[0]) {
-                                      form.setValue(
-                                        `testimonials.feedbacks.${fIndex}.photo`,
-                                        uploaded[0].url,
-                                        { shouldValidate: true },
-                                      );
-                                      await saveField();
-                                    }
-                                  }
-                                }}
-                                setFiles={() => {}}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="grid md:grid-cols-3 gap-4">
-                        {/* Name */}
-                        <FormField
-                          control={form.control}
-                          name={`testimonials.feedbacks.${fIndex}.name`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="Customer Name"
-                                  value={field.value ?? ""}
-                                  onBlur={saveField}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Rating FIXED */}
-                        <FormField
-                          control={form.control}
-                          name={`testimonials.feedbacks.${fIndex}.rating`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Rating</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="Rating"
-                                  value={field.value ?? ""}
-                                  onChange={(e) =>
-                                    field.onChange(
-                                      e.target.value === ""
-                                        ? undefined
-                                        : Number(e.target.value),
-                                    )
-                                  }
-                                  onBlur={saveField}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Comment */}
-                        <FormField
-                          control={form.control}
-                          name={`testimonials.feedbacks.${fIndex}.comment`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Comment</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="Customer feedback"
-                                  value={field.value ?? ""}
-                                  onBlur={saveField}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          removeFeedback(fIndex);
-                          await saveField();
-                        }}
-                        className="btn btn-sm text-red-500"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {feedbackFields.map((feedback, fIndex) => (
+                      <div
+                        key={feedback.id}
+                        className="border p-4 rounded space-y-4 bg-gray-50"
                       >
-                        Remove Feedback
-                      </button>
-                    </div>
-                  ))}
+                        {/* Photo */}
+                        <FormField
+                          control={form.control}
+                          name={`testimonials.feedbacks.${fIndex}.photo`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Photo</FormLabel>
+                              <FormControl>
+                                <FileUploader
+                                  imageUrl={field.value || ""}
+                                  onFieldChange={async (_blobUrl, files) => {
+                                    if (files?.length) {
+                                      const uploaded = await startUpload(files);
+                                      if (uploaded?.[0]) {
+                                        form.setValue(
+                                          `testimonials.feedbacks.${fIndex}.photo`,
+                                          uploaded[0].url,
+                                          { shouldValidate: true },
+                                        );
+                                        await saveField();
+                                      }
+                                    }
+                                  }}
+                                  setFiles={() => {}}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4">
+                          {/* Name */}
+                          <FormField
+                            control={form.control}
+                            name={`testimonials.feedbacks.${fIndex}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Customer Name"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Rating FIXED */}
+                          <FormField
+                            control={form.control}
+                            name={`testimonials.feedbacks.${fIndex}.rating`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Rating</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="Rating"
+                                    value={field.value ?? ""}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        e.target.value === ""
+                                          ? undefined
+                                          : Number(e.target.value),
+                                      )
+                                    }
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Comment */}
+                          <FormField
+                            control={form.control}
+                            name={`testimonials.feedbacks.${fIndex}.comment`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Comment</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Customer feedback"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            removeFeedback(fIndex);
+                            await saveField();
+                          }}
+                          className="btn btn-sm text-red-500"
+                        >
+                          Remove Feedback
+                        </button>
+                      </div>
+                    ))}
+                  </div>
 
                   <button
                     type="button"
