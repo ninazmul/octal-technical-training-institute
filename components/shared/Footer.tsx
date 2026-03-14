@@ -3,18 +3,12 @@
 import { ISetting } from "@/lib/database/models/setting.model";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
-  Users,
-  Phone,
-  Mail,
-  MapPin,
-} from "lucide-react"; // professional icons
+import { Phone, Mail, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getSetting } from "@/lib/actions";
+import { headerLinks } from "@/constants";
+import { FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
+import { FaFacebookF, FaUsers } from "react-icons/fa6";
 
 const currentYear = new Date().getFullYear();
 
@@ -22,7 +16,6 @@ const Footer = () => {
   const [setting, setSetting] = useState<ISetting | null>(null);
   const themeColor = setting?.theme || "#000000";
 
-  // Fetch settings once
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -32,7 +25,6 @@ const Footer = () => {
         console.error("Settings load failed", err);
       }
     };
-
     fetchSettings();
   }, []);
 
@@ -44,102 +36,120 @@ const Footer = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         style={{ backgroundColor: themeColor }}
-        className="px-6 md:px-10 py-12 md:py-20 space-y-6"
+        className="px-6 md:px-10 py-12 md:py-20 grid grid-cols-1 md:grid-cols-4 gap-10"
       >
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
+        {/* Logo/About */}
+        <div className="space-y-4 text-center md:text-left">
           <Image
             src={setting?.logo || "/assets/images/logo.png"}
             alt="Logo"
-            width={200}
-            height={200}
+            width={150}
+            height={150}
             priority
-            className="rounded-full"
+            className="mx-auto md:mx-0 rounded-md"
           />
-          <h2 className="text-2xl md:text-3xl font-bold tracking-wide">
-            {setting?.name}
-          </h2>
+          <h2 className="text-xl font-bold">{setting?.name}</h2>
           {setting?.description && (
             <div
-              className="text-sm md:text-base leading-relaxed opacity-90 max-w-2xl"
+              className="text-sm opacity-90"
               dangerouslySetInnerHTML={{ __html: setting?.description }}
             />
           )}
+          {/* Social Links */}
+          <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
+            {setting?.facebook && (
+              <a
+                href={setting.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+              >
+                <FaFacebookF size={20} />
+              </a>
+            )}
+
+            {setting?.instagram && (
+              <a
+                href={setting.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+              >
+                <FaInstagram size={20} />
+              </a>
+            )}
+
+            {setting?.twitter && (
+              <a
+                href={setting.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+              >
+                <FaTwitter size={20} />
+              </a>
+            )}
+
+            {setting?.facebookGroup && (
+              <a
+                href={setting.facebookGroup}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+              >
+                <FaUsers size={20} />
+              </a>
+            )}
+
+            {setting?.youtube && (
+              <a
+                href={setting.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+              >
+                <FaYoutube size={20} />
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Contact Info */}
-        <div className="flex flex-col md:flex-row md:flex-wrap items-start justify-center gap-6 text-sm md:text-base text-left">
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold">যোগাযোগ</h3>
           {setting?.phoneNumber && (
             <div className="flex items-start gap-2 opacity-90">
-              <Phone size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{setting?.phoneNumber}</span>
+              <Phone size={16} /> <span>{setting.phoneNumber}</span>
             </div>
           )}
           {setting?.email && (
             <div className="flex items-start gap-2 opacity-90">
-              <Mail size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{setting?.email}</span>
+              <Mail size={16} /> <span>{setting.email}</span>
             </div>
           )}
           {setting?.address && (
             <div className="flex items-start gap-2 opacity-90">
-              <MapPin size={18} className="flex-shrink-0 mt-0.5" />
-              <span>{setting?.address}</span>
+              <MapPin size={16} /> <span>{setting.address}</span>
             </div>
           )}
         </div>
 
-        {/* Social Links */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-sm md:text-base">
-          {setting?.facebook && (
-            <a
-              href={setting?.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-400 transition-colors flex items-center gap-2"
-            >
-              <Facebook size={20} /> Facebook
-            </a>
-          )}
-          {setting?.instagram && (
-            <a
-              href={setting?.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-pink-400 transition-colors flex items-center gap-2"
-            >
-              <Instagram size={20} /> Instagram
-            </a>
-          )}
-          {setting?.twitter && (
-            <a
-              href={setting?.twitter}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-sky-400 transition-colors flex items-center gap-2"
-            >
-              <Twitter size={20} /> Twitter
-            </a>
-          )}
-          {setting?.facebookGroup && (
-            <a
-              href={setting?.facebookGroup}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-500 transition-colors flex items-center gap-2"
-            >
-              <Users size={20} /> Facebook Group
-            </a>
-          )}
-          {setting?.youtube && (
-            <a
-              href={setting?.youtube}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-red-500 transition-colors flex items-center gap-2"
-            >
-              <Youtube size={20} /> YouTube
-            </a>
-          )}
+        {/* Popular Courses */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold">জনপ্রিয় কোর্স</h3>
+          {/* {setting?.features?.slice(0, 3).map((course, idx) => (
+            <p key={idx} className="opacity-90">{course.title}</p>
+          ))} */}
+        </div>
+
+        {/* Others */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold">অন্যান্য</h3>
+          {headerLinks.map((link, idx) => (
+            <p key={idx} className="opacity-90">
+              {link.label}
+            </p>
+          ))}
         </div>
       </motion.div>
 
@@ -157,20 +167,19 @@ const Footer = () => {
               href="/dashboard"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
+              className="hover:text-white"
             >
               {setting?.name}
             </a>
             . All rights reserved.
           </p>
-
           <p className="flex items-center gap-2">
             ⚙️ Developed by{" "}
             <a
               href="https://www.artistycode.studio"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
+              className="hover:text-white"
             >
               ArtistyCode Studio
             </a>

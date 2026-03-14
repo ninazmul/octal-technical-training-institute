@@ -68,17 +68,17 @@ export default function Header({ openSearch }: HeaderProps) {
       {/* Top support bar */}
       <div style={{ backgroundColor: themeColor }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between py-2 px-4 w-full">
-          <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto">
             <p className="flex items-center gap-1 text-white text-xs md:text-sm font-semibold">
               <Phone size={14} /> {settings?.phoneNumber}
             </p>
-            <p className="flex items-center gap-1 text-white text-xs md:text-sm font-semibold">
+            <p className="hidden md:flex items-center gap-1 text-white text-xs md:text-sm font-semibold">
               <Mail size={14} /> {settings?.email}
             </p>
           </div>
 
           <div className="flex items-center justify-between gap-4 w-full md:w-auto">
-            <div className="flex items-center justify-center gap-2 text-sm md:text-base">
+            <div className="hidden md:flex items-center justify-center gap-2 text-sm md:text-base">
               {settings?.facebook && (
                 <a
                   href={settings.facebook}
@@ -135,7 +135,7 @@ export default function Header({ openSearch }: HeaderProps) {
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-end gap-3">
               <SignedIn>
                 {adminStatus && (
                   <Button
