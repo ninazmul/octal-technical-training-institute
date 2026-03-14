@@ -31,17 +31,17 @@ import { HexColorPicker } from "react-colorful";
 
 const optionalString = z.preprocess(
   (v) => (v === null || v === "" ? undefined : v),
-  z.string().optional()
+  z.string().optional(),
 );
 
 const optionalEmail = z.preprocess(
   (v) => (v === null || v === "" ? undefined : v),
-  z.string().email().optional()
+  z.string().email().optional(),
 );
 
 const optionalUrl = z.preprocess(
   (v) => (v === null || v === "" ? undefined : v),
-  z.string().url().optional()
+  z.string().url().optional(),
 );
 
 // ================= Zod Schema =================
@@ -136,7 +136,7 @@ export const settingSchema = z.object({
             photo: optionalString,
             rating: z.number().optional(),
             comment: optionalString,
-          })
+          }),
         )
         .default([]),
     })
@@ -160,7 +160,7 @@ export const settingSchema = z.object({
           z.object({
             question: optionalString,
             answer: optionalString,
-          })
+          }),
         )
         .default([]),
     })
@@ -186,7 +186,10 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
-    defaultValues: settingSchema.parse(initialData ?? {}),
+    defaultValues: settingSchema.parse({
+      ...settingSchema.parse({}),
+      ...initialData,
+    }),
   });
 
   // Testimonials.feedbacks array
