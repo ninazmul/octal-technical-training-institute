@@ -135,7 +135,7 @@ export default function Header({ openSearch }: HeaderProps) {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-end w-full gap-3">
               <SignedIn>
                 {adminStatus && (
                   <Button
