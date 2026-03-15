@@ -25,7 +25,7 @@ function Hero({ setting }: { setting: ISetting }) {
             className="flex flex-col w-full lg:w-1/2 gap-6 text-center lg:text-left"
           >
             {/* Title */}
-            <h1 className="text-3xl md:text-6xl lg:text-6xl font-bold leading-tight text-gray-900 space-y-2">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900 space-y-2 mt-8">
               {titleParts.map((part, index) => (
                 <motion.span
                   key={index}
@@ -55,7 +55,7 @@ function Hero({ setting }: { setting: ISetting }) {
                   .getElementById("checkout")
                   ?.scrollIntoView({ behavior: "smooth" })
               }
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-lg cursor-pointer transition-transform hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full w-4/5 md:w-1/2 lg:w-1/2 mx-auto lg:mx-0 text-white font-semibold shadow-lg cursor-pointer transition-transform hover:scale-105"
               style={{ backgroundColor: themeColor }}
             >
               <GraduationCap size={22} />
