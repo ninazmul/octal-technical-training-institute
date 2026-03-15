@@ -1073,7 +1073,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   <h4 className="font-semibold text-lg">Mentors</h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {mentorFields.map((mentor, index) => (
+                    {mentorFields.map((mentor, mIndex) => (
                       <div
                         key={mentor.id}
                         className="border p-4 rounded space-y-4 bg-gray-50"
@@ -1081,7 +1081,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         {/* Photo */}
                         <FormField
                           control={form.control}
-                          name={`ourMentors.mentors.${index}.photo`}
+                          name={`ourMentors.mentors.${mIndex}.photo`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Photo</FormLabel>
@@ -1093,7 +1093,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                       const uploaded = await startUpload(files);
                                       if (uploaded?.[0]) {
                                         form.setValue(
-                                          `ourMentors.mentors.${index}.photo`,
+                                          `ourMentors.mentors.${mIndex}.photo`,
                                           uploaded[0].url,
                                           { shouldValidate: true },
                                         );
@@ -1112,7 +1112,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         <FormField
                           control={form.control}
                           name={
-                            `ourMentors.mentors.${index}.name` as Path<SettingFormValues>
+                            `ourMentors.mentors.${mIndex}.name` as Path<SettingFormValues>
                           }
                           render={({ field }) => (
                             <FormItem>
@@ -1141,7 +1141,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         <FormField
                           control={form.control}
                           name={
-                            `ourMentors.mentors.${index}.expertise` as Path<SettingFormValues>
+                            `ourMentors.mentors.${mIndex}.expertise` as Path<SettingFormValues>
                           }
                           render={({ field }) => (
                             <FormItem>
@@ -1170,7 +1170,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         {["facebook", "linkedIn", "twitter", "other"].map(
                           (social) => {
                             const name =
-                              `ourMentors.mentors.${index}.social.${social}` as Path<SettingFormValues>;
+                              `ourMentors.mentors.${mIndex}.social.${social}` as Path<SettingFormValues>;
 
                             return (
                               <FormField
@@ -1209,7 +1209,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         <button
                           type="button"
                           onClick={async () => {
-                            removeMentor(index);
+                            removeMentor(mIndex);
                             await saveField();
                           }}
                           className="btn btn-sm text-red-500"
