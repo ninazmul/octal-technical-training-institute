@@ -39,8 +39,8 @@ export const POST = async (req: NextRequest) => {
     }
 
     // Ensure SMTP configuration exists
-    const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
-    const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+    const SMTP_HOST = process.env.SMTP_HOST;
+    const SMTP_PORT = Number(process.env.SMTP_PORT);
     const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
     const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
     const CONTACT_RECEIVER =
