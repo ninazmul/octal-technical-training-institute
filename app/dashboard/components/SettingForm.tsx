@@ -72,8 +72,6 @@ export const settingSchema = z.object({
       title: optionalString,
       description: optionalString,
       image: optionalString,
-      offerStartDate: z.date().optional(),
-      offerEndDate: z.date().optional(),
     })
     .optional(),
 
@@ -194,12 +192,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   const heroData = initialData?.hero
     ? {
         ...initialData.hero,
-        offerStartDate: initialData.hero.offerStartDate
-          ? new Date(initialData.hero.offerStartDate)
-          : undefined,
-        offerEndDate: initialData.hero.offerEndDate
-          ? new Date(initialData.hero.offerEndDate)
-          : undefined,
       }
     : undefined;
 
@@ -623,42 +615,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
-              ))}
-
-              {(["offerStartDate", "offerEndDate"] as const).map((key) => (
-                <FormField
-                  key={key}
-                  control={form.control}
-                  name={`hero.${key}`}
-                  render={({ field }) => {
-                    const valueStr =
-                      field.value instanceof Date &&
-                      !isNaN(field.value.getTime())
-                        ? field.value.toISOString().split("T")[0]
-                        : "";
-
-                    return (
-                      <FormItem>
-                        <FormLabel>{key}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={valueStr}
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? new Date(e.target.value)
-                                  : undefined,
-                              )
-                            }
-                            onBlur={saveField}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
                 />
               ))}
             </AccordionContent>

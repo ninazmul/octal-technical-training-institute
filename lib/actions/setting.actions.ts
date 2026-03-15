@@ -53,8 +53,6 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     title: "",
     description: "",
     image: "",
-    offerStartDate: new Date(),
-    offerEndDate: new Date(),
   },
 
   features: {

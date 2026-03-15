@@ -88,8 +88,6 @@ export interface Hero {
   title?: string;
   description?: string;
   image?: string;
-  offerStartDate?: Date;
-  offerEndDate?: Date;
 }
 
 export interface Features {
