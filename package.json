@@ -53,6 +53,7 @@
     "lucide-react": "^0.469.0",
     "mongoose": "^8.9.1",
     "next": "^15.1.2",
+    "nodemailer": "^8.0.2",
     "query-string": "^9.1.1",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.1",
