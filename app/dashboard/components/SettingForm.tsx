@@ -188,22 +188,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
-    defaultValues: {
-      ...settingSchema.parse({}),
-      ...initialData,
-      ourMentors: {
-        ...settingSchema.parse({}).ourMentors,
-        ...initialData?.ourMentors,
-      },
-      testimonials: {
-        ...settingSchema.parse({}).testimonials,
-        ...initialData?.testimonials,
-      },
-      faqs: {
-        ...settingSchema.parse({}).faqs,
-        ...initialData?.faqs,
-      },
-    },
+    defaultValues: settingSchema.parse(initialData ?? {}),
   });
 
   // Testimonials.feedbacks array
