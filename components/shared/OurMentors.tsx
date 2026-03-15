@@ -70,9 +70,9 @@ function OurMentors({ setting }: { setting: ISetting }) {
                 <Image
                   src={mentor.photo}
                   alt={mentor.name || "Mentor"}
-                  width={80}
-                  height={80}
-                  className="rounded-full object-contain w-[200px] h-[200px]"
+                  width={200}
+                  height={200}
+                  className="rounded-full object-cover"
                 />
               ) : (
                 <div
@@ -84,13 +84,13 @@ function OurMentors({ setting }: { setting: ISetting }) {
               )}
 
               {/* Name */}
-              <p className="font-semibold text-gray-800 text-lg line-clamp-2 truncate">
+              <p className="font-semibold text-gray-800 text-lg">
                 {mentor.name || "Anonymous"}
               </p>
 
               {/* Expertise */}
               {mentor.expertise && (
-                <p className="text-gray-600 text-sm line-clamp-1 truncate">{mentor.expertise}</p>
+                <p className="text-gray-600 text-sm">{mentor.expertise}</p>
               )}
 
               {/* Social Links */}

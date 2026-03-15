@@ -553,6 +553,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
           <AccordionItem value="hero">
             <AccordionTrigger>Hero Section</AccordionTrigger>
             <AccordionContent className="space-y-4">
+              {/* Text, Description, Image Fields */}
               {(["title", "description", "image"] as const).map((key) => (
                 <FormField
                   key={key}
@@ -607,9 +608,18 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   control={form.control}
                   name={`hero.${key}`}
                   render={({ field }) => {
-                    const valueStr = field.value
-                      ? field.value.toISOString().split("T")[0]
+                    // Convert value safely to Date
+                    const dateValue =
+                      field.value instanceof Date
+                        ? field.value
+                        : field.value
+                          ? new Date(field.value)
+                          : undefined;
+
+                    const valueStr = dateValue
+                      ? dateValue.toISOString().split("T")[0]
                       : "";
+
                     return (
                       <FormItem>
                         <FormLabel>{key}</FormLabel>
@@ -635,7 +645,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
               ))}
             </AccordionContent>
           </AccordionItem>
-
+          
           {/* ===== Features Section ===== */}
           <AccordionItem value="features">
             <AccordionTrigger>Features</AccordionTrigger>
