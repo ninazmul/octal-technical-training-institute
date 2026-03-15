@@ -5,23 +5,28 @@ export default function BengaliFontDetector() {
   useEffect(() => {
     const bengaliRegex = /[\u0980-\u09FF]/;
 
-    const scanTextNodes = (node: Node) => {
+    const scanNode = (node: Node) => {
       if (node.nodeType === Node.TEXT_NODE) {
-        if (bengaliRegex.test(node.textContent || "")) {
-          node.parentElement?.classList.add("font-bengali");
+        const parent = node.parentElement;
+        if (
+          parent &&
+          !parent.classList.contains("bengali-checked") &&
+          bengaliRegex.test(node.textContent || "")
+        ) {
+          parent.classList.add("font-bengali", "bengali-checked");
         }
       } else {
-        node.childNodes.forEach(scanTextNodes);
+        node.childNodes.forEach(scanNode);
       }
     };
 
     // Initial scan
-    scanTextNodes(document.body);
+    scanNode(document.body);
 
-    // Observe changes for dynamically added content
+    // Observe dynamic changes
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach(scanTextNodes);
+        mutation.addedNodes.forEach(scanNode);
       });
     });
 
