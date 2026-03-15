@@ -72,6 +72,8 @@ export const settingSchema = z.object({
       title: optionalString,
       description: optionalString,
       image: optionalString,
+      offerStartDate: optionalString,
+      offerEndDate: optionalString,
     })
     .optional(),
 
@@ -580,6 +582,36 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+              ))}
+
+              {(["offerStartDate", "offerEndDate"] as const).map((key) => (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={`hero.${key}`}
+                  render={({ field }) => {
+                    // Convert string to yyyy-MM-dd format for date input
+                    const dateValue =
+                      field.value && !isNaN(Date.parse(field.value))
+                        ? new Date(field.value).toISOString().split("T")[0]
+                        : "";
+
+                    return (
+                      <FormItem>
+                        <FormLabel>{key}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={dateValue}
+                            onChange={(e) => field.onChange(e.target.value)} // Keep string
+                            onBlur={saveField}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               ))}
             </AccordionContent>

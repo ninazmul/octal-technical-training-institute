@@ -88,6 +88,8 @@ export interface ISetting extends Document {
     title?: string;
     description?: string;
     image?: string;
+    offerStartDate?: string;
+    offerEndDate?: string;
   };
 
   // Features (single object with arrays inside)
@@ -132,6 +134,8 @@ const SettingSchema = new Schema<ISetting>(
       title: { type: String },
       description: { type: String },
       image: { type: String },
+      offerStartDate: { type: String, default: "" },
+      offerEndDate: { type: String, default: "" },
     },
 
     features: {
