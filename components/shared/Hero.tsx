@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { GraduationCap } from "lucide-react";
 
 function Hero({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#2563eb"; // LMS blue default
+  const themeColor = setting.theme || "#2563eb";
 
   const titleParts = useMemo(() => {
     return setting.hero?.title?.split(/[.,]/).filter(Boolean) || [];
