@@ -601,26 +601,28 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                 />
               ))}
 
-              {/* Hero Dates */}
               {(["offerStartDate", "offerEndDate"] as const).map((key) => (
                 <FormField
                   key={key}
                   control={form.control}
                   name={`hero.${key}`}
                   render={({ field }) => {
-                    // Safely convert value to Date
                     let dateValue: Date | undefined;
+
                     if (field.value instanceof Date) {
                       dateValue = field.value;
                     } else if (typeof field.value === "string" && field.value) {
                       const d = new Date(field.value);
-                      if (!isNaN(d.getTime())) dateValue = d;
+                      if (!isNaN(d.getTime())) {
+                        dateValue = d;
+                      }
                     }
 
-                    // Convert Date to YYYY-MM-DD for input
-                    const valueStr = dateValue
-                      ? dateValue.toISOString().slice(0, 10)
-                      : "";
+                    // Only call toISOString if dateValue is valid
+                    const valueStr =
+                      dateValue && !isNaN(dateValue.getTime())
+                        ? dateValue.toISOString().slice(0, 10)
+                        : "";
 
                     return (
                       <FormItem>
