@@ -23,7 +23,7 @@ const NavItems = ({ onItemSelected }: NavItemsProps) => {
               onClick={onItemSelected}
               className={`
                 block w-full lg:w-auto px-3 py-2 lg:py-1 whitespace-nowrap
-                border-b lg:border-0 border-gray-300
+                border-b lg:border-0 border-gray-300 font-semibold
                 
                 ${
                   isActive
