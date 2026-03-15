@@ -6,6 +6,7 @@ import Feature from "./Feature";
 import LMSFeatures from "./LMSFeatures";
 import Feedback from "./Feedback";
 import FAQ from "./FAQ";
+import OurMentors from "./OurMentors";
 
 export default function Home({ setting }: { setting: ISetting }) {
   return (
@@ -13,6 +14,7 @@ export default function Home({ setting }: { setting: ISetting }) {
       <Hero setting={setting} />
       <Feature setting={setting} />
       <LMSFeatures setting={setting} />
+      <OurMentors setting={setting} />
       <Feedback setting={setting} />
       <FAQ setting={setting} />
     </main>
