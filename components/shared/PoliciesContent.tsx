@@ -241,7 +241,7 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
 
             {settings.privacyPolicy && (
               <motion.section
-                id="terms-of-service"
+                id="privacy-policy"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -273,7 +273,7 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
 
             {settings.returnPolicy && (
               <motion.section
-                id="terms-of-service"
+                id="return-policy"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
