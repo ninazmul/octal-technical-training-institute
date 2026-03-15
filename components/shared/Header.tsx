@@ -144,7 +144,11 @@ export default function Header({ openSearch }: HeaderProps) {
                     size="sm"
                     className="rounded-md bg-white text-primary hover:bg-primary hover:text-white border-primary"
                   >
-                    <a href="/dashboard" className="flex items-center gap-1">
+                    <a
+                      href="/dashboard"
+                      target="_blank"
+                      className="flex items-center gap-1"
+                    >
                       <Shield />
                       <span className="hidden md:flex">Dashboard</span>
                     </a>

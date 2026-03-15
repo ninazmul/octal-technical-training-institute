@@ -157,7 +157,7 @@ const Footer = () => {
           <p>
             © {currentYear}{" "}
             <a
-              href="/dashboard"
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white"
