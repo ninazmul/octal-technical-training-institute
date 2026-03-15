@@ -52,7 +52,7 @@ function OurMentors({ setting }: { setting: ISetting }) {
       </motion.div>
 
       {/* Mentors Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl mt-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl mt-10">
         {setting.ourMentors?.mentors?.map((mentor, index) => {
           const firstLetter = mentor.name?.charAt(0).toUpperCase() || "?";
 
@@ -63,7 +63,7 @@ function OurMentors({ setting }: { setting: ISetting }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-4 p-2 md:p-6 bg-white rounded-2xl shadow-md text-center"
+              className="flex flex-col items-center gap-4 p-6 bg-white rounded-2xl shadow-md text-center"
             >
               {/* Avatar */}
               {mentor.photo ? (
@@ -72,11 +72,11 @@ function OurMentors({ setting }: { setting: ISetting }) {
                   alt={mentor.name || "Mentor"}
                   width={80}
                   height={80}
-                  className="rounded-full object-contain w-[100px] h-[100px]"
+                  className="rounded-full object-contain w-[200px] h-[200px]"
                 />
               ) : (
                 <div
-                  className="w-[100px] h-[100px] rounded-full flex items-center justify-center text-5xl font-bold text-white"
+                  className="w-[200px] h-[200px] rounded-full flex items-center justify-center text-5xl font-bold text-white"
                   style={{ backgroundColor: themeColor }}
                 >
                   {firstLetter}
