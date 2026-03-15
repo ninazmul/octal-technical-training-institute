@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ISetting } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
+import { ChevronDown, ChevronRight, DollarSign, File, Mail, MapPin, Phone, Shield } from "lucide-react";
 
 type NavItem = {
   label: string;
@@ -68,7 +69,7 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
     prose-li:marker:text-gray-500 dark:prose-li:marker:text-gray-400
     prose-blockquote:border-l-2 prose-blockquote:border-gray-300 dark:prose-blockquote:border-gray-600 prose-blockquote:pl-3 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 italic
     prose-code:bg-gray-100 dark:prose-code:bg-gray-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-pink-600
-    prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-md prose-pre:p-3
+    prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-md prose-pre:p-1
     prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline hover:prose-a:text-blue-800 dark:hover:prose-a:text-blue-300
     prose-img:rounded-md prose-img:shadow-sm prose-img:my-3
   `;
@@ -80,40 +81,127 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center text-4xl md:text-5xl font-extrabold mb-16"
+          className="text-center text-4xl md:text-5xl font-extrabold mb-4"
           style={{ color: themeColor }}
         >
-          Our Policies
+          Legal Information
         </motion.h1>
+        <motion.h3
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          Everything you need to know about our terms, privacy practices, and
+          policies at CADD CORE Training Institute.
+        </motion.h3>
 
         <div className="grid lg:grid-cols-[260px_1fr] gap-12">
           {/* Sidebar Navigation */}
-          <aside className="lg:sticky lg:top-24 h-fit">
-            <div className="bg-white dark:bg-gray-800 border rounded-xl p-5 shadow-sm">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
-                Policies
+          <aside className="lg:sticky lg:top-24 h-fit space-y-4">
+            <div className="bg-white dark:bg-gray-800 border rounded-xl shadow-md">
+              <h3 className="text-lg font-semibold text-white bg-primary p-4 mb-4 rounded-t-2xl uppercase tracking-wide">
+                Quick Navigation
               </h3>
-
-              <nav className="flex flex-col gap-2">
+              {/* Navigation */}
+              <nav className="flex flex-col gap-2 p-4">
                 {navItems.map((item) => {
                   const active = activeSection === item.id;
+
+                  // Choose icon based on section id
+                  let IconComponent;
+                  if (item.id === "terms-of-service") IconComponent = File;
+                  if (item.id === "privacy-policy") IconComponent = Shield;
+                  if (item.id === "return-policy") IconComponent = DollarSign;
 
                   return (
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="px-3 py-2 text-sm rounded-md transition"
+                      className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition ${
+                        active
+                          ? "font-semibold"
+                          : "font-medium text-gray-600 dark:text-gray-400"
+                      }`}
                       style={{
                         background: active ? `${themeColor}20` : "transparent",
                         color: active ? themeColor : undefined,
-                        fontWeight: active ? 600 : 500,
                       }}
                     >
-                      {item.label}
+                      {/* Left side: icon + label */}
+                      <div className="flex items-center gap-2">
+                        {IconComponent && (
+                          <IconComponent
+                            size={16}
+                            style={{ color: active ? themeColor : "inherit" }}
+                          />
+                        )}
+                        {item.label}
+                      </div>
+
+                      {/* Right side: arrow */}
+                      {active ? (
+                        <ChevronDown size={16} style={{ color: themeColor }} />
+                      ) : (
+                        <ChevronRight size={16} className="text-gray-400" />
+                      )}
                     </a>
                   );
                 })}
               </nav>
+            </div>
+            {/* Contact Info */}
+            <div className="bg-white dark:bg-gray-800 border rounded-xl shadow-md p-4">
+              <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                Need Help?
+              </h4>
+              <div className="space-y-6 text-gray-700 dark:text-gray-300">
+                {settings.email && (
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="p-1 rounded-lg flex-shrink-0"
+                      style={{ backgroundColor: `${themeColor}20` }}
+                    >
+                      <Mail size={12} style={{ color: themeColor }} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="font-medium break-words">
+                        {settings.email}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {settings.phoneNumber && (
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="p-1 rounded-lg flex-shrink-0"
+                      style={{ backgroundColor: `${themeColor}20` }}
+                    >
+                      <Phone size={12} style={{ color: themeColor }} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Phone</p>
+                      <p className="font-medium">{settings.phoneNumber}</p>
+                    </div>
+                  </div>
+                )}
+
+                {settings.address && (
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="p-1 rounded-lg flex-shrink-0"
+                      style={{ backgroundColor: `${themeColor}20` }}
+                    >
+                      <MapPin size={12} style={{ color: themeColor }} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Address</p>
+                      <p className="font-medium">{settings.address}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </aside>
 
@@ -125,63 +213,93 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 border rounded-xl p-8 shadow-sm"
+                className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm"
               >
-                <h2
-                  className="text-2xl font-semibold mb-6"
-                  style={{ color: themeColor }}
-                >
-                  Terms & Conditions
-                </h2>
-
                 <div
-                  className={proseClasses}
-                  dangerouslySetInnerHTML={{ __html: settings.termsOfService }}
-                />
+                  className="flex items-center gap-2 p-4 text-white rounded-t-2xl"
+                  style={{ backgroundColor: themeColor }}
+                >
+                  <div>
+                    <File size={32} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-semibold">শর্তাবলী</h2>
+                    <h3>Applicable Policies:</h3>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div
+                    className={proseClasses}
+                    dangerouslySetInnerHTML={{
+                      __html: settings.termsOfService,
+                    }}
+                  />{" "}
+                </div>
               </motion.section>
             )}
 
             {settings.privacyPolicy && (
               <motion.section
-                id="privacy-policy"
+                id="terms-of-service"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 border rounded-xl p-8 shadow-sm"
+                className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm"
               >
-                <h2
-                  className="text-2xl font-semibold mb-6"
-                  style={{ color: themeColor }}
-                >
-                  Privacy Policy
-                </h2>
-
                 <div
-                  className={proseClasses}
-                  dangerouslySetInnerHTML={{ __html: settings.privacyPolicy }}
-                />
+                  className="flex items-center gap-2 p-4 text-white rounded-t-2xl"
+                  style={{ backgroundColor: themeColor }}
+                >
+                  <div>
+                    <Shield size={32} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-semibold">গোপনীয়তা নীতি</h2>
+                    <h3>Applicable Policies:</h3>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div
+                    className={proseClasses}
+                    dangerouslySetInnerHTML={{
+                      __html: settings.privacyPolicy,
+                    }}
+                  />{" "}
+                </div>
               </motion.section>
             )}
 
             {settings.returnPolicy && (
               <motion.section
-                id="return-policy"
+                id="terms-of-service"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 border rounded-xl p-8 shadow-sm"
+                className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm"
               >
-                <h2
-                  className="text-2xl font-semibold mb-6"
-                  style={{ color: themeColor }}
-                >
-                  Return & Refund Policy
-                </h2>
-
                 <div
-                  className={proseClasses}
-                  dangerouslySetInnerHTML={{ __html: settings.returnPolicy }}
-                />
+                  className="flex items-center gap-2 p-4 text-white rounded-t-2xl"
+                  style={{ backgroundColor: themeColor }}
+                >
+                  <div>
+                    <DollarSign size={32} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-semibold">গোপনীয়তা নীতি</h2>
+                    <h3>Applicable Policies:</h3>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div
+                    className={proseClasses}
+                    dangerouslySetInnerHTML={{
+                      __html: settings.returnPolicy,
+                    }}
+                  />{" "}
+                </div>
               </motion.section>
             )}
           </div>
