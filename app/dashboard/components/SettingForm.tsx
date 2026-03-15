@@ -626,7 +626,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                 />
               ))}
 
-              {/* Hero Dates */}
               {(["offerStartDate", "offerEndDate"] as const).map((key) => (
                 <FormField
                   key={key}
@@ -650,7 +649,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                               field.onChange(
                                 e.target.value
                                   ? new Date(e.target.value)
-                                  : undefined, // <--- use undefined
+                                  : undefined,
                               )
                             }
                             onBlur={saveField}
