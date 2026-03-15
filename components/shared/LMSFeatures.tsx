@@ -5,7 +5,7 @@ import { FaBookOpen, FaChalkboardTeacher, FaCertificate, FaUsers } from "react-i
 import { motion } from "framer-motion";
 
 function LMSFeatures({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#1a1a1a";
+  const themeColor = setting.theme || "#0055CE";
 
   const items = [
     {

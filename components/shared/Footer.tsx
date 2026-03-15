@@ -15,7 +15,7 @@ const currentYear = new Date().getFullYear();
 
 const Footer = () => {
   const [setting, setSetting] = useState<ISetting | null>(null);
-  const themeColor = setting?.theme || "#000000";
+  const themeColor = setting?.theme || "#0055CE";
 
   useEffect(() => {
     const fetchSettings = async () => {

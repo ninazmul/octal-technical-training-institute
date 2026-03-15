@@ -20,7 +20,7 @@ type NavItem = {
 };
 
 export default function AboutContent({ settings }: { settings: ISetting }) {
-  const themeColor = settings.theme || "#000000";
+  const themeColor = settings.theme || "#0055CE";
   const [activeSection, setActiveSection] = useState("");
 
   const navItems: NavItem[] = useMemo(() => {

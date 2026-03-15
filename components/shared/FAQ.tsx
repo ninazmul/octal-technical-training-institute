@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function FAQ({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#000000";
+  const themeColor = setting.theme || "#0055CE";
   const faqs = setting.faqs?.items || [];
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);

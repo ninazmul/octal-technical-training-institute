@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 import { Clock, GraduationCap } from "lucide-react";
 
 function Hero({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#2563eb"; // LMS blue default
+  const themeColor = setting.theme || "#0055CE"; // LMS blue default
 
   const startDate = useMemo(
     () =>

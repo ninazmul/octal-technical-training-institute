@@ -16,7 +16,7 @@ import {
 import { toast } from "react-hot-toast";
 
 export default function ContactContent({ settings }: { settings: ISetting }) {
-  const themeColor = settings.theme || "#2563eb";
+  const themeColor = settings.theme || "#0055CE";
 
   const [formData, setFormData] = useState({
     name: "",

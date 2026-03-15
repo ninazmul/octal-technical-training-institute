@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Facebook, Linkedin, Twitter, Globe } from "lucide-react";
 
 function OurMentors({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#000000";
+  const themeColor = setting.theme || "#0055CE";
 
   return (
     <main className="relative w-full py-12 md:py-20 flex flex-col items-center justify-center text-center px-6 md:px-12 bg-gray-100">

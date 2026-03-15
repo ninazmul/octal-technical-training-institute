@@ -10,7 +10,7 @@ type NavItem = {
 };
 
 export default function PoliciesContent({ settings }: { settings: ISetting }) {
-  const themeColor = settings.theme || "#000000";
+  const themeColor = settings.theme || "#0055CE";
   const [activeSection, setActiveSection] = useState<string>("");
 
   /* -----------------------------
