@@ -9,12 +9,17 @@ import { getSetting } from "@/lib/actions";
 import { headerLinks } from "@/constants";
 import { FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import { FaFacebookF, FaUsers } from "react-icons/fa6";
+import Link from "next/link";
 
 const currentYear = new Date().getFullYear();
 
 const Footer = () => {
   const [setting, setSetting] = useState<ISetting | null>(null);
   const themeColor = setting?.theme || "#000000";
+
+  const stripImages = (html: string) => {
+    return html.replace(/<img[^>]*>/gi, "");
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -50,10 +55,19 @@ const Footer = () => {
           <h2 className="text-xl font-bold">{setting?.name}</h2>
           {setting?.description && (
             <div
-              className="text-sm opacity-90"
-              dangerouslySetInnerHTML={{ __html: setting?.description }}
+              className="text-sm opacity-90 line-clamp-3"
+              dangerouslySetInnerHTML={{
+                __html: stripImages(setting.description),
+              }}
             />
           )}
+
+          <Link
+            href="/about"
+            className="inline-block text-sm font-medium underline hover:opacity-80"
+          >
+            Read more →
+          </Link>
           {/* Social Links */}
           <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
             {setting?.facebook && (
@@ -137,11 +151,16 @@ const Footer = () => {
           {/* Others */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Others</h3>
-            {headerLinks.map((link, idx) => (
-              <p key={idx} className="opacity-90">
-                {link.label}
-              </p>
-            ))}
+            <div className="grid grid-cols-1">
+              {headerLinks.map((link, idx) => (
+                <Link href={link.route} key={idx} className="opacity-90">
+                  {link.label}
+                </Link>
+              ))}
+              <Link href={"/policies"} className="opacity-90">
+                Policies
+              </Link>
+            </div>
           </div>
         </div>
       </motion.div>
