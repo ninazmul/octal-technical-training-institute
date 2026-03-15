@@ -5,32 +5,44 @@ export default function BengaliFontDetector() {
   useEffect(() => {
     const bengaliRegex = /[\u0980-\u09FF]/;
 
-    const scanNode = (node: Node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const parent = node.parentElement;
-        if (
-          parent &&
-          !parent.classList.contains("bengali-checked") &&
-          bengaliRegex.test(node.textContent || "")
-        ) {
-          parent.classList.add("font-bengali", "bengali-checked");
-        }
-      } else {
-        node.childNodes.forEach(scanNode);
+    function applyBengaliFont(node: HTMLElement) {
+      if (node.classList.contains("bengali-checked")) return;
+
+      if (bengaliRegex.test(node.textContent || "")) {
+        node.classList.add("font-bengali", "bengali-checked");
       }
-    };
 
-    // Initial scan
-    scanNode(document.body);
+      // Recursively check children
+      node.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6,p,div").forEach(
+        (child) => {
+          if (!child.classList.contains("bengali-checked")) {
+            if (bengaliRegex.test(child.textContent || "")) {
+              child.classList.add("font-bengali", "bengali-checked");
+            }
+          }
+        }
+      );
+    }
 
-    // Observe dynamic changes
+    // Scan headings, paragraphs, and divs with text content
+    const elements = Array.from(
+      document.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6,p,div")
+    ).filter((el) => el.textContent && el.textContent.trim().length > 0);
+
+    elements.forEach((el) => applyBengaliFont(el));
+
+    // Observe dynamically added content
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach(scanNode);
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) applyBengaliFont(node);
+        });
       });
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    elements.forEach((el) =>
+      observer.observe(el, { childList: true, subtree: true })
+    );
 
     return () => observer.disconnect();
   }, []);
