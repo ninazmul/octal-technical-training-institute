@@ -1,7 +1,6 @@
 import { Inter, DM_Serif_Display, Hind_Siliguri } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import BengaliFontDetector from "@/components/shared/BengaliFontDetector";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,14 +20,17 @@ const hindSiliguri = Hind_Siliguri({
   variable: "--font-bengali",
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <ClerkProvider>
       <html lang="en">
         <body
           className={`${inter.variable} ${dmSerif.variable} ${hindSiliguri.variable} font-sans`}
         >
-          <BengaliFontDetector />
           {children}
         </body>
       </html>

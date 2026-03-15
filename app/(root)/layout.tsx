@@ -6,6 +6,7 @@ import ScrollHeaderWrapper from "@/components/shared/ScrollHeaderWrapper";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import SearchDrawer from "@/components/shared/SearchDrawer";
+import BengaliFontDetector from "@/components/shared/BengaliFontDetector";
 // import SearchDrawer from "@/components/shared/SearchDrawer";
 
 export default function RootLayout({
@@ -40,6 +41,7 @@ export default function RootLayout({
       </ScrollHeaderWrapper>
 
       <main style={{ paddingTop: headerHeight }} className="flex-1">
+        <BengaliFontDetector />
         {children}
       </main>
 
