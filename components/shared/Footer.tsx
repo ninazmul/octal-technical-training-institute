@@ -169,6 +169,9 @@ const Footer = () => {
             </a>
             . All rights reserved.
           </p>
+          <p className="">
+            E-Trade License No: 252601303247
+          </p>
           <p className="flex items-center gap-2">
             ⚙️ Developed by{" "}
             <a

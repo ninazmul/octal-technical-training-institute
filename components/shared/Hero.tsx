@@ -99,7 +99,7 @@ function Hero({ setting }: { setting: ISetting }) {
                 }}
               >
                 <Clock size={16} />
-                Special {offerHours}-hour enrollment offer!
+                {offerHours}-ঘণ্টার বিশেষ ভর্তি সুযোগ!{" "}
               </div>
             )}
 
@@ -157,12 +157,12 @@ function Hero({ setting }: { setting: ISetting }) {
               style={{ backgroundColor: themeColor }}
             >
               <GraduationCap size={22} />
-              Enroll Now
+              এনরোল করুন
             </div>
 
             {/* Contact */}
             <div className="text-gray-800 text-sm font-medium mb-6">
-              Need help? Call: {setting.phoneNumber}
+              সাহায্য দরকার? কল করুন: {setting.phoneNumber}
             </div>
           </motion.div>
 
@@ -174,7 +174,7 @@ function Hero({ setting }: { setting: ISetting }) {
             className="relative w-full lg:w-1/2 h-[300px] md:h-[500px]"
           >
             <Image
-              src={setting.hero?.image || "/assets/images/lms-hero.jpg"}
+              src={setting.hero?.image || "/assets/images/logo.png"}
               alt="Learning Hero"
               fill
               className="object-contain"
