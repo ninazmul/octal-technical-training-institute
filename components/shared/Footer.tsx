@@ -17,10 +17,6 @@ const Footer = () => {
   const [setting, setSetting] = useState<ISetting | null>(null);
   const themeColor = setting?.theme || "#000000";
 
-  const stripImages = (html: string) => {
-    return html.replace(/<img[^>]*>/gi, "");
-  };
-
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -53,21 +49,9 @@ const Footer = () => {
             className="mx-auto md:mx-0 rounded-md"
           />
           <h2 className="text-xl font-bold">{setting?.name}</h2>
-          {setting?.description && (
-            <div
-              className="text-sm opacity-90 line-clamp-3"
-              dangerouslySetInnerHTML={{
-                __html: stripImages(setting.description),
-              }}
-            />
+          {setting?.tagline && (
+            <p className="opacity-90 italic">{setting.tagline}</p>
           )}
-
-          <Link
-            href="/about"
-            className="inline-block text-sm font-medium underline hover:opacity-80"
-          >
-            Read more →
-          </Link>
           {/* Social Links */}
           <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
             {setting?.facebook && (

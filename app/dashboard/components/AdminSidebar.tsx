@@ -72,29 +72,22 @@ const AdminSidebar = ({ role }: { role?: string }) => {
 
   return (
     <Sidebar
-      className="text-[#3e0078] font-semibold font-serif"
+      className="text-primary font-semibold font-serif"
       collapsible="icon"
     >
       <SidebarContent>
         <SidebarGroup className="space-y-4">
           <SidebarGroupLabel>
-            <Link href={"/"} className="flex items-center gap-2">
-              <Image
-                src={settings?.logo || "/assets/images/logo.png"}
-                width={40}
-                height={40}
-                alt={settings?.name || "Logo"}
-              />
-              <h1 className="text-lg font-serif font-bold text-[#3e0078]">
-                <span className="text-[#3e0078]">
-                  {settings?.name?.split(" ")[0]}
-                </span>
-                <span className="text-black">
-                  {" "}
-                  {settings?.name?.split(" ").slice(1).join(" ")}
-                </span>
-              </h1>
-            </Link>
+            <div className="relative w-full h-10 rounded-md overflow-hidden bg-primary">
+              <Link href={"/"}>
+                <Image
+                  src={settings?.logo || "/assets/images/logo.png"}
+                  fill
+                  className="object-contain rounded-md"
+                  alt={settings?.name || "Logo"}
+                />
+              </Link>
+            </div>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
@@ -123,7 +116,7 @@ const AdminSidebar = ({ role }: { role?: string }) => {
                         <Link
                           href={item.url}
                           className={`flex items-center space-x-2 px-4 py-2 rounded-md ${
-                            isActive ? "bg-[#3e0078] text-white" : ""
+                            isActive ? "bg-primary text-white" : ""
                           }`}
                         >
                           <item.icon className="w-5 h-5" />
