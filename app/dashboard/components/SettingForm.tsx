@@ -1081,7 +1081,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         {/* Photo */}
                         <FormField
                           control={form.control}
-                          name={`testimonials.feedbacks.${index}.photo`}
+                          name={`ourMentors.mentors.${index}.photo`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Photo</FormLabel>
@@ -1093,7 +1093,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                       const uploaded = await startUpload(files);
                                       if (uploaded?.[0]) {
                                         form.setValue(
-                                          `testimonials.feedbacks.${index}.photo`,
+                                          `ourMentors.mentors.${index}.photo`,
                                           uploaded[0].url,
                                           { shouldValidate: true },
                                         );
