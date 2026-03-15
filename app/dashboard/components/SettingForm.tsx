@@ -72,8 +72,8 @@ export const settingSchema = z.object({
       title: optionalString,
       description: optionalString,
       image: optionalString,
-      offerStartDate: z.coerce.date().optional(),
-      offerEndDate: z.coerce.date().optional(),
+      offerStartDate: z.date().optional(),
+      offerEndDate: z.date().optional(),
     })
     .optional(),
 
@@ -188,23 +188,49 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
 
+  const defaults = settingSchema.parse({}); // get schema defaults
+
+  // Convert hero dates
+  const heroData = initialData?.hero
+    ? {
+        ...initialData.hero,
+        offerStartDate: initialData.hero.offerStartDate
+          ? new Date(initialData.hero.offerStartDate)
+          : undefined,
+        offerEndDate: initialData.hero.offerEndDate
+          ? new Date(initialData.hero.offerEndDate)
+          : undefined,
+      }
+    : undefined;
+
+  // Arrays must exist for useFieldArray
+  const testimonialsData = {
+    ...defaults.testimonials,
+    ...initialData?.testimonials,
+    feedbacks: initialData?.testimonials?.feedbacks || [],
+  };
+
+  const ourMentorsData = {
+    ...defaults.ourMentors,
+    ...initialData?.ourMentors,
+    mentors: initialData?.ourMentors?.mentors || [],
+  };
+
+  const faqsData = {
+    ...defaults.faqs,
+    ...initialData?.faqs,
+    items: initialData?.faqs?.items || [],
+  };
+
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
     defaultValues: {
-      ...settingSchema.parse({}),
+      ...defaults,
       ...initialData,
-      ourMentors: {
-        ...settingSchema.parse({}).ourMentors,
-        ...initialData?.ourMentors,
-      },
-      testimonials: {
-        ...settingSchema.parse({}).testimonials,
-        ...initialData?.testimonials,
-      },
-      faqs: {
-        ...settingSchema.parse({}).faqs,
-        ...initialData?.faqs,
-      },
+      hero: heroData,
+      testimonials: testimonialsData,
+      ourMentors: ourMentorsData,
+      faqs: faqsData,
     },
   });
 
@@ -553,7 +579,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
           <AccordionItem value="hero">
             <AccordionTrigger>Hero Section</AccordionTrigger>
             <AccordionContent className="space-y-4">
-              {/* Text, Description, Image Fields */}
               {(["title", "description", "image"] as const).map((key) => (
                 <FormField
                   key={key}
@@ -601,27 +626,17 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                 />
               ))}
 
+              {/* Hero Dates */}
               {(["offerStartDate", "offerEndDate"] as const).map((key) => (
                 <FormField
                   key={key}
                   control={form.control}
                   name={`hero.${key}`}
                   render={({ field }) => {
-                    let dateValue: Date | undefined;
-
-                    if (field.value instanceof Date) {
-                      dateValue = field.value;
-                    } else if (typeof field.value === "string" && field.value) {
-                      const d = new Date(field.value);
-                      if (!isNaN(d.getTime())) {
-                        dateValue = d;
-                      }
-                    }
-
-                    // Only call toISOString if dateValue is valid
                     const valueStr =
-                      dateValue && !isNaN(dateValue.getTime())
-                        ? dateValue.toISOString().slice(0, 10)
+                      field.value instanceof Date &&
+                      !isNaN(field.value.getTime())
+                        ? field.value.toISOString().split("T")[0]
                         : "";
 
                     return (
@@ -631,12 +646,13 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           <Input
                             type="date"
                             value={valueStr}
-                            onChange={(e) => {
-                              const val = e.target.value
-                                ? new Date(e.target.value)
-                                : undefined;
-                              field.onChange(val);
-                            }}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value
+                                  ? new Date(e.target.value)
+                                  : undefined, // <--- use undefined
+                              )
+                            }
                             onBlur={saveField}
                           />
                         </FormControl>

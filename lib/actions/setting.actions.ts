@@ -6,7 +6,27 @@ import Setting, { ISetting } from "../database/models/setting.model";
 import { SettingParams } from "@/types";
 import { Types } from "mongoose";
 
-// ===== Default template
+// ====== CREATE SETTING (only if none exists)
+export const createSetting = async (
+  params: SettingParams,
+): Promise<ISetting | null> => {
+  try {
+    await connectToDatabase();
+
+    const existing = await Setting.findOne().lean<ISetting>();
+    if (existing) {
+      throw new Error("Settings already exist");
+    }
+
+    const newSetting = await Setting.create(params);
+    return JSON.parse(JSON.stringify(newSetting)) as ISetting; // consistent plain object
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
+};
+
+// Default template for a brand-new setting
 const DEFAULT_SETTING: Partial<ISetting> = {
   _id: new Types.ObjectId(),
   logo: "",
@@ -18,15 +38,25 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   phoneNumber: "",
   address: "",
   theme: "light",
+
   facebook: "",
   instagram: "",
   twitter: "",
   facebookGroup: "",
   youtube: "",
+
   returnPolicy: "",
   termsOfService: "",
   privacyPolicy: "",
-  hero: { title: "", description: "", image: "" },
+
+  hero: {
+    title: "",
+    description: "",
+    image: "",
+    offerStartDate: new Date(),
+    offerEndDate: new Date(),
+  },
+
   features: {
     badge: "",
     title: "",
@@ -35,6 +65,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     weGiveYou: [],
     weDoNotGiveYou: [],
   },
+
   testimonials: {
     badge: "",
     title: "",
@@ -44,21 +75,27 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     totalIndustryExperts: 0,
     feedbacks: [],
   },
-  ourMentors: { badge: "", title: "", description: "", mentors: [] },
-  faqs: { badge: "", title: "", description: "", items: [] },
+
+  ourMentors: {
+    badge: "",
+    title: "",
+    description: "",
+    mentors: [],
+  },
+
+  faqs: {
+    badge: "",
+    title: "",
+    description: "",
+    items: [],
+  },
+
   createdAt: new Date(),
   updatedAt: new Date(),
 };
 
-// ===== In-memory cache variable
-let cachedSetting: ISetting | null = null;
-
-// ===== GET SETTING (with simple in-memory cache)
 export const getSetting = async (): Promise<ISetting> => {
   try {
-    // Return cached copy if available
-    if (cachedSetting) return cachedSetting;
-
     await connectToDatabase();
 
     let setting = await Setting.findOne().lean<ISetting>();
@@ -68,37 +105,14 @@ export const getSetting = async (): Promise<ISetting> => {
       setting = await Setting.create(DEFAULT_SETTING);
     }
 
-    // Store in cache
-    cachedSetting = JSON.parse(JSON.stringify(setting)) as ISetting;
-    return cachedSetting;
+    return JSON.parse(JSON.stringify(setting)) as ISetting;
   } catch (error) {
     handleError(error);
     throw new Error("Unable to fetch setting");
   }
 };
 
-// ===== CREATE SETTING (only if none exists)
-export const createSetting = async (
-  params: SettingParams,
-): Promise<ISetting | null> => {
-  try {
-    await connectToDatabase();
-
-    const existing = await Setting.findOne().lean<ISetting>();
-    if (existing) throw new Error("Settings already exist");
-
-    const newSetting = await Setting.create(params);
-
-    // Update cache
-    cachedSetting = JSON.parse(JSON.stringify(newSetting)) as ISetting;
-    return cachedSetting;
-  } catch (error) {
-    handleError(error);
-    return null;
-  }
-};
-
-// ===== UPSERT SETTING (update if exists, else create)
+// ====== UPSERT SETTING (update if exists, else create)
 export const upsertSetting = async (
   updateData: Partial<SettingParams>,
 ): Promise<ISetting | null> => {
@@ -106,16 +120,17 @@ export const upsertSetting = async (
     await connectToDatabase();
 
     const setting = await Setting.findOneAndUpdate(
-      {},
+      {}, // always target the single settings doc
       { $set: updateData },
-      { new: true, upsert: true, runValidators: true, lean: true },
+      {
+        new: true, // return updated doc
+        upsert: true, // create if none exists
+        runValidators: true,
+        lean: true, // return plain object
+      },
     );
 
-    if (!setting) return null;
-
-    // Update cache
-    cachedSetting = JSON.parse(JSON.stringify(setting)) as ISetting;
-    return cachedSetting;
+    return setting ? (JSON.parse(JSON.stringify(setting)) as ISetting) : null;
   } catch (error) {
     handleError(error);
     return null;
