@@ -65,7 +65,7 @@ function Feedback({ setting }: { setting: ISetting }) {
           >
             {setting.testimonials?.totalEnrollment}+
           </p>
-          <p className="text-xs md:text-sm">Total Enrollments</p>
+          <p className="text-xs md:text-sm">সর্বমোট এনরোলমেন্ট</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <p
@@ -74,7 +74,7 @@ function Feedback({ setting }: { setting: ISetting }) {
           >
             {setting.testimonials?.totalSucceededStudents}%
           </p>
-          <p className="text-xs md:text-sm">Successful Students</p>
+          <p className="text-xs md:text-sm">সফল শিক্ষার্থী</p>
         </div>
         <div className="flex flex-col items-center gap-2">
           <p
@@ -83,7 +83,7 @@ function Feedback({ setting }: { setting: ISetting }) {
           >
             {setting.testimonials?.totalIndustryExperts}+
           </p>
-          <p className="text-xs md:text-sm">Industry Experts</p>
+          <p className="text-xs md:text-sm">ইন্ডাস্ট্রি এক্সপার্টস</p>
         </div>
       </motion.div>
 

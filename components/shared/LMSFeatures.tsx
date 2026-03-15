@@ -1,7 +1,12 @@
 "use client";
 
 import { ISetting } from "@/lib/database/models/setting.model";
-import { FaBookOpen, FaChalkboardTeacher, FaCertificate, FaUsers } from "react-icons/fa";
+import {
+  FaBookOpen,
+  FaChalkboardTeacher,
+  FaCertificate,
+  FaUsers,
+} from "react-icons/fa";
 import { motion } from "framer-motion";
 
 function LMSFeatures({ setting }: { setting: ISetting }) {
@@ -9,24 +14,24 @@ function LMSFeatures({ setting }: { setting: ISetting }) {
 
   const items = [
     {
-      icon: <FaBookOpen className="w-10 h-10 p-2 text-blue-600" />,
-      title: "Rich Course Library",
-      desc: "Access a wide range of curated courses anytime.",
+      icon: <FaBookOpen className="w-10 h-10 p-2 text-sky-500" />,
+      title: "সমৃদ্ধ কোর্স লাইব্রেরি",
+      desc: "যেকোনো সময় বিস্তৃত কোর্সসমূহে প্রবেশাধিকার পান।",
     },
     {
       icon: <FaChalkboardTeacher className="w-10 h-10 p-2 text-emerald-500" />,
-      title: "Expert Instructors",
-      desc: "Learn directly from industry professionals.",
+      title: "অভিজ্ঞ প্রশিক্ষক",
+      desc: "শিল্পের পেশাদারদের কাছ থেকে সরাসরি শিখুন।",
     },
     {
       icon: <FaUsers className="w-10 h-10 p-2 text-yellow-500" />,
-      title: "Collaborative Learning",
-      desc: "Engage with peers through discussions and projects.",
+      title: "সহযোগিতামূলক শিক্ষা",
+      desc: "আলোচনা ও প্রকল্পের মাধ্যমে সহপাঠীদের সাথে যুক্ত হোন।",
     },
     {
       icon: <FaCertificate className="w-10 h-10 p-2 text-green-500" />,
-      title: "Certified Achievements",
-      desc: "Earn recognized certificates to boost your career.",
+      title: "স্বীকৃত অর্জন",
+      desc: "আপনার ক্যারিয়ারকে এগিয়ে নিতে স্বীকৃত সার্টিফিকেট অর্জন করুন।",
     },
   ];
 
@@ -43,13 +48,14 @@ function LMSFeatures({ setting }: { setting: ISetting }) {
         className="flex flex-col items-center gap-4"
       >
         <div className="text-white border rounded-full px-4 py-2 text-sm shadow-md flex items-center gap-2 w-max font-semibold bg-black/25">
-          LMS Features
+          LMS বৈশিষ্ট্যসমূহ
         </div>
         <h2 className="text-white text-3xl md:text-5xl font-bold">
-          Empower Your Learning Journey
+          আপনার শেখার যাত্রাকে শক্তিশালী করুন
         </h2>
         <p className="max-w-3xl text-white text-lg md:text-xl">
-          Explore courses, connect with experts, and achieve certifications with ease.
+          কোর্স অন্বেষণ করুন, বিশেষজ্ঞদের সাথে যুক্ত হোন, এবং সহজেই সার্টিফিকেশন
+          অর্জন করুন।
         </p>
       </motion.div>
 

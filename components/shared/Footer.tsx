@@ -149,6 +149,24 @@ const Footer = () => {
         </div>
       </motion.div>
 
+      {/* Middle Bar */}
+      {/* <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.6 }}
+        className=""
+      >
+        <div className="relative w-full h-10 lg:h-20">
+          <Image
+            src={"/assets/images/banks.png"}
+            alt="Logo"
+            fill
+            priority
+            className=""
+          />
+        </div>
+      </motion.div> */}
+
       {/* Bottom Bar */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -169,9 +187,7 @@ const Footer = () => {
             </a>
             . All rights reserved.
           </p>
-          <p className="">
-            E-Trade License No: 252601303247
-          </p>
+          <p className="">E-Trade License No: 252601303247</p>
           <p className="flex items-center gap-2">
             ⚙️ Developed by{" "}
             <a
