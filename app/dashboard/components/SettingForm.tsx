@@ -186,43 +186,23 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
 
-  const defaults = settingSchema.parse({}); // get schema defaults
-
-  // Convert hero dates
-  const heroData = initialData?.hero
-    ? {
-        ...initialData.hero,
-      }
-    : undefined;
-
-  // Arrays must exist for useFieldArray
-  const testimonialsData = {
-    ...defaults.testimonials,
-    ...initialData?.testimonials,
-    feedbacks: initialData?.testimonials?.feedbacks || [],
-  };
-
-  const ourMentorsData = {
-    ...defaults.ourMentors,
-    ...initialData?.ourMentors,
-    mentors: initialData?.ourMentors?.mentors || [],
-  };
-
-  const faqsData = {
-    ...defaults.faqs,
-    ...initialData?.faqs,
-    items: initialData?.faqs?.items || [],
-  };
-
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
     defaultValues: {
-      ...defaults,
+      ...settingSchema.parse({}),
       ...initialData,
-      hero: heroData,
-      testimonials: testimonialsData,
-      ourMentors: ourMentorsData,
-      faqs: faqsData,
+      ourMentors: {
+        ...settingSchema.parse({}).ourMentors,
+        ...initialData?.ourMentors,
+      },
+      testimonials: {
+        ...settingSchema.parse({}).testimonials,
+        ...initialData?.testimonials,
+      },
+      faqs: {
+        ...settingSchema.parse({}).faqs,
+        ...initialData?.faqs,
+      },
     },
   });
 

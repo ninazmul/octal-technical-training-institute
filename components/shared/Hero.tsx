@@ -1,77 +1,13 @@
 "use client";
 
 import { ISetting } from "@/lib/database/models/setting.model";
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { GraduationCap, Clock } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 function Hero({ setting }: { setting: ISetting }) {
   const themeColor = setting.theme || "#2563eb"; // LMS blue default
-
-  const startDate = useMemo(
-    () =>
-      setting.hero?.offerStartDate
-        ? new Date(setting.hero.offerStartDate)
-        : new Date(),
-    [setting.hero?.offerStartDate],
-  );
-
-  const endDate = useMemo(
-    () =>
-      setting.hero?.offerEndDate
-        ? new Date(setting.hero.offerEndDate)
-        : new Date(),
-    [setting.hero?.offerEndDate],
-  );
-
-  const calculateTimeLeft = useCallback((end: Date) => {
-    const diff = end.getTime() - Date.now();
-    if (diff <= 0) return null;
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-    };
-  }, []);
-
-  const [timeLeft, setTimeLeft] = useState<ReturnType<
-    typeof calculateTimeLeft
-  > | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    const updateTimer = () => {
-      setTimeLeft(calculateTimeLeft(endDate));
-    };
-
-    updateTimer(); // first run
-
-    intervalRef.current = setInterval(updateTimer, 1000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [endDate, calculateTimeLeft]);
-
-  const calculateOfferHours = (start?: Date, end?: Date) => {
-    if (!start || !end) return null;
-    const diff = end.getTime() - start.getTime();
-    if (diff <= 0) return null;
-    return Math.floor(diff / (1000 * 60 * 60));
-  };
-
-  const offerHours = useMemo(
-    () => calculateOfferHours(startDate, endDate),
-    [startDate, endDate],
-  );
 
   const titleParts = useMemo(() => {
     return setting.hero?.title?.split(/[.,]/).filter(Boolean) || [];
@@ -88,21 +24,6 @@ function Hero({ setting }: { setting: ISetting }) {
             transition={{ duration: 0.6 }}
             className="flex flex-col w-full lg:w-1/2 gap-6 text-center lg:text-left"
           >
-            {/* Offer Banner */}
-            {offerHours !== null && (
-              <div
-                className="mt-8 inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold shadow-md mx-auto lg:mx-0 w-max"
-                style={{
-                  backgroundColor: `${themeColor}20`,
-                  border: `1px solid ${themeColor}`,
-                  color: themeColor,
-                }}
-              >
-                <Clock size={16} />
-                Special {offerHours}-hour enrollment offer!
-              </div>
-            )}
-
             {/* Title */}
             <h1 className="text-3xl md:text-6xl lg:text-6xl font-bold leading-tight text-gray-900 space-y-2">
               {titleParts.map((part, index) => (
@@ -125,25 +46,6 @@ function Hero({ setting }: { setting: ISetting }) {
                 className="text-gray-700 text-base md:text-lg lg:text-xl max-w-xl mx-auto lg:mx-0"
                 dangerouslySetInnerHTML={{ __html: setting.hero.description }}
               />
-            )}
-
-            {/* Countdown */}
-            {timeLeft && (
-              <div className="flex justify-center lg:justify-start gap-4">
-                {Object.entries(timeLeft).map(([label, val], i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center bg-white shadow rounded-lg px-2 lg:px-4 py-1 lg:py-2"
-                  >
-                    <span className="text-2xl font-bold text-gray-900">
-                      {String(val).padStart(2, "0")}
-                    </span>
-                    <span className="text-xs uppercase text-gray-500">
-                      {label}
-                    </span>
-                  </div>
-                ))}
-              </div>
             )}
 
             {/* CTA */}
