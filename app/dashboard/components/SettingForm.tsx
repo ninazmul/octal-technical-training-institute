@@ -608,16 +608,18 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   control={form.control}
                   name={`hero.${key}`}
                   render={({ field }) => {
-                    // Convert value safely to Date
-                    const dateValue =
-                      field.value instanceof Date
-                        ? field.value
-                        : field.value
-                          ? new Date(field.value)
-                          : undefined;
+                    // Safely convert value to Date
+                    let dateValue: Date | undefined;
+                    if (field.value instanceof Date) {
+                      dateValue = field.value;
+                    } else if (typeof field.value === "string" && field.value) {
+                      const d = new Date(field.value);
+                      if (!isNaN(d.getTime())) dateValue = d;
+                    }
 
+                    // Convert Date to YYYY-MM-DD for input
                     const valueStr = dateValue
-                      ? dateValue.toISOString().split("T")[0]
+                      ? dateValue.toISOString().slice(0, 10)
                       : "";
 
                     return (
@@ -627,13 +629,12 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           <Input
                             type="date"
                             value={valueStr}
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? new Date(e.target.value)
-                                  : undefined,
-                              )
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value
+                                ? new Date(e.target.value)
+                                : undefined;
+                              field.onChange(val);
+                            }}
                             onBlur={saveField}
                           />
                         </FormControl>
@@ -645,7 +646,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
               ))}
             </AccordionContent>
           </AccordionItem>
-          
+
           {/* ===== Features Section ===== */}
           <AccordionItem value="features">
             <AccordionTrigger>Features</AccordionTrigger>
