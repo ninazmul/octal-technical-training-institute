@@ -3,7 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { ISetting } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronRight, DollarSign, File, Mail, MapPin, Phone, Shield } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  DollarSign,
+  File,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+} from "lucide-react";
 
 type NavItem = {
   label: string;
@@ -92,7 +101,7 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
           className="text-center mb-16"
         >
           Everything you need to know about our terms, privacy practices, and
-          policies at CADD CORE Training Institute.
+          policies at Octal Technical Training Institute.
         </motion.h3>
 
         <div className="grid lg:grid-cols-[260px_1fr] gap-12">
