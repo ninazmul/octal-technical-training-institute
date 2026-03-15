@@ -48,7 +48,7 @@ function LMSFeatures({ setting }: { setting: ISetting }) {
         className="flex flex-col items-center gap-4"
       >
         <div className="text-white border rounded-full px-4 py-2 text-sm shadow-md flex items-center gap-2 w-max font-semibold bg-black/25">
-          LMS বৈশিষ্ট্যসমূহ
+          বৈশিষ্ট্যসমূহ
         </div>
         <h2 className="text-white text-3xl md:text-5xl font-bold">
           আপনার শেখার যাত্রাকে শক্তিশালী করুন
