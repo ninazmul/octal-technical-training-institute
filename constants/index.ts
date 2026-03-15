@@ -1,14 +1,14 @@
 export const headerLinks = [
   {
-    label: "About Us",
+    label: "আমাদের সম্পর্কে",
     route: "/about",
   },
   {
-    label: "Success Stories",
+    label: "সাফল্যের গল্প",
     route: "/success",
   },
   {
-    label: "Contact Us",
+    label: "যোগাযোগ",
     route: "/contact",
   },
 ];

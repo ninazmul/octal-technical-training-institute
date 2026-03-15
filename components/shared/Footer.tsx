@@ -142,7 +142,7 @@ const Footer = () => {
                 </Link>
               ))}
               <Link href={"/policies"} className="opacity-90">
-                Policies
+                নীতিমালা
               </Link>
             </div>
           </div>
