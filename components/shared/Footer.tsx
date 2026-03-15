@@ -114,7 +114,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:justify-items-center w-full px-12">
           {/* Contact Info */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold">Contacts</h3>
+            <h3 className="text-lg font-semibold">যোগাযোগ</h3>
             {setting?.phoneNumber && (
               <div className="flex items-start gap-2 opacity-90">
                 <Phone size={16} /> <span>{setting.phoneNumber}</span>
@@ -134,7 +134,7 @@ const Footer = () => {
 
           {/* Others */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold">Others</h3>
+            <h3 className="text-lg font-semibold">অন্যান্য</h3>
             <div className="grid grid-cols-1">
               {headerLinks.map((link, idx) => (
                 <Link href={link.route} key={idx} className="opacity-90">
