@@ -66,28 +66,22 @@ function OurMentors({ setting }: { setting: ISetting }) {
               className="flex flex-col items-center gap-4 p-2 md:p-6 bg-white rounded-2xl shadow-md text-center"
             >
               {/* Avatar */}
-              <div className="relative w-[120px] h-[120px] flex items-end justify-center">
-                {/* Circle background */}
-                <div className="absolute bottom-0 w-[120px] h-[120px] rounded-full bg-gradient-to-b from-blue-200 to-blue-400 shadow-md" />
-
-                {/* Transparent mentor image */}
-                {mentor.photo ? (
-                  <Image
-                    src={mentor.photo}
-                    alt={mentor.name || "Mentor"}
-                    width={120}
-                    height={150} // taller than circle
-                    className="object-contain relative bottom-0"
-                  />
-                ) : (
-                  <div
-                    className="w-[120px] h-[120px] flex items-center justify-center text-5xl font-bold text-white rounded-full relative bottom-0"
-                    style={{ backgroundColor: themeColor }}
-                  >
-                    {firstLetter}
-                  </div>
-                )}
-              </div>
+              {mentor.photo ? (
+                <Image
+                  src={mentor.photo}
+                  alt={mentor.name || "Mentor"}
+                  width={80}
+                  height={80}
+                  className="rounded-full object-contain w-[100px] h-[100px]"
+                />
+              ) : (
+                <div
+                  className="w-[100px] h-[100px] rounded-full flex items-center justify-center text-5xl font-bold text-white"
+                  style={{ backgroundColor: themeColor }}
+                >
+                  {firstLetter}
+                </div>
+              )}
 
               {/* Name */}
               <p className="font-semibold text-gray-800 text-lg line-clamp-2 truncate">
@@ -96,9 +90,7 @@ function OurMentors({ setting }: { setting: ISetting }) {
 
               {/* Expertise */}
               {mentor.expertise && (
-                <p className="text-gray-600 text-sm line-clamp-1 truncate">
-                  {mentor.expertise}
-                </p>
+                <p className="text-gray-600 text-sm line-clamp-1 truncate">{mentor.expertise}</p>
               )}
 
               {/* Social Links */}
