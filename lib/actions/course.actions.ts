@@ -12,7 +12,6 @@ export type CourseParams = {
   modules: {
     title: string;
     content: string;
-    videoUrl?: string;
   }[];
   price: number;
   discountPrice?: number;

@@ -27,7 +27,7 @@ const Page = async () => {
           </h3>
           <a href="/dashboard/courses/create" className="w-full md:w-max">
             <Button size="lg" className="rounded-full w-full">
-              Add Product
+              Add Course
             </Button>
           </a>
         </div>

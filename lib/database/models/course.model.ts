@@ -10,7 +10,6 @@ export interface ICourse extends Document {
   modules: {
     title: string;
     content: string;
-    videoUrl?: string;
   }[];
   price: number;
   discountPrice?: number;
@@ -31,7 +30,6 @@ const CourseSchema = new Schema<ICourse>(
       {
         title: { type: String, required: true },
         content: { type: String, required: true },
-        videoUrl: { type: String },
       },
     ],
     price: { type: Number, required: true },

@@ -32,8 +32,8 @@ const sidebarItems = [
     roles: ["admin", "moderator"],
   },
   {
-    title: "Products",
-    url: "/dashboard/products",
+    title: "Courses",
+    url: "/dashboard/courses",
     icon: Boxes,
     roles: ["admin", "moderator"],
   },
@@ -68,7 +68,7 @@ const AdminSidebar = ({ role }: { role?: string }) => {
     })();
   }, []);
 
-  const moderatorAllowed = ["Dashboard", "Products", "Orders"];
+  const moderatorAllowed = ["Dashboard", "Courses", "Orders"];
 
   return (
     <Sidebar

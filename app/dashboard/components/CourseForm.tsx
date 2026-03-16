@@ -31,7 +31,6 @@ const courseFormSchema = z.object({
       z.object({
         title: z.string().min(1, "Module title is required"),
         content: z.string().min(1, "Module content is required"),
-        videoUrl: z.string().url().optional(),
       }),
     )
     .min(1, "At least one module is required"),
@@ -233,22 +232,6 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name={`modules.${index}.videoUrl`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Video URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter video URL (optional)"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <Button
                 type="button"
                 variant="destructive"
@@ -263,7 +246,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
             type="button"
             size="sm"
             onClick={() =>
-              modulesFieldArray.append({ title: "", content: "", videoUrl: "" })
+              modulesFieldArray.append({ title: "", content: "" })
             }
           >
             Add Module
