@@ -112,6 +112,15 @@ export interface ISetting extends Document {
   updatedAt?: Date;
 }
 
+const FeatureItemSchema = new Schema(
+  {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+    icon: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const SettingSchema = new Schema<ISetting>(
   {
     logo: { type: String },
@@ -147,13 +156,10 @@ const SettingSchema = new Schema<ISetting>(
       title: { type: String, default: "" },
       description: { type: String, default: "" },
 
-      items: [
-        {
-          title: { type: String, default: "" },
-          description: { type: String, default: "" },
-          icon: { type: String, default: "" },
-        },
-      ],
+      items: {
+        type: [FeatureItemSchema],
+        default: [],
+      },
     },
 
     testimonials: {
