@@ -150,7 +150,7 @@ function Hero({ setting }: { setting: ISetting }) {
             <div
               onClick={() =>
                 document
-                  .getElementById("checkout")
+                  .getElementById("courses") // <-- updated id
                   ?.scrollIntoView({ behavior: "smooth" })
               }
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full w-4/5 md:w-1/2 lg:w-1/2 mx-auto lg:mx-0 text-white font-semibold shadow-lg cursor-pointer transition-transform hover:scale-105"

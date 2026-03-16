@@ -19,7 +19,9 @@ export default function Home({
   return (
     <main>
       <Hero setting={setting} />
-      <CoursesContent setting={setting} courses={courses} />
+      <section id="courses">
+        <CoursesContent setting={setting} courses={courses} />
+      </section>
       <LMSFeatures setting={setting} />
       <OurMentors setting={setting} />
       <Feedback setting={setting} />
