@@ -21,6 +21,7 @@ import { ICourse } from "@/lib/database/models/course.model";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
+// -------------------- Schema --------------------
 const courseFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   photo: z.string().min(1, "Course photo is required"),
@@ -38,6 +39,21 @@ const courseFormSchema = z.object({
   discountPrice: z.coerce.number().optional(),
   seats: z.coerce.number().min(0, "Seats are required"),
   isActive: z.boolean().default(true),
+  batch: z.string().optional(),
+  sku: z.string().optional(),
+  courseStartDate: z.string().optional(),
+  registrationDeadline: z.string().optional(),
+  schedule: z
+    .array(
+      z.object({
+        day: z.string().optional(),
+        start: z.string().optional(),
+        end: z.string().optional(),
+      }),
+    )
+    .optional(),
+  duration: z.string().optional(),
+  sessions: z.string().optional(),
 });
 
 type CourseFormProps = {
@@ -62,17 +78,31 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           discountPrice: course.discountPrice,
           seats: course.seats,
           isActive: course.isActive,
+          batch: course.batch || "",
+          sku: course.sku || "",
+          courseStartDate: course.courseStartDate || "",
+          registrationDeadline: course.registrationDeadline || "",
+          schedule: course.schedule || [{ day: "", start: "", end: "" }],
+          duration: course.duration || "",
+          sessions: course.sessions || "",
         }
       : {
           title: "",
           photo: "",
           description: "",
           prerequisites: [""],
-          modules: [{ title: "", content: "", videoUrl: "" }],
+          modules: [{ title: "", content: "" }],
           price: 0,
           discountPrice: undefined,
           seats: 0,
           isActive: true,
+          batch: "",
+          sku: "",
+          courseStartDate: "",
+          registrationDeadline: "",
+          schedule: [{ day: "", start: "", end: "" }],
+          duration: "",
+          sessions: "",
         };
 
   const form = useForm<z.infer<typeof courseFormSchema>>({
@@ -83,6 +113,11 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
   const modulesFieldArray = useFieldArray({
     control: form.control,
     name: "modules",
+  });
+
+  const scheduleFieldArray = useFieldArray({
+    control: form.control,
+    name: "schedule",
   });
 
   async function onSubmit(values: z.infer<typeof courseFormSchema>) {
@@ -131,7 +166,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           )}
         />
 
-        {/* Photo Upload */}
+        {/* Photo */}
         <FormField
           control={form.control}
           name="photo"
@@ -143,11 +178,9 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                   imageUrl={field.value}
                   setFiles={() => {}}
                   onFieldChange={async (_blobUrl, files) => {
-                    if (files && files.length > 0) {
+                    if (files?.length) {
                       const uploaded = await startUpload(files);
-                      if (uploaded?.[0]) {
-                        field.onChange(uploaded[0].url);
-                      }
+                      if (uploaded?.[0]) field.onChange(uploaded[0].url);
                     }
                   }}
                 />
@@ -181,7 +214,6 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormLabel>Prerequisites (comma separated)</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter prerequisites"
                   value={field.value?.join(", ") || ""}
                   onChange={(e) =>
                     field.onChange(
@@ -191,6 +223,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                         .filter(Boolean),
                     )
                   }
+                  placeholder="e.g. HTML, CSS, JavaScript"
                 />
               </FormControl>
               <FormMessage />
@@ -245,43 +278,41 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           <Button
             type="button"
             size="sm"
-            onClick={() =>
-              modulesFieldArray.append({ title: "", content: "" })
-            }
+            onClick={() => modulesFieldArray.append({ title: "", content: "" })}
           >
             Add Module
           </Button>
         </div>
 
-        {/* Price */}
-        <FormField
-          control={form.control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Discount Price */}
-        <FormField
-          control={form.control}
-          name="discountPrice"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Discount Price</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Pricing */}
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="discountPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Discount Price</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Seats */}
         <FormField
@@ -297,6 +328,162 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
             </FormItem>
           )}
         />
+
+        {/* Batch, SKU, Dates */}
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="batch"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Batch</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Batch 1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sku"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>SKU</FormLabel>
+                <FormControl>
+                  <Input placeholder="Unique code" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="courseStartDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Course Start Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="registrationDeadline"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Registration Deadline</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Schedule */}
+        <div className="flex flex-col gap-4">
+          <h3 className="font-semibold">Schedule</h3>
+          {scheduleFieldArray.fields.map((item, index) => (
+            <div
+              key={item.id}
+              className="grid grid-cols-3 gap-4 rounded border p-4 shadow-sm"
+            >
+              <FormField
+                control={form.control}
+                name={`schedule.${index}.day`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Day</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Monday" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`schedule.${index}.start`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`schedule.${index}.end`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => scheduleFieldArray.remove(index)}
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            size="sm"
+            onClick={() =>
+              scheduleFieldArray.append({ day: "", start: "", end: "" })
+            }
+          >
+            Add Schedule
+          </Button>
+        </div>
+
+        {/* Duration & Sessions */}
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Duration</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. 3 months" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sessions"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sessions</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. 12 sessions" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Active Toggle */}
         <FormField

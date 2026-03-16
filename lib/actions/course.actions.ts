@@ -4,19 +4,24 @@ import { connectToDatabase } from "../database";
 import { handleError } from "../utils";
 import Course, { ICourse } from "../database/models/course.model";
 
+// -------------------- Params --------------------
 export type CourseParams = {
   title: string;
   photo: string;
   description: string;
   prerequisites?: string[];
-  modules: {
-    title: string;
-    content: string;
-  }[];
+  modules: { title: string; content: string }[];
   price: number;
   discountPrice?: number;
   seats?: number;
   isActive?: boolean;
+  batch?: string;
+  sku?: string;
+  courseStartDate?: string;
+  registrationDeadline?: string;
+  schedule?: { day?: string; start?: string; end?: string }[]; // updated to array
+  duration?: string;
+  sessions?: string;
 };
 
 // -------------------- CREATE --------------------

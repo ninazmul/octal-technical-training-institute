@@ -1,6 +1,6 @@
 import { Document, Schema, Types, model, models } from "mongoose";
 
-// Interface for Course
+// -------------------- Interface --------------------
 export interface ICourse extends Document {
   _id: Types.ObjectId;
   title: string;
@@ -15,11 +15,23 @@ export interface ICourse extends Document {
   discountPrice?: number;
   seats: number;
   isActive: boolean;
+  batch?: string;
+  sku?: string;
+  courseStartDate?: string;
+  registrationDeadline?: string;
+  schedule?: {
+    day?: string;
+    start?: string;
+    end?: string;
+  }[];
+  duration?: string;
+  sessions?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Schema for Course
+// -------------------- Schema --------------------
 const CourseSchema = new Schema<ICourse>(
   {
     title: { type: String, required: true, trim: true },
@@ -36,11 +48,24 @@ const CourseSchema = new Schema<ICourse>(
     discountPrice: { type: Number },
     seats: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
+    batch: { type: String },
+    sku: { type: String, unique: true, sparse: true },
+    courseStartDate: { type: String },
+    registrationDeadline: { type: String },
+    schedule: [
+      {
+        day: { type: String },
+        start: { type: String },
+        end: { type: String },
+      },
+    ],
+    duration: { type: String },
+    sessions: { type: String },
   },
   { timestamps: true },
 );
 
-// Model creation
+// -------------------- Model --------------------
 const Course = models.Course || model<ICourse>("Course", CourseSchema);
 
 export default Course;
