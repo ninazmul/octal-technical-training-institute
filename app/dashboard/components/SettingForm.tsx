@@ -82,17 +82,22 @@ export const settingSchema = z.object({
       badge: optionalString,
       title: optionalString,
       description: optionalString,
-      image: optionalString,
-      weGiveYou: z.array(z.string()).default([]),
-      weDoNotGiveYou: z.array(z.string()).default([]),
+
+      items: z
+        .array(
+          z.object({
+            title: optionalString,
+            description: optionalString,
+            icon: optionalString,
+          }),
+        )
+        .default([]),
     })
     .default({
       badge: "",
       title: "",
       description: "",
-      image: "",
-      weGiveYou: [],
-      weDoNotGiveYou: [],
+      items: [],
     }),
 
   testimonials: z
@@ -191,6 +196,16 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
     defaultValues: settingSchema.parse(initialData ?? {}),
+  });
+
+  // Features.items array
+  const {
+    fields: featureFields,
+    append: appendFeature,
+    remove: removeFeature,
+  } = useFieldArray({
+    control: form.control,
+    name: "features.items",
   });
 
   // Testimonials.feedbacks array
@@ -620,127 +635,134 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
           {/* ===== Features Section ===== */}
           <AccordionItem value="features">
             <AccordionTrigger>Features</AccordionTrigger>
-            <AccordionContent className="space-y-4">
-              {(["badge", "title", "description", "image"] as const).map(
-                (key) => (
-                  <FormField
-                    key={key}
-                    control={form.control}
-                    name={`features.${key}`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{key}</FormLabel>
-                        <FormControl>
-                          {key === "description" ? (
-                            <RichTextEditor
-                              value={field.value || ""}
-                              onChange={(val) => {
-                                field.onChange(val);
-                                saveField();
-                              }}
-                            />
-                          ) : key === "image" ? (
-                            <FileUploader
-                              imageUrl={field.value || ""}
-                              onFieldChange={async (_blobUrl, files) => {
-                                if (files?.length) {
-                                  const uploaded = await startUpload(files);
-                                  if (uploaded?.[0]) {
-                                    form.setValue(
-                                      `features.${key}`,
-                                      uploaded[0].url,
-                                      {
-                                        shouldValidate: true,
-                                      },
-                                    );
-                                    saveField();
-                                  }
-                                }
-                              }}
-                              setFiles={() => {}}
-                            />
-                          ) : (
-                            <Input {...field} onBlur={saveField} />
-                          )}
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ),
-              )}
 
-              {/* We Give You & We Do Not Give You */}
-              {[
-                { title: "We Give You", name: "features.weGiveYou" },
-                {
-                  title: "We Do Not Give You",
-                  name: "features.weDoNotGiveYou",
-                },
-              ].map((section) => {
-                const values = (form.watch(
-                  section.name as Path<SettingFormValues>,
-                ) ?? []) as string[];
-                return (
-                  <div key={section.title} className="space-y-2">
-                    <h4 className="font-semibold">{section.title}</h4>
-                    {values.map((item, index) => (
-                      <div key={index} className="flex gap-2 items-center">
-                        <Input
-                          value={item}
-                          onChange={(e) => {
-                            const current = (form.getValues(
-                              section.name as Path<SettingFormValues>,
-                            ) ?? []) as string[];
-                            const updated = [...current];
-                            updated[index] = e.target.value;
-                            form.setValue(
-                              section.name as Path<SettingFormValues>,
-                              updated,
-                            );
-                          }}
-                          onBlur={saveField}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const current = (form.getValues(
-                              section.name as Path<SettingFormValues>,
-                            ) ?? []) as string[];
-                            const updated = current.filter(
-                              (_, i) => i !== index,
-                            );
-                            form.setValue(
-                              section.name as Path<SettingFormValues>,
-                              updated,
-                            );
-                            saveField();
-                          }}
-                          className="btn btn-sm"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const current = (form.getValues(
-                          section.name as Path<SettingFormValues>,
-                        ) ?? []) as string[];
-                        form.setValue(section.name as Path<SettingFormValues>, [
-                          ...current,
-                          "",
-                        ]);
-                        saveField();
-                      }}
-                      className="btn btn-sm"
+            <AccordionContent className="space-y-4">
+              {/* Section Header */}
+              {(["badge", "title", "description"] as const).map((key) => (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={`features.${key}`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{key}</FormLabel>
+
+                      <FormControl>
+                        {key === "description" ? (
+                          <RichTextEditor
+                            value={field.value || ""}
+                            onChange={(val) => {
+                              field.onChange(val);
+                              saveField();
+                            }}
+                          />
+                        ) : (
+                          <Input {...field} onBlur={saveField} />
+                        )}
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+
+              {/* Feature Items */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg">Feature Items</h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {featureFields.map((feature, index) => (
+                    <div
+                      key={feature.id}
+                      className="border p-4 rounded space-y-4 bg-gray-50"
                     >
-                      Add Item
-                    </button>
-                  </div>
-                );
-              })}
+                      {/* Title */}
+                      <FormField
+                        control={form.control}
+                        name={`features.items.${index}.title`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Feature Title"
+                                value={field.value ?? ""}
+                                onBlur={saveField}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Description */}
+                      <FormField
+                        control={form.control}
+                        name={`features.items.${index}.description`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                placeholder="Feature Description"
+                                value={field.value ?? ""}
+                                onBlur={saveField}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Icon */}
+                      <FormField
+                        control={form.control}
+                        name={`features.items.${index}.icon`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Icon</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Icon name (lucide)"
+                                value={field.value ?? ""}
+                                onBlur={saveField}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          removeFeature(index);
+                          await saveField();
+                        }}
+                        className="btn btn-sm text-red-500"
+                      >
+                        Remove Feature
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    appendFeature({
+                      title: "",
+                      description: "",
+                      icon: "",
+                    });
+                    await saveField();
+                  }}
+                  className="btn btn-sm text-green-600"
+                >
+                  Add Feature
+                </button>
+              </div>
             </AccordionContent>
           </AccordionItem>
 

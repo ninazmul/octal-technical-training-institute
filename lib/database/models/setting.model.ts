@@ -48,13 +48,17 @@ export interface IFaq {
   items?: IFaqItem[];
 }
 
+export interface IFeatureItem {
+  title?: string;
+  description?: string;
+  icon?: string;
+}
+
 export interface IFeatures {
   badge?: string;
   title?: string;
   description?: string;
-  image?: string;
-  weGiveYou?: string[];
-  weDoNotGiveYou?: string[];
+  items?: IFeatureItem[];
 }
 
 export interface ISetting extends Document {
@@ -142,9 +146,14 @@ const SettingSchema = new Schema<ISetting>(
       badge: { type: String, default: "" },
       title: { type: String, default: "" },
       description: { type: String, default: "" },
-      image: { type: String, default: "" },
-      weGiveYou: { type: [String], default: [] },
-      weDoNotGiveYou: { type: [String], default: [] },
+
+      items: [
+        {
+          title: { type: String, default: "" },
+          description: { type: String, default: "" },
+          icon: { type: String, default: "" },
+        },
+      ],
     },
 
     testimonials: {

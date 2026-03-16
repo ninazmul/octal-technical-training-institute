@@ -59,9 +59,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     badge: "",
     title: "",
     description: "",
-    image: "",
-    weGiveYou: [],
-    weDoNotGiveYou: [],
+    items: [],
   },
 
   testimonials: {

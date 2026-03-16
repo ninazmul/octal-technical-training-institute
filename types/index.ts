@@ -92,13 +92,17 @@ export interface Hero {
   offerEndDate?: string;
 }
 
-export interface Features {
+export interface IFeatureItem {
+  title?: string;
+  description?: string;
+  icon?: string;
+}
+
+export interface IFeatures {
   badge?: string;
   title?: string;
   description?: string;
-  image?: string;
-  weGiveYou?: string[];
-  weDoNotGiveYou?: string[];
+  items?: IFeatureItem[];
 }
 
 export interface HowToIdentify {
@@ -137,7 +141,7 @@ export interface SettingParams {
   hero?: Hero;
 
   // ===== Features =====
-  features?: Features; // single object
+  features?: IFeatures; // single object
 
   // ===== Testimonials =====
   testimonials?: Testimonial; // single object with feedbacks array
