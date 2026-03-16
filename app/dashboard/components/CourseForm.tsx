@@ -20,6 +20,7 @@ import { createCourse, updateCourse } from "@/lib/actions/course.actions";
 import { ICourse } from "@/lib/database/models/course.model";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { RichTextEditor } from "@/components/shared/RichTextEditor";
 
 // -------------------- Schema --------------------
 const courseFormSchema = z.object({
@@ -198,7 +199,10 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Enter course description" {...field} />
+                <RichTextEditor
+                  value={field.value || ""}
+                  onChange={(val) => field.onChange(val)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
