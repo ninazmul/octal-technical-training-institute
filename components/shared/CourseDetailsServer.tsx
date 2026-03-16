@@ -3,7 +3,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { getCourseById } from "@/lib/actions/course.actions";
-import { redirect } from "next/navigation";
 import CourseDetailsClient from "./CourseDetailsClient";
 
 type Props = {
@@ -16,10 +15,6 @@ const CourseDetailsServer = async ({ id }: Props) => {
   const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
   const email = await getUserEmailById(userId);
-
-  if (!email) {
-    redirect("/sign-in");
-  }
 
   if (!course) {
     return (

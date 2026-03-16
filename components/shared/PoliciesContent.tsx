@@ -68,19 +68,9 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
 
   const proseClasses = `
     prose prose-base max-w-none dark:prose-invert
-    prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-gray-100
-    prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
-    prose-strong:font-semibold prose-strong:text-gray-900 dark:prose-strong:text-gray-100
-    prose-em:italic prose-em:text-gray-800 dark:prose-em:text-gray-200
-    prose-u:underline
-    prose-ul:list-disc prose-ul:pl-5
-    prose-ol:list-decimal prose-ol:pl-5
-    prose-li:marker:text-gray-500 dark:prose-li:marker:text-gray-400
-    prose-blockquote:border-l-2 prose-blockquote:border-gray-300 dark:prose-blockquote:border-gray-600 prose-blockquote:pl-3 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 italic
-    prose-code:bg-gray-100 dark:prose-code:bg-gray-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-pink-600
-    prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-md prose-pre:p-1
-    prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline hover:prose-a:text-blue-800 dark:hover:prose-a:text-blue-300
-    prose-img:rounded-md prose-img:shadow-sm prose-img:my-3
+    prose-headings:font-semibold
+    prose-p:text-gray-700 dark:prose-p:text-gray-300
+    prose-p:leading-relaxed
   `;
 
   return (
@@ -296,7 +286,9 @@ export default function PoliciesContent({ settings }: { settings: ISetting }) {
                     <DollarSign size={32} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-semibold">গোপনীয়তা নীতি</h2>
+                    <h2 className="text-2xl font-semibold">
+                      রিফান্ড ও বাতিল নীতি
+                    </h2>
                     <h3>Applicable Policies:</h3>
                   </div>
                 </div>

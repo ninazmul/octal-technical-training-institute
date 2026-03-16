@@ -12,11 +12,12 @@ import {
   BookOpen,
   Users,
   AlertCircle,
+  Dot,
 } from "lucide-react";
 
 export default function CourseDetailsClient({
   course,
-  email,
+  // email,
 }: {
   course: ICourse;
   email: string;
@@ -80,7 +81,20 @@ export default function CourseDetailsClient({
           <InfoCard title="Course Details">
             {/* Info Items */}
             <InfoItem icon={<DollarSign size={18} />} label="Price">
-              টাকা {course.discountPrice || course.price}
+              {course.discountPrice ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500 line-through text-sm">
+                    টাকা {course.price}
+                  </span>
+                  <span className="text-green-600 font-bold">
+                    টাকা {course.discountPrice}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-bold text-gray-900">
+                  টাকা {course.price}
+                </span>
+              )}
             </InfoItem>
             <InfoItem icon={<GraduationCap size={18} />} label="Batch">
               {course.batch || "N/A"}
@@ -109,9 +123,14 @@ export default function CourseDetailsClient({
 
           <InfoCard title="Prerequisites">
             {course.prerequisites?.length ? (
-              <p className="text-gray-700 dark:text-gray-300">
-                {course.prerequisites.join(", ")}
-              </p>
+              <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+                {course.prerequisites.map((item, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <Dot />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             ) : (
               <p className="text-gray-500 dark:text-gray-400">
                 No prerequisites listed.
@@ -144,11 +163,6 @@ export default function CourseDetailsClient({
             No modules defined yet.
           </p>
         )}
-      </div>
-
-      {/* User Info */}
-      <div className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
-        Logged in as: {email}
       </div>
     </main>
   );
