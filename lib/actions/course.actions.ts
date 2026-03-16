@@ -76,7 +76,7 @@ export async function searchCourses(query: string) {
     const regex = new RegExp(query, "i");
     const courses = await Course.find({ title: regex })
       .limit(10)
-      .select("title photo price sku batch");
+      .select("title photo price discountPrice seats duration courseStartDate registrationDeadline sku batch");
     return JSON.parse(JSON.stringify(courses));
   } catch (error) {
     console.error("Search error:", error);

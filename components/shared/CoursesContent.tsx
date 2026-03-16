@@ -89,9 +89,21 @@ function Courses({
                   </h3>
                 </Link>
                 <div className="mt-auto flex justify-between items-center">
-                  <span className="font-bold text-lg text-primary">
-                    টাকা {course.discountPrice || course.price}
-                  </span>
+                  {course.discountPrice ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-500 line-through text-sm">
+                        টাকা {course.price}
+                      </span>
+                      <span className="font-bold text-lg text-primary">
+                        টাকা {course.discountPrice}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-bold text-lg text-primary">
+                      টাকা {course.price}
+                    </span>
+                  )}
+
                   {course.isActive && (
                     <span
                       className="text-xs font-semibold px-2 py-1 rounded-full"

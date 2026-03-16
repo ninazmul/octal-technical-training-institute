@@ -88,16 +88,16 @@ export default function SearchDrawer({
             </p>
           )}
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {results.map((item, idx) => (
               <a
                 key={idx}
                 href={`/courses/${item._id}`}
                 onClick={() => onOpenChange(false)}
-                className="flex gap-4 p-3 rounded-lg border hover:bg-primary-50 transition"
+                className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border hover:bg-primary-50 transition shadow-sm"
               >
                 {/* Thumbnail */}
-                <div className="w-20 h-20 relative flex-shrink-0">
+                <div className="w-full sm:w-24 h-32 sm:h-24 relative flex-shrink-0">
                   <Image
                     src={item.photo || "/assets/images/placeholder.png"}
                     alt={item.title}
@@ -108,32 +108,41 @@ export default function SearchDrawer({
 
                 {/* Info */}
                 <div className="flex flex-col flex-1">
-                  <span className="font-semibold text-gray-900 text-base">
+                  <span className="font-semibold text-gray-900 text-base line-clamp-2">
                     {item.title}
                   </span>
 
                   {/* Batch & Duration */}
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 mt-1">
                     {item.batch ? `Batch: ${item.batch}` : "Upcoming Batch"}
                     {item.duration && ` • Duration: ${item.duration}`}
                   </span>
 
                   {/* Price */}
-                  <span className="text-primary font-bold mt-1">
-                    ৳{item.discountPrice || item.price}
-                  </span>
+                  {item.discountPrice ? (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-red-500 line-through text-sm">
+                        ৳{item.price}
+                      </span>
+                      <span className="text-primary font-bold">
+                        ৳{item.discountPrice}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-primary font-bold mt-2">
+                      ৳{item.price}
+                    </span>
+                  )}
 
-                  {/* Start Date / Deadline */}
-                  {item.courseStartDate && (
-                    <span className="text-xs text-gray-500">
-                      Starts: {item.courseStartDate}
-                    </span>
-                  )}
-                  {item.registrationDeadline && (
-                    <span className="text-xs text-gray-500">
-                      Deadline: {item.registrationDeadline}
-                    </span>
-                  )}
+                  {/* Dates */}
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
+                    {item.courseStartDate && (
+                      <span>Starts: {item.courseStartDate}</span>
+                    )}
+                    {item.registrationDeadline && (
+                      <span>Deadline: {item.registrationDeadline}</span>
+                    )}
+                  </div>
                 </div>
               </a>
             ))}
