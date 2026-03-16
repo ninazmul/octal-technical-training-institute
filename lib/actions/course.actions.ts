@@ -69,6 +69,21 @@ export const getCourseById = async (courseId: string) => {
   }
 };
 
+export async function searchCourses(query: string) {
+  if (!query) return [];
+
+  try {
+    const regex = new RegExp(query, "i");
+    const courses = await Course.find({ title: regex })
+      .limit(10)
+      .select("title photo price sku batch");
+    return JSON.parse(JSON.stringify(courses));
+  } catch (error) {
+    console.error("Search error:", error);
+    return [];
+  }
+}
+
 // -------------------- UPDATE --------------------
 export const updateCourse = async (
   courseId: string,

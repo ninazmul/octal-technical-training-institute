@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -8,10 +8,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-// import { searchProducts } from "@/lib/actions/product.actions";
-// import Image from "next/image";
 import { FaMagnifyingGlass } from "react-icons/fa6";
-// import { IProduct } from "@/lib/database/models/product.model";
+import Image from "next/image";
+import { ICourse } from "@/lib/database/models/course.model";
+import { searchCourses } from "@/lib/actions/course.actions";
 
 interface SearchDrawerProps {
   open: boolean;
@@ -25,25 +25,25 @@ export default function SearchDrawer({
   headerHeight,
 }: SearchDrawerProps) {
   const [query, setQuery] = useState("");
-//   const [results, setResults] = useState<IProduct[]>([]);
-//   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<ICourse[]>([]);
+  const [loading, setLoading] = useState(false);
 
-//   useEffect(() => {
-//     if (!query.trim()) {
-//       setResults([]);
-//       return;
-//     }
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
 
-//     const fetchResults = async () => {
-//       setLoading(true);
-//       const data = await searchProducts(query);
-//       setResults(data);
-//       setLoading(false);
-//     };
+    const fetchResults = async () => {
+      setLoading(true);
+      const data = await searchCourses(query);
+      setResults(data);
+      setLoading(false);
+    };
 
-//     const delay = setTimeout(fetchResults, 400);
-//     return () => clearTimeout(delay);
-//   }, [query]);
+    const delay = setTimeout(fetchResults, 400);
+    return () => clearTimeout(delay);
+  }, [query]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -75,7 +75,7 @@ export default function SearchDrawer({
         </div>
 
         {/* Scrollable Content */}
-        {/* <div className="overflow-y-auto max-h-[calc(100vh-180px)] p-4">
+        <div className="overflow-y-auto max-h-[calc(100vh-180px)] p-4">
           {loading && (
             <p className="text-gray-500 text-sm text-center py-4">
               Searching...
@@ -88,37 +88,57 @@ export default function SearchDrawer({
             </p>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {results.map((item, idx) => (
               <a
                 key={idx}
-                href={`/products/${item._id}`}
+                href={`/courses/${item._id}`}
                 onClick={() => onOpenChange(false)}
-                className="flex items-center gap-3 p-2 rounded-lg border hover:bg-red-50 transition"
+                className="flex gap-4 p-3 rounded-lg border hover:bg-primary-50 transition"
               >
-                <div className="w-16 h-16 relative flex-shrink-0">
+                {/* Thumbnail */}
+                <div className="w-20 h-20 relative flex-shrink-0">
                   <Image
-                    src={
-                      item.images?.[0]?.imageUrl ||
-                      "/assets/images/placeholder.png"
-                    }
+                    src={item.photo || "/assets/images/placeholder.png"}
                     alt={item.title}
                     fill
                     className="object-cover rounded-md"
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-gray-800">
+
+                {/* Info */}
+                <div className="flex flex-col flex-1">
+                  <span className="font-semibold text-gray-900 text-base">
                     {item.title}
                   </span>
-                  <span className="text-primary text-sm font-medium">
-                    ৳{item.price}
+
+                  {/* Batch & Duration */}
+                  <span className="text-sm text-gray-600">
+                    {item.batch ? `Batch: ${item.batch}` : "Upcoming Batch"}
+                    {item.duration && ` • Duration: ${item.duration}`}
                   </span>
+
+                  {/* Price */}
+                  <span className="text-primary font-bold mt-1">
+                    ৳{item.discountPrice || item.price}
+                  </span>
+
+                  {/* Start Date / Deadline */}
+                  {item.courseStartDate && (
+                    <span className="text-xs text-gray-500">
+                      Starts: {item.courseStartDate}
+                    </span>
+                  )}
+                  {item.registrationDeadline && (
+                    <span className="text-xs text-gray-500">
+                      Deadline: {item.registrationDeadline}
+                    </span>
+                  )}
                 </div>
               </a>
             ))}
           </div>
-        </div> */}
+        </div>
       </SheetContent>
     </Sheet>
   );
