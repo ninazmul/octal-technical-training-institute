@@ -393,8 +393,9 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           {scheduleFieldArray.fields.map((item, index) => (
             <div
               key={item.id}
-              className="grid grid-cols-3 gap-4 rounded border p-4 shadow-sm"
+              className="grid grid-cols-3 gap-4 rounded border p-4 shadow-sm items-end"
             >
+              {/* Day Select */}
               <FormField
                 control={form.control}
                 name={`schedule.${index}.day`}
@@ -402,12 +403,32 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                   <FormItem>
                     <FormLabel>Day</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Monday" {...field} />
+                      <select
+                        {...field}
+                        className="w-full border rounded px-2 py-1"
+                      >
+                        <option value="">Select day</option>
+                        {[
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                          "Sunday",
+                        ].map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Start Time */}
               <FormField
                 control={form.control}
                 name={`schedule.${index}.start`}
@@ -421,6 +442,8 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                   </FormItem>
                 )}
               />
+
+              {/* End Time */}
               <FormField
                 control={form.control}
                 name={`schedule.${index}.end`}
@@ -434,6 +457,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                   </FormItem>
                 )}
               />
+
               <Button
                 type="button"
                 variant="destructive"
@@ -444,6 +468,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               </Button>
             </div>
           ))}
+
           <Button
             type="button"
             size="sm"
