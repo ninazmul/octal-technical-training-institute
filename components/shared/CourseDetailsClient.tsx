@@ -218,11 +218,10 @@ function ModuleAccordion({
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ maxHeight: 0, opacity: 0 }}
+            animate={{ maxHeight: open ? 500 : 0, opacity: open ? 1 : 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="px-4 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="overflow-hidden px-4 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
           >
             {module.content}
           </motion.div>

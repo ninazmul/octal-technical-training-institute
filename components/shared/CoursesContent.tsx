@@ -65,7 +65,7 @@ function Courses({
         }}
       >
         {courses &&
-          courses.map((course) => (
+          courses.slice(0, 3).map((course) => (
             <motion.div
               key={course._id.toString()}
               className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white"
@@ -108,6 +108,16 @@ function Courses({
             </motion.div>
           ))}
       </motion.div>
+
+      {/* More Button */}
+      {courses && courses.length > 3 && (
+        <Link
+          href="/courses"
+          className="mt-10 inline-block border-2 border-primary hover:bg-blue-100 text-primary font-semibold py-2 px-4 rounded-xl shadow-md transition-colors"
+        >
+          আরও কোর্স দেখুন
+        </Link>
+      )}
     </main>
   );
 }
