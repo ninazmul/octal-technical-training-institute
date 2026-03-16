@@ -72,7 +72,7 @@ function OurMentors({ setting }: { setting: ISetting }) {
                   alt={mentor.name || "Mentor"}
                   width={200}
                   height={200}
-                  className="rounded-full object-cover"
+                  className="rounded-full object-contain h-[200px]"
                 />
               ) : (
                 <div
