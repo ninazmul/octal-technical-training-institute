@@ -120,7 +120,7 @@ const CourseTable = ({ courses }: { courses: ICourse[] }) => {
         <TableHeader>
           <TableRow>
             <TableHead>#</TableHead>
-            {["title", "price", "discountPrice", "seats", "isActive"].map(
+            {["title", "price", "discountPrice", "seats", "SKU", "isActive"].map(
               (key) => (
                 <TableHead key={key}>
                   <div
@@ -174,6 +174,7 @@ const CourseTable = ({ courses }: { courses: ICourse[] }) => {
                     : "-"}
                 </TableCell>
                 <TableCell>{course.seats}</TableCell>
+                <TableCell>{course.sku}</TableCell>
                 <TableCell>
                   <Switch
                     checked={course.isActive}
