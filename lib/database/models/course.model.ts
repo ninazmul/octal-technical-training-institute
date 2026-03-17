@@ -3,17 +3,27 @@ import { Document, Schema, Types, model, models } from "mongoose";
 // -------------------- Interface --------------------
 export interface ICourse extends Document {
   _id: Types.ObjectId;
+
+  // Basic Info
   title: string;
+  category: string;
+  mode: "Online" | "Offline";
   photo: string;
   description: string;
-  prerequisites?: string[];
+  prerequisites: string[];
+
+  // Course Content
   modules: {
     title: string;
     content: string;
   }[];
+
+  // Pricing & Seats
   price: number;
   discountPrice?: number;
   seats: number;
+
+  // Meta Info
   isActive: boolean;
   batch?: string;
   sku?: string;
@@ -27,6 +37,7 @@ export interface ICourse extends Document {
   duration?: string;
   sessions?: string;
 
+  // Timestamps
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,22 +45,36 @@ export interface ICourse extends Document {
 // -------------------- Schema --------------------
 const CourseSchema = new Schema<ICourse>(
   {
+    // Basic Info
     title: { type: String, required: true, trim: true },
+    category: { type: String, required: true, trim: true },
+    mode: {
+      type: String,
+      enum: ["Online", "Offline"],
+      default: "Online",
+      required: true,
+    },
     photo: { type: String, required: true },
     description: { type: String, required: true },
     prerequisites: { type: [String], default: [] },
+
+    // Course Content
     modules: [
       {
         title: { type: String, required: true },
         content: { type: String, required: true },
       },
     ],
+
+    // Pricing & Seats
     price: { type: Number, required: true },
     discountPrice: { type: Number },
-    seats: { type: Number, default: 0 },
+    seats: { type: Number, required: true, default: 0 },
+
+    // Meta Info
     isActive: { type: Boolean, default: true },
-    batch: { type: String },
-    sku: { type: String, unique: true, sparse: true },
+    batch: { type: String, trim: true },
+    sku: { type: String, unique: true, sparse: true, trim: true },
     courseStartDate: { type: String },
     registrationDeadline: { type: String },
     schedule: [

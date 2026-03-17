@@ -25,6 +25,8 @@ import { RichTextEditor } from "@/components/shared/RichTextEditor";
 // -------------------- Schema --------------------
 const courseFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  category: z.string().min(1, "Category is required"),
+  mode: z.enum(["Online", "Offline"], { required_error: "Mode is required" }),
   photo: z.string().min(1, "Course photo is required"),
   description: z.string().min(1, "Description is required"),
   prerequisites: z.array(z.string()).optional(),
@@ -67,44 +69,29 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
 
-  const initialValues =
-    course && type === "Update"
-      ? {
-          title: course.title,
-          photo: course.photo,
-          description: course.description,
-          prerequisites: course.prerequisites || [],
-          modules: course.modules,
-          price: course.price,
-          discountPrice: course.discountPrice,
-          seats: course.seats,
-          isActive: course.isActive,
-          batch: course.batch || "",
-          sku: course.sku || "",
-          courseStartDate: course.courseStartDate || "",
-          registrationDeadline: course.registrationDeadline || "",
-          schedule: course.schedule || [{ day: "", start: "", end: "" }],
-          duration: course.duration || "",
-          sessions: course.sessions || "",
-        }
-      : {
-          title: "",
-          photo: "",
-          description: "",
-          prerequisites: [""],
-          modules: [{ title: "", content: "" }],
-          price: 0,
-          discountPrice: undefined,
-          seats: 0,
-          isActive: true,
-          batch: "",
-          sku: "",
-          courseStartDate: "",
-          registrationDeadline: "",
-          schedule: [{ day: "", start: "", end: "" }],
-          duration: "",
-          sessions: "",
-        };
+  const initialValues: z.infer<typeof courseFormSchema> = {
+    title: course?.title || "",
+    category: course?.category || "",
+    mode:
+      course?.mode === "Online" || course?.mode === "Offline"
+        ? course.mode
+        : "Online",
+    photo: course?.photo || "",
+    description: course?.description || "",
+    prerequisites: course?.prerequisites || [""],
+    modules: course?.modules || [{ title: "", content: "" }],
+    price: course?.price || 0,
+    discountPrice: course?.discountPrice,
+    seats: course?.seats || 0,
+    isActive: course?.isActive ?? true,
+    batch: course?.batch || "",
+    sku: course?.sku || "",
+    courseStartDate: course?.courseStartDate || "",
+    registrationDeadline: course?.registrationDeadline || "",
+    schedule: course?.schedule || [{ day: "", start: "", end: "" }],
+    duration: course?.duration || "",
+    sessions: course?.sessions || "",
+  };
 
   const form = useForm<z.infer<typeof courseFormSchema>>({
     resolver: zodResolver(courseFormSchema),
@@ -161,6 +148,71 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Enter course title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Category */}
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <FormControl>
+                <select
+                  {...field}
+                  className="w-full border rounded px-3 py-2"
+                  defaultValue={field.value || ""}
+                >
+                  <option value="" disabled>
+                    Select a category
+                  </option>
+                  {[
+                    "Design",
+                    "Front End Development",
+                    "IT Security",
+                    "Management",
+                    "Mobile Application Development",
+                    "Web Development",
+                    "Programming",
+                    "Office Application",
+                    "Video Editing & Motion",
+                    "Marketing",
+                    "Workshop",
+                    "Networking",
+                    "Database Administration",
+                    "Freelancing",
+                  ].map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* ---- Put Online/Offline mode here ---- */}
+        <FormField
+          control={form.control}
+          name="mode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mode</FormLabel>
+              <FormControl>
+                <select
+                  {...field}
+                  className="w-full border rounded px-3 py-2"
+                  defaultValue={field.value || "Online"}
+                >
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                </select>
               </FormControl>
               <FormMessage />
             </FormItem>

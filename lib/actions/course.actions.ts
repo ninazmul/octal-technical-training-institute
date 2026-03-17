@@ -8,6 +8,8 @@ import { unstable_cache } from "next/cache";
 // -------------------- Params --------------------
 export type CourseParams = {
   title: string;
+  category: string;
+  mode: "Online" | "Offline";
   photo: string;
   description: string;
   prerequisites?: string[];
@@ -20,46 +22,46 @@ export type CourseParams = {
   sku?: string;
   courseStartDate?: string;
   registrationDeadline?: string;
-  schedule?: { day?: string; start?: string; end?: string }[]; // updated to array
+  schedule?: { day?: string; start?: string; end?: string }[];
   duration?: string;
   sessions?: string;
 };
 
 // -------------------- CREATE --------------------
-export const createCourse = async (data: CourseParams) => {
+export const createCourse = async (data: CourseParams): Promise<ICourse | undefined> => {
   try {
     await connectToDatabase();
     const newCourse = await Course.create(data);
-    return JSON.parse(JSON.stringify(newCourse)) as ICourse;
+    return newCourse.toObject() as ICourse;
   } catch (error) {
     handleError(error);
   }
 };
 
 // -------------------- GET ALL --------------------
-export const getAllCourses = async () => {
+export const getAllCourses = async (): Promise<ICourse[] | undefined> => {
   try {
     await connectToDatabase();
     const courses = await Course.find({}).lean();
-    return JSON.parse(JSON.stringify(courses)) as ICourse[];
+    return courses as unknown as ICourse[];
   } catch (error) {
     handleError(error);
   }
 };
 
 // -------------------- GET ONLY ACTIVE --------------------
-export const getActiveCourses = async () => {
+export const getActiveCourses = async (): Promise<ICourse[] | undefined> => {
   try {
     await connectToDatabase();
     const courses = await Course.find({ isActive: true }).lean();
-    return JSON.parse(JSON.stringify(courses)) as ICourse[];
+    return courses as unknown as ICourse[];
   } catch (error) {
     handleError(error);
   }
 };
 
 // -------------------- GET BY ID --------------------
-export async function getCourseById(courseId: string): Promise<ICourse | null> {
+export const getCourseById = async (courseId: string): Promise<ICourse | null> => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
@@ -67,21 +69,22 @@ export async function getCourseById(courseId: string): Promise<ICourse | null> {
       const course = await Course.findById(courseId)
         .select(
           `
-          title photo price discountPrice seats batch
+          title category photo price discountPrice seats batch
           courseStartDate duration sessions registrationDeadline
           prerequisites description modules schedule
-        `,
+        `
         )
         .lean();
 
       return course as ICourse | null;
     },
     ["course-by-id", courseId],
-    { revalidate: 600 },
+    { revalidate: 600 }
   )();
-}
+};
 
-export async function searchCourses(query: string) {
+// -------------------- SEARCH --------------------
+export const searchCourses = async (query: string): Promise<ICourse[]> => {
   if (!query) return [];
 
   try {
@@ -89,34 +92,38 @@ export async function searchCourses(query: string) {
     const courses = await Course.find({ title: regex })
       .limit(10)
       .select(
-        "title photo price discountPrice seats duration courseStartDate registrationDeadline sku batch",
-      );
-    return JSON.parse(JSON.stringify(courses));
+        "title category photo price discountPrice seats duration courseStartDate registrationDeadline sku batch"
+      )
+      .lean();
+
+    return courses as unknown as ICourse[];
   } catch (error) {
     console.error("Search error:", error);
     return [];
   }
-}
+};
 
 // -------------------- UPDATE --------------------
 export const updateCourse = async (
   courseId: string,
-  data: Partial<CourseParams>,
-) => {
+  data: Partial<CourseParams>
+): Promise<ICourse | undefined> => {
   try {
     await connectToDatabase();
     const updatedCourse = await Course.findByIdAndUpdate(courseId, data, {
       new: true,
+      runValidators: true,
     }).lean();
+
     if (!updatedCourse) throw new Error("Course not found");
-    return JSON.parse(JSON.stringify(updatedCourse)) as ICourse;
+    return updatedCourse as unknown as ICourse;
   } catch (error) {
     handleError(error);
   }
 };
 
 // -------------------- TOGGLE ACTIVE --------------------
-export const toggleCourseStatus = async (courseId: string) => {
+export const toggleCourseStatus = async (courseId: string): Promise<ICourse | undefined> => {
   try {
     await connectToDatabase();
     const course = await Course.findById(courseId);
@@ -125,14 +132,14 @@ export const toggleCourseStatus = async (courseId: string) => {
     course.isActive = !course.isActive;
     await course.save();
 
-    return JSON.parse(JSON.stringify(course)) as ICourse;
+    return course.toObject() as ICourse;
   } catch (error) {
     handleError(error);
   }
 };
 
 // -------------------- DELETE --------------------
-export const deleteCourse = async (courseId: string) => {
+export const deleteCourse = async (courseId: string): Promise<{ message: string } | undefined> => {
   try {
     await connectToDatabase();
     const deletedCourse = await Course.findByIdAndDelete(courseId).lean();
