@@ -59,9 +59,9 @@ export const getActiveCourses = async () => {
 };
 
 // -------------------- GET BY ID --------------------
-export const getCourseById = (courseId: string) =>
-  unstable_cache(
-    async (): Promise<ICourse | null> => {
+export async function getCourseById(courseId: string): Promise<ICourse | null> {
+  return unstable_cache(
+    async () => {
       await connectToDatabase();
 
       const course = await Course.findById(courseId)
@@ -79,6 +79,7 @@ export const getCourseById = (courseId: string) =>
     ["course-by-id", courseId],
     { revalidate: 60 },
   )();
+}
 
 export async function searchCourses(query: string) {
   if (!query) return [];
