@@ -69,7 +69,7 @@ export async function getCourseById(courseId: string): Promise<ICourse | null> {
           `
           title photo price discountPrice seats batch
           courseStartDate duration sessions registrationDeadline
-          prerequisites description
+          prerequisites description modules schedule
         `,
         )
         .lean();
@@ -77,7 +77,7 @@ export async function getCourseById(courseId: string): Promise<ICourse | null> {
       return course as ICourse | null;
     },
     ["course-by-id", courseId],
-    { revalidate: 60 },
+    { revalidate: 600 },
   )();
 }
 

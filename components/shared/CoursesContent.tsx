@@ -5,6 +5,7 @@ import { ISetting } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { CourseLink } from "./CourseLink";
 
 function Courses({
   setting,
@@ -83,11 +84,11 @@ function Courses({
 
               {/* Course Info */}
               <div className="p-5 flex flex-col flex-1 text-left">
-                <Link href={`/courses/${course._id}`} prefetch>
+                <CourseLink id={course._id.toString()}>
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
                   </h3>
-                </Link>
+                </CourseLink>
                 <div className="mt-auto flex justify-between items-center">
                   {course.discountPrice ? (
                     <div className="flex items-center gap-2">

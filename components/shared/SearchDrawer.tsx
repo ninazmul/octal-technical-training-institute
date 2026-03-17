@@ -12,7 +12,7 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 import Image from "next/image";
 import { ICourse } from "@/lib/database/models/course.model";
 import { searchCourses } from "@/lib/actions/course.actions";
-import Link from "next/link";
+import { CourseLink } from "./CourseLink";
 
 interface SearchDrawerProps {
   open: boolean;
@@ -25,9 +25,9 @@ export default function SearchDrawer({
   onOpenChange,
   headerHeight,
 }: SearchDrawerProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<ICourse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -37,7 +37,7 @@ export default function SearchDrawer({
 
     const fetchResults = async () => {
       setLoading(true);
-      const data = await searchCourses(query);
+      const data: ICourse[] = await searchCourses(query);
       setResults(data);
       setLoading(false);
     };
@@ -90,13 +90,12 @@ export default function SearchDrawer({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {results.map((item, idx) => (
-              <Link
-                key={idx}
-                href={`/courses/${item._id}`}
-                prefetch
-                onClick={() => onOpenChange(false)}
+            {results.map((item) => (
+              <CourseLink
+                key={item._id.toString()}
+                id={item._id.toString()}
                 className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border hover:bg-primary-50 transition shadow-sm"
+                onClick={() => onOpenChange(false)}
               >
                 {/* Thumbnail */}
                 <div className="w-full sm:w-24 h-32 sm:h-24 relative flex-shrink-0">
@@ -146,7 +145,7 @@ export default function SearchDrawer({
                     )}
                   </div>
                 </div>
-              </Link>
+              </CourseLink>
             ))}
           </div>
         </div>

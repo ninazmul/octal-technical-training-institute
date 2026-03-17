@@ -3,7 +3,7 @@
 import { getActiveCourses } from "@/lib/actions/course.actions";
 import Image from "next/image";
 import { getSetting } from "@/lib/actions";
-import Link from "next/link";
+import { CourseLink } from "@/components/shared/CourseLink";
 
 export default async function CoursesPage() {
   const setting = await getSetting();
@@ -41,11 +41,11 @@ export default async function CoursesPage() {
               </div>
               <div className="p-5 flex flex-col flex-1 text-left">
                 {/* Title wrapped in Link */}
-                <Link href={`/courses/${course._id}`} prefetch>
+                <CourseLink id={course._id.toString()}>
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
                   </h3>
-                </Link>
+                </CourseLink>
 
                 <div className="mt-auto flex justify-between items-center">
                   {course.discountPrice ? (
