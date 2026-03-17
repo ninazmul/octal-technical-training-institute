@@ -1,7 +1,5 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
-import { getUserEmailById } from "@/lib/actions/user.actions";
 import { getCourseById } from "@/lib/actions/course.actions";
 import CourseDetailsClient from "./CourseDetailsClient";
 
@@ -12,10 +10,6 @@ type Props = {
 const CourseDetailsServer = async ({ id }: Props) => {
   const course = await getCourseById(id);
 
-  const { sessionClaims } = await auth();
-  const userId = sessionClaims?.userId as string;
-  const email = await getUserEmailById(userId);
-
   if (!course) {
     return (
       <div className="px-4 py-10 text-center text-xl text-destructive">
@@ -25,7 +19,7 @@ const CourseDetailsServer = async ({ id }: Props) => {
   }
 
   // Pass data into client component
-  return <CourseDetailsClient course={course} email={email} />;
+  return <CourseDetailsClient course={course} />;
 };
 
 export default CourseDetailsServer;

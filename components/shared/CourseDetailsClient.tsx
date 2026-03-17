@@ -17,10 +17,8 @@ import {
 
 export default function CourseDetailsClient({
   course,
-  // email,
 }: {
   course: ICourse;
-  email: string;
 }) {
   return (
     <main className="w-full max-w-7xl mx-auto py-12 px-6 md:px-12">
