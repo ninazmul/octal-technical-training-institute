@@ -25,9 +25,9 @@ export default function SearchDrawer({
   onOpenChange,
   headerHeight,
 }: SearchDrawerProps) {
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<ICourse[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -35,15 +35,26 @@ export default function SearchDrawer({
       return;
     }
 
+    let active = true; // guard for race conditions
+
     const fetchResults = async () => {
       setLoading(true);
-      const data: ICourse[] = await searchCourses(query);
-      setResults(data);
-      setLoading(false);
+      try {
+        const data = await searchCourses(query);
+        if (active) setResults(data);
+      } catch (err) {
+        console.error("Search failed:", err);
+        if (active) setResults([]);
+      } finally {
+        if (active) setLoading(false);
+      }
     };
 
     const delay = setTimeout(fetchResults, 400);
-    return () => clearTimeout(delay);
+    return () => {
+      active = false;
+      clearTimeout(delay);
+    };
   }, [query]);
 
   return (
@@ -66,6 +77,7 @@ export default function SearchDrawer({
 
           <div className="relative mt-3">
             <Input
+              aria-label="Search courses"
               placeholder="Type to search..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -90,9 +102,9 @@ export default function SearchDrawer({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {results.map((item) => (
+            {results.map((item, idx) => (
               <CourseLink
-                key={item._id.toString()}
+                key={idx}
                 id={item._id.toString()}
                 className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border hover:bg-primary-50 transition shadow-sm"
                 onClick={() => onOpenChange(false)}

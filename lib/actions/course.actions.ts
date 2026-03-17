@@ -27,8 +27,60 @@ export type CourseParams = {
   sessions?: string;
 };
 
-// -------------------- CREATE --------------------
-export const createCourse = async (data: CourseParams): Promise<ICourse | undefined> => {
+// -------------------- Helper: classify course --------------------
+function classifyCourse(
+  course: ICourse,
+): "upcoming" | "ongoing" | "old" | "unknown" {
+  if (!course.courseStartDate || !course.duration) return "unknown";
+
+  const start = new Date(course.courseStartDate);
+  const now = new Date();
+  const durationDays = parseInt(course.duration); // assuming duration stored as string number of days
+  const end = new Date(start);
+  end.setDate(end.getDate() + durationDays);
+
+  if (now < start) return "upcoming";
+  if (now >= start && now <= end) return "ongoing";
+  if (now > end) return "old";
+  return "unknown";
+}
+
+// -------------------- Unified Action --------------------
+export async function getCourses(options: {
+  tab?: "all" | "upcoming" | "ongoing" | "old";
+  category?: string;
+}): Promise<ICourse[]> {
+  try {
+    await connectToDatabase();
+    const courses = await Course.find({ isActive: true }).lean<ICourse[]>();
+
+    let filtered = courses;
+
+    // Tab filter
+    if (options.tab && options.tab !== "all") {
+      filtered = filtered.filter(
+        (course) => classifyCourse(course) === options.tab,
+      );
+    }
+
+    // Category filter
+    if (options.category && options.category.trim() !== "") {
+      filtered = filtered.filter(
+        (course) => course.category === options.category,
+      );
+    }
+
+    return filtered;
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+}
+
+// -------------------- Other CRUD actions remain unchanged --------------------
+export const createCourse = async (
+  data: CourseParams,
+): Promise<ICourse | undefined> => {
   try {
     await connectToDatabase();
     const newCourse = await Course.create(data);
@@ -38,113 +90,92 @@ export const createCourse = async (data: CourseParams): Promise<ICourse | undefi
   }
 };
 
-// -------------------- GET ALL --------------------
-export const getAllCourses = async (): Promise<ICourse[] | undefined> => {
-  try {
-    await connectToDatabase();
-    const courses = await Course.find({}).lean();
-    return courses as unknown as ICourse[];
-  } catch (error) {
-    handleError(error);
-  }
-};
-
-// -------------------- GET ONLY ACTIVE --------------------
-export const getActiveCourses = async (): Promise<ICourse[] | undefined> => {
-  try {
-    await connectToDatabase();
-    const courses = await Course.find({ isActive: true }).lean();
-    return courses as unknown as ICourse[];
-  } catch (error) {
-    handleError(error);
-  }
-};
-
-// -------------------- GET BY ID --------------------
-export const getCourseById = async (courseId: string): Promise<ICourse | null> => {
+export const getCourseById = async (
+  courseId: string,
+): Promise<ICourse | null> => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
-
       const course = await Course.findById(courseId)
         .select(
           `
           title category photo price discountPrice seats batch
           courseStartDate duration sessions registrationDeadline
           prerequisites description modules schedule
-        `
+        `,
         )
-        .lean();
-
-      return course as ICourse | null;
+        .lean<ICourse>();
+      return course || null;
     },
     ["course-by-id", courseId],
-    { revalidate: 600 }
+    { revalidate: 600 },
   )();
 };
 
 // -------------------- SEARCH --------------------
 export const searchCourses = async (query: string): Promise<ICourse[]> => {
-  if (!query) return [];
+  if (!query.trim()) return [];
 
   try {
+    await connectToDatabase();
     const regex = new RegExp(query, "i");
-    const courses = await Course.find({ title: regex })
+
+    const courses = await Course.find({ 
+      isActive: true, // only search active courses
+      title: regex 
+    })
       .limit(10)
       .select(
         "title category photo price discountPrice seats duration courseStartDate registrationDeadline sku batch"
       )
-      .lean();
+      .lean<ICourse[]>();
 
-    return courses as unknown as ICourse[];
+    return courses;
   } catch (error) {
-    console.error("Search error:", error);
+    handleError(error);
     return [];
   }
 };
 
-// -------------------- UPDATE --------------------
 export const updateCourse = async (
   courseId: string,
-  data: Partial<CourseParams>
+  data: Partial<CourseParams>,
 ): Promise<ICourse | undefined> => {
   try {
     await connectToDatabase();
     const updatedCourse = await Course.findByIdAndUpdate(courseId, data, {
       new: true,
       runValidators: true,
-    }).lean();
-
+    }).lean<ICourse>();
     if (!updatedCourse) throw new Error("Course not found");
-    return updatedCourse as unknown as ICourse;
+    return updatedCourse;
   } catch (error) {
     handleError(error);
   }
 };
 
-// -------------------- TOGGLE ACTIVE --------------------
-export const toggleCourseStatus = async (courseId: string): Promise<ICourse | undefined> => {
+export const toggleCourseStatus = async (
+  courseId: string,
+): Promise<ICourse | undefined> => {
   try {
     await connectToDatabase();
     const course = await Course.findById(courseId);
     if (!course) throw new Error("Course not found");
-
     course.isActive = !course.isActive;
     await course.save();
-
     return course.toObject() as ICourse;
   } catch (error) {
     handleError(error);
   }
 };
 
-// -------------------- DELETE --------------------
-export const deleteCourse = async (courseId: string): Promise<{ message: string } | undefined> => {
+export const deleteCourse = async (
+  courseId: string,
+): Promise<{ message: string } | undefined> => {
   try {
     await connectToDatabase();
     const deletedCourse = await Course.findByIdAndDelete(courseId).lean();
     if (!deletedCourse) throw new Error("Course not found");
-
     return { message: "Course deleted successfully" };
   } catch (error) {
     handleError(error);

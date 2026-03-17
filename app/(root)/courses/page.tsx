@@ -1,14 +1,56 @@
-"use server";
+"use client";
 
-import { getActiveCourses } from "@/lib/actions/course.actions";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { getSetting } from "@/lib/actions";
+import Image from "next/image";
 import { CourseLink } from "@/components/shared/CourseLink";
+import { ICourse } from "@/lib/database/models/course.model";
+import { getCourses } from "@/lib/actions/course.actions";
 
-export default async function CoursesPage() {
-  const setting = await getSetting();
-  const courses = await getActiveCourses();
-  const themeColor = setting?.theme || "#0055CE";
+type TabKey = "all" | "upcoming" | "ongoing" | "old";
+
+export default function CoursesPage() {
+  const [activeTab, setActiveTab] = useState<TabKey>("ongoing");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [themeColor, setThemeColor] = useState("#0055CE");
+
+  const categories: string[] = [
+    "All Categories",
+    "Design",
+    "Front End Development",
+    "IT Security",
+    "Management",
+    "Mobile Application Development",
+    "Web Development",
+    "Programming",
+    "Office Application",
+    "Video Editing & Motion",
+    "Marketing",
+    "Workshop",
+    "Networking",
+    "Database Administration",
+    "Freelancing",
+  ];
+
+  useEffect(() => {
+    async function loadSetting() {
+      const setting = await getSetting();
+      setThemeColor(setting?.theme || "#0055CE");
+    }
+    loadSetting();
+  }, []);
+
+  useEffect(() => {
+    async function loadCourses() {
+      const data = await getCourses({
+        tab: activeTab,
+        category: selectedCategory === "All Categories" ? "" : selectedCategory,
+      });
+      setCourses(data);
+    }
+    loadCourses();
+  }, [activeTab, selectedCategory]);
 
   return (
     <main className="w-full py-12 md:py-20 px-6 md:px-12">
@@ -17,18 +59,64 @@ export default async function CoursesPage() {
           className="text-4xl md:text-5xl font-bold"
           style={{ color: themeColor }}
         >
-          আমাদের সক্রিয় কোর্সসমূহ
+          আমাদের কোর্সসমূহ
         </h1>
         <p className="mt-4 text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
-          বর্তমানে চালু থাকা কোর্সগুলোতে ভর্তি হয়ে আপনার দক্ষতা বৃদ্ধি করুন।
+          আপনার প্রয়োজন অনুযায়ী কোর্স নির্বাচন করুন।
         </p>
       </div>
 
+      {/* Tabs with All as dropdown */}
+      <div className="flex justify-center gap-4 mb-10 flex-wrap">
+        {/* All Courses Dropdown */}
+        <select
+          value={selectedCategory || "All Categories"}
+          onChange={(e) => {
+            setActiveTab("all");
+            setSelectedCategory(e.target.value);
+          }}
+          className={`px-4 py-2 rounded-xl font-semibold transition ${
+            activeTab === "all"
+              ? "text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+          style={activeTab === "all" ? { backgroundColor: themeColor } : {}}
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+
+        {/* Other Tabs */}
+        {(["upcoming", "ongoing", "old"] as TabKey[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab);
+              setSelectedCategory(""); // reset category
+            }}
+            className={`px-4 py-2 rounded-xl font-semibold transition ${
+              activeTab === tab
+                ? "text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+            style={activeTab === tab ? { backgroundColor: themeColor } : {}}
+          >
+            {tab === "upcoming" && "Upcoming Courses"}
+            {tab === "ongoing" && "Ongoing Courses"}
+            {tab === "old" && "Old Courses"}
+          </button>
+        ))}
+      </div>
+
+      {/* Courses Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        {courses && courses.length > 0 ? (
-          courses.map((course) => (
+        {courses.length > 0 ? (
+          courses.map((course, idx) => (
             <div
-              key={course._id.toString()}
+              key={idx}
               className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white hover:scale-[1.02] transition"
             >
               <div className="relative w-full h-48">
@@ -40,7 +128,6 @@ export default async function CoursesPage() {
                 />
               </div>
               <div className="p-5 flex flex-col flex-1 text-left">
-                {/* Title wrapped in Link */}
                 <CourseLink id={course._id.toString()}>
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
@@ -62,25 +149,13 @@ export default async function CoursesPage() {
                       টাকা {course.price}
                     </span>
                   )}
-
-                  {course.isActive && (
-                    <span
-                      className="text-xs font-semibold px-2 py-1 rounded-full"
-                      style={{
-                        backgroundColor: `${themeColor}20`,
-                        color: themeColor,
-                      }}
-                    >
-                      সক্রিয়
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
           ))
         ) : (
           <p className="text-center text-gray-500 col-span-full">
-            বর্তমানে কোনো সক্রিয় কোর্স নেই।
+            এই ট্যাবে কোনো কোর্স নেই।
           </p>
         )}
       </div>
