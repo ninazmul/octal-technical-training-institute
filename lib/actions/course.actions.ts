@@ -3,6 +3,7 @@
 import { connectToDatabase } from "../database";
 import { handleError } from "../utils";
 import Course, { ICourse } from "../database/models/course.model";
+import { unstable_cache } from "next/cache";
 
 // -------------------- Params --------------------
 export type CourseParams = {
@@ -58,16 +59,26 @@ export const getActiveCourses = async () => {
 };
 
 // -------------------- GET BY ID --------------------
-export const getCourseById = async (courseId: string) => {
-  try {
-    await connectToDatabase();
-    const course = await Course.findById(courseId).lean();
-    if (!course) throw new Error("Course not found");
-    return JSON.parse(JSON.stringify(course)) as ICourse;
-  } catch (error) {
-    handleError(error);
-  }
-};
+export const getCourseById = (courseId: string) =>
+  unstable_cache(
+    async (): Promise<ICourse | null> => {
+      await connectToDatabase();
+
+      const course = await Course.findById(courseId)
+        .select(
+          `
+          title photo price discountPrice seats batch
+          courseStartDate duration sessions registrationDeadline
+          prerequisites description
+        `,
+        )
+        .lean();
+
+      return course as ICourse | null;
+    },
+    ["course-by-id", courseId],
+    { revalidate: 60 },
+  )();
 
 export async function searchCourses(query: string) {
   if (!query) return [];
@@ -76,7 +87,9 @@ export async function searchCourses(query: string) {
     const regex = new RegExp(query, "i");
     const courses = await Course.find({ title: regex })
       .limit(10)
-      .select("title photo price discountPrice seats duration courseStartDate registrationDeadline sku batch");
+      .select(
+        "title photo price discountPrice seats duration courseStartDate registrationDeadline sku batch",
+      );
     return JSON.parse(JSON.stringify(courses));
   } catch (error) {
     console.error("Search error:", error);

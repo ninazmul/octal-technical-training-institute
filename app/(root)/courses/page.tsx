@@ -41,7 +41,7 @@ export default async function CoursesPage() {
               </div>
               <div className="p-5 flex flex-col flex-1 text-left">
                 {/* Title wrapped in Link */}
-                <Link href={`/courses/${course._id}`}>
+                <Link href={`/courses/${course._id}`} prefetch>
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
                   </h3>

@@ -12,6 +12,7 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 import Image from "next/image";
 import { ICourse } from "@/lib/database/models/course.model";
 import { searchCourses } from "@/lib/actions/course.actions";
+import Link from "next/link";
 
 interface SearchDrawerProps {
   open: boolean;
@@ -90,9 +91,10 @@ export default function SearchDrawer({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {results.map((item, idx) => (
-              <a
+              <Link
                 key={idx}
                 href={`/courses/${item._id}`}
+                prefetch
                 onClick={() => onOpenChange(false)}
                 className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border hover:bg-primary-50 transition shadow-sm"
               >
@@ -144,7 +146,7 @@ export default function SearchDrawer({
                     )}
                   </div>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
