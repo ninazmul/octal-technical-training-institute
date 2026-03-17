@@ -26,7 +26,11 @@ export const createSetting = async (
   }
 };
 
-// Default template for a brand-new setting
+// ----- In-memory cache -----
+let cachedSetting: ISetting | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+
 const DEFAULT_SETTING: Partial<ISetting> = {
   _id: new Types.ObjectId(),
   logo: "",
@@ -38,30 +42,16 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   phoneNumber: "",
   address: "",
   theme: "light",
-
   facebook: "",
   instagram: "",
   twitter: "",
   facebookGroup: "",
   youtube: "",
-
   returnPolicy: "",
   termsOfService: "",
   privacyPolicy: "",
-
-  hero: {
-    title: "",
-    description: "",
-    image: "",
-  },
-
-  features: {
-    badge: "",
-    title: "",
-    description: "",
-    items: [],
-  },
-
+  hero: { title: "", description: "", image: "" },
+  features: { badge: "", title: "", description: "", items: [] },
   testimonials: {
     badge: "",
     title: "",
@@ -71,44 +61,41 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     totalIndustryExperts: 0,
     feedbacks: [],
   },
-
-  ourMentors: {
-    badge: "",
-    title: "",
-    description: "",
-    mentors: [],
-  },
-
-  faqs: {
-    badge: "",
-    title: "",
-    description: "",
-    items: [],
-  },
-
+  ourMentors: { badge: "", title: "", description: "", mentors: [] },
+  faqs: { badge: "", title: "", description: "", items: [] },
   createdAt: new Date(),
   updatedAt: new Date(),
 };
 
+// ====== GET SETTING WITH CACHE ======
 export const getSetting = async (): Promise<ISetting> => {
   try {
+    const now = Date.now();
+
+    // Use cache if valid
+    if (cachedSetting && now - cacheTimestamp < CACHE_TTL) {
+      return cachedSetting;
+    }
+
     await connectToDatabase();
 
     let setting = await Setting.findOne().lean<ISetting>();
 
     if (!setting) {
-      // Create default setting in DB
       setting = await Setting.create(DEFAULT_SETTING);
     }
 
-    return JSON.parse(JSON.stringify(setting)) as ISetting;
+    cachedSetting = JSON.parse(JSON.stringify(setting)) as ISetting;
+    cacheTimestamp = now;
+
+    return cachedSetting;
   } catch (error) {
     handleError(error);
     throw new Error("Unable to fetch setting");
   }
 };
 
-// ====== UPSERT SETTING (update if exists, else create)
+// ====== UPSERT SETTING WITH CACHE REFRESH ======
 export const upsertSetting = async (
   updateData: Partial<SettingParams>,
 ): Promise<ISetting | null> => {
@@ -116,17 +103,22 @@ export const upsertSetting = async (
     await connectToDatabase();
 
     const setting = await Setting.findOneAndUpdate(
-      {}, // always target the single settings doc
+      {},
       { $set: updateData },
       {
-        new: true, // return updated doc
-        upsert: true, // create if none exists
+        new: true,
+        upsert: true,
         runValidators: true,
-        lean: true, // return plain object
+        lean: true,
       },
     );
 
-    return setting ? (JSON.parse(JSON.stringify(setting)) as ISetting) : null;
+    if (setting) {
+      cachedSetting = JSON.parse(JSON.stringify(setting)) as ISetting;
+      cacheTimestamp = Date.now();
+    }
+
+    return setting ? cachedSetting : null;
   } catch (error) {
     handleError(error);
     return null;
