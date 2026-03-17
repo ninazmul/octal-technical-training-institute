@@ -25,7 +25,7 @@ export default function Header({ openSearch }: HeaderProps) {
 
   const [adminStatus, setAdminStatus] = useState(false);
   const [settings, setSettings] = useState<ISetting | null>(null);
-  const themeColor = settings?.theme || "0055CE";
+  const themeColor = settings?.theme || "#0055CE";
 
   // Fetch settings once
   useEffect(() => {
