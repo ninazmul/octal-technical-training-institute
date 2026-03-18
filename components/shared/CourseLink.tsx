@@ -1,7 +1,7 @@
 "use client";
 
 import Link, { LinkProps } from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface CourseLinkProps extends Omit<LinkProps, "href"> {
@@ -19,13 +19,25 @@ export function CourseLink({
   ...props
 }: CourseLinkProps) {
   const router = useRouter();
-  let timeout: NodeJS.Timeout;
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prefetched = useRef<Set<string>>(new Set());
 
   const handleMouseEnter = () => {
-    timeout = setTimeout(() => router.prefetch(`/courses/${id}`), 120);
+    // Only prefetch if not already done
+    if (!prefetched.current.has(id)) {
+      timeoutRef.current = setTimeout(() => {
+        router.prefetch(`/courses/${id}`);
+        prefetched.current.add(id);
+      }, 60); // small delay to avoid accidental hover prefetch
+    }
   };
 
-  const handleMouseLeave = () => clearTimeout(timeout);
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
 
   return (
     <Link
