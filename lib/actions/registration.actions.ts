@@ -11,7 +11,6 @@ export type SerializedCourse = { _id: string };
 export type SerializedRegistration = {
   _id: string;
   englishName: string | null;
-  bengaliName: string | null;
   fathersName: string | null;
   mothersName: string | null;
   gender: string | null;
@@ -39,7 +38,6 @@ export type SerializedRegistration = {
 // -------------------- Params --------------------
 export type RegistrationParams = {
   englishName: string;
-  bengaliName: string;
   fathersName: string;
   mothersName: string;
   gender: string;
@@ -111,7 +109,6 @@ function serializeRegistration(
   return {
     _id: String(raw["_id"] ?? ""),
     englishName: toStringOrNull(raw["englishName"]),
-    bengaliName: toStringOrNull(raw["bengaliName"]),
     fathersName: toStringOrNull(raw["fathersName"]),
     mothersName: toStringOrNull(raw["mothersName"]),
     gender: toStringOrNull(raw["gender"]),
@@ -184,7 +181,6 @@ function buildValidatedUpdate(
   // Add editable personal fields from modal
   const editableFields = [
     "englishName",
-    "bengaliName",
     "fathersName",
     "mothersName",
     "gender",
@@ -226,7 +222,6 @@ export const createRegistration = async (
     // Create registration (registrationNumber auto-generated in model)
     const created = await Registration.create({
       englishName: data.englishName,
-      bengaliName: data.bengaliName,
       fathersName: data.fathersName,
       mothersName: data.mothersName,
       gender: data.gender,

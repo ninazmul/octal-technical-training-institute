@@ -23,7 +23,6 @@ import toast from "react-hot-toast";
 // -------------------- Schema --------------------
 const registrationFormSchema = z.object({
   englishName: z.string().min(1, "English name is required"),
-  bengaliName: z.string().min(1, "Bengali name is required"),
   fathersName: z.string().min(1, "Father's name is required"),
   mothersName: z.string().min(1, "Mother's name is required"),
   gender: z.enum(["Male", "Female", "Other"], {
@@ -55,7 +54,6 @@ export default function RegistrationForm({
     resolver: zodResolver(registrationFormSchema),
     defaultValues: {
       englishName: "",
-      bengaliName: "",
       fathersName: "",
       mothersName: "",
       gender: "Male",
@@ -110,21 +108,6 @@ export default function RegistrationForm({
               <FormLabel>English Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter English name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Bengali Name */}
-        <FormField
-          control={form.control}
-          name="bengaliName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bengali Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter Bengali name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

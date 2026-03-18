@@ -64,7 +64,6 @@ export default function RegistrationDetailsClient({
         <div class="student-info">
           <div>
             <p><strong>Name:</strong> ${registration.englishName}</p>
-            ${registration.bengaliName ? `<p><strong>Bengali Name:</strong> ${registration.bengaliName}</p>` : ""}
             <p><strong>Registration #:</strong> ${registration.registrationNumber || "N/A"}</p>
           </div>
           <div class="photo-container">
@@ -122,9 +121,6 @@ export default function RegistrationDetailsClient({
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
               {registration.englishName || "Unnamed Student"}
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              {registration.bengaliName && `(${registration.bengaliName})`}
-            </p>
             <div className="mt-3 flex items-center gap-3">
               <span className="text-sm text-gray-500">
                 Registration #:{" "}

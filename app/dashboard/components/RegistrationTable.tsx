@@ -65,7 +65,6 @@ function normalizeRegistration(
   return {
     _id: updated._id,
     englishName: updated.englishName ?? undefined,
-    bengaliName: updated.bengaliName ?? undefined,
     fathersName: updated.fathersName ?? undefined,
     mothersName: updated.mothersName ?? undefined,
     gender: updated.gender ?? undefined,

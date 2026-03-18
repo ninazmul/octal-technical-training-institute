@@ -6,7 +6,6 @@ export interface IRegistration extends Document {
 
   // Student Info
   englishName: string;
-  bengaliName: string;
   fathersName: string;
   mothersName: string;
   gender: string;
@@ -48,7 +47,6 @@ export interface IRegistration extends Document {
 const RegistrationSchema = new Schema<IRegistration>(
   {
     englishName: { type: String, required: true, trim: true },
-    bengaliName: { type: String, required: true, trim: true },
     fathersName: { type: String, required: true, trim: true },
     mothersName: { type: String, required: true, trim: true },
     gender: { type: String, required: true, enum: ["Male", "Female", "Other"] },

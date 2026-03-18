@@ -29,7 +29,6 @@ function normalizeRegistration(r: SerializedRegistration): RegistrationItem {
   return {
     _id: r._id,
     englishName: mapStr(r.englishName),
-    bengaliName: mapStr(r.bengaliName),
     fathersName: mapStr(r.fathersName),
     mothersName: mapStr(r.mothersName),
     gender: mapStr(r.gender),
