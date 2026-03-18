@@ -35,11 +35,23 @@ export const createRegistration = async (
     const course = await Course.findById(data.courseId);
     if (!course) throw new Error("Course not found");
 
-    // Registration number is auto-generated in the model pre-save hook
+    // Convert seats string → number
+    const currentSeats = course.seats ? parseInt(course.seats, 10) : 0;
+
+    // Check if seats are available
+    if (currentSeats <= 0) {
+      throw new Error("No seats available for this course");
+    }
+
+    // Create registration (registrationNumber auto-generated in model)
     const newRegistration = await Registration.create({
       ...data,
       course: course._id,
     });
+
+    // Reduce seats by 1 and save back as string
+    course.seats = String(currentSeats - 1);
+    await course.save();
 
     return newRegistration.toObject() as IRegistration;
   } catch (error) {

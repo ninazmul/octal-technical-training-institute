@@ -136,15 +136,39 @@ export default function CourseDetailsClient({ course }: { course: ICourse }) {
 
           {/* Enroll Button */}
           <div>
-            <Link href={`/checkout/${course._id.toString()}`}>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition-colors"
-              >
-                Enroll Now
-              </motion.button>
-            </Link>
+            {(() => {
+              const seatsAvailable = Number(course.seats) > 0;
+              const deadline = course.registrationDeadline
+                ? new Date(course.registrationDeadline)
+                : null;
+              const now = new Date();
+              const deadlinePassed = deadline ? now > deadline : false;
+
+              const active = seatsAvailable && !deadlinePassed;
+
+              if (active) {
+                return (
+                  <Link href={`/checkout/${course._id.toString()}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition-colors"
+                    >
+                      Enroll Now
+                    </motion.button>
+                  </Link>
+                );
+              }
+
+              return (
+                <motion.button
+                  disabled
+                  className="w-full bg-gray-400 text-gray-700 font-semibold py-3 px-6 rounded-xl shadow-md cursor-not-allowed"
+                >
+                  {seatsAvailable ? "Deadline Passed" : "No Seats Available"}
+                </motion.button>
+              );
+            })()}
           </div>
         </aside>
       </div>
