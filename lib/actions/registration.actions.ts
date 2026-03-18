@@ -22,6 +22,19 @@ export type RegistrationParams = {
   address: string;
   photo?: string;
   courseId: string; // reference to Course
+
+  // New management fields
+  status?: "Pending" | "Ongoing" | "Completed" | "Closed";
+  certificateStatus?: "Not Certified" | "Certified";
+  paymentAmount?: number;
+  paymentStatus?: "Unpaid" | "Partial" | "Paid";
+  transactionId?: string;
+  paymentMethod?:
+    | "Cash"
+    | "Card"
+    | "Bank Transfer"
+    | "Mobile Payment"
+    | "Other";
 };
 
 // -------------------- Create Registration --------------------
@@ -47,6 +60,12 @@ export const createRegistration = async (
     const newRegistration = await Registration.create({
       ...data,
       course: course._id,
+      status: data.status || "Pending",
+      certificateStatus: data.certificateStatus || "Not Certified",
+      paymentAmount: data.paymentAmount || 0,
+      paymentStatus: data.paymentStatus || "Unpaid",
+      transactionId: data.transactionId || undefined,
+      paymentMethod: data.paymentMethod || undefined,
     });
 
     // Reduce seats by 1 and save back as string
@@ -67,7 +86,6 @@ export const getRegistrations = async (): Promise<IRegistration[]> => {
       .populate("course", "title category batch price discountPrice")
       .lean<IRegistration[]>();
 
-    // Each registration will include its auto-generated registrationNumber
     return registrations;
   } catch (error) {
     handleError(error);

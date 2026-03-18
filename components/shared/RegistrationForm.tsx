@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { createRegistration } from "@/lib/actions/registration.actions";
 import {
   Form,
@@ -36,6 +36,7 @@ const registrationFormSchema = z.object({
   institution: z.string().min(1, "Institution is required"),
   address: z.string().min(1, "Address is required"),
   photo: z.string().min(1, "Photo is required"),
+  paymentAmount: z.number(), // new field
 });
 
 type RegistrationFormProps = {
@@ -47,7 +48,7 @@ export default function RegistrationForm({
   course,
   email,
 }: RegistrationFormProps) {
-  const router = useRouter();
+  // const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
 
   const form = useForm<z.infer<typeof registrationFormSchema>>({
@@ -65,12 +66,18 @@ export default function RegistrationForm({
       institution: "",
       address: "",
       photo: "",
+      paymentAmount: course.discountPrice ?? course.price, // auto-fill
     },
   });
 
   async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
     try {
-      const payload = { ...values, email, courseId: course._id.toString() };
+      const payload = {
+        ...values,
+        email,
+        courseId: course._id.toString(),
+        paymentAmount: course.discountPrice ?? course.price,
+      };
       const registration = await createRegistration(payload);
 
       if (registration) {
@@ -78,7 +85,7 @@ export default function RegistrationForm({
           `Registration successful! Your registration number is ${registration.registrationNumber}`,
         );
         form.reset();
-        router.push("/dashboard/registrations");
+        // router.push("/registrations");
       }
     } catch (error) {
       console.error("Registration failed", error);

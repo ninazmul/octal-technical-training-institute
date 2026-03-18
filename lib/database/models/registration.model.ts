@@ -24,6 +24,21 @@ export interface IRegistration extends Document {
   // Auto-generated Registration Number
   registrationNumber: string;
 
+  // Status & Management
+  status: "Pending" | "Ongoing" | "Completed" | "Closed";
+  certificateStatus: "Not Certified" | "Certified";
+  paymentAmount: number;
+  paymentStatus: "Unpaid" | "Partial" | "Paid";
+
+  // Transaction Info
+  transactionId?: string; // reference from payment gateway/bank
+  paymentMethod?:
+    | "Cash"
+    | "Card"
+    | "Bank Transfer"
+    | "Mobile Payment"
+    | "Other";
+
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
@@ -48,6 +63,29 @@ const RegistrationSchema = new Schema<IRegistration>(
     course: { type: Schema.Types.ObjectId, ref: "Course", required: true },
 
     registrationNumber: { type: String, unique: true },
+
+    // New fields
+    status: {
+      type: String,
+      enum: ["Pending", "Ongoing", "Completed", "Closed"],
+      default: "Pending",
+    },
+    certificateStatus: {
+      type: String,
+      enum: ["Not Certified", "Certified"],
+      default: "Not Certified",
+    },
+    paymentAmount: { type: Number, default: 0 },
+    paymentStatus: {
+      type: String,
+      enum: ["Unpaid", "Partial", "Paid"],
+      default: "Unpaid",
+    },
+    transactionId: { type: String, trim: true },
+    paymentMethod: {
+      type: String,
+      enum: ["Cash", "Card", "Bank Transfer", "Mobile Payment", "Other"],
+    },
   },
   { timestamps: true },
 );
@@ -55,7 +93,6 @@ const RegistrationSchema = new Schema<IRegistration>(
 // -------------------- Auto-generate Registration Number --------------------
 RegistrationSchema.pre<IRegistration>("save", async function (next) {
   if (!this.registrationNumber) {
-    // Example format: REG-2026-00001
     const year = new Date().getFullYear();
     const count = await model<IRegistration>("Registration").countDocuments();
     this.registrationNumber = `REG-${year}-${String(count + 1).padStart(5, "0")}`;
