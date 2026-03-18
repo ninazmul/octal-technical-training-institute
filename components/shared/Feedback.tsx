@@ -140,7 +140,7 @@ function Feedback({ setting }: { setting: ISetting }) {
 
               {/* Comment */}
               {feedback.comment && (
-                <p className="text-gray-600 text-sm line-clamp-3">
+                <p className="text-gray-600 text-sm text-justify">
                   {feedback.comment}
                 </p>
               )}
