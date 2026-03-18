@@ -58,7 +58,7 @@ export default function RegistrationForm({
       fathersName: "",
       mothersName: "",
       gender: "Male",
-      email: "",
+      email: email,
       number: "",
       whatsApp: "",
       occupation: "",
@@ -70,7 +70,7 @@ export default function RegistrationForm({
 
   async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
     try {
-      const payload = { ...values, courseId: course._id.toString() };
+      const payload = { ...values, email, courseId: course._id.toString() };
       const registration = await createRegistration(payload);
 
       if (registration) {
