@@ -14,10 +14,10 @@ import { getSetting } from "@/lib/actions/setting.actions";
 import { ISetting } from "@/lib/database/models/setting.model";
 import {
   LayoutDashboard,
-  Boxes,
-  ShoppingCart,
   Shield,
   Settings,
+  BookOpen,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,13 +34,13 @@ const sidebarItems = [
   {
     title: "Courses",
     url: "/dashboard/courses",
-    icon: Boxes,
+    icon: BookOpen,
     roles: ["admin", "moderator"],
   },
   {
-    title: "Orders",
-    url: "/dashboard/orders",
-    icon: ShoppingCart,
+    title: "Registrations",
+    url: "/dashboard/registrations",
+    icon: Users,
     roles: ["admin", "moderator"],
   },
   {
@@ -68,7 +68,7 @@ const AdminSidebar = ({ role }: { role?: string }) => {
     })();
   }, []);
 
-  const moderatorAllowed = ["Dashboard", "Courses", "Orders"];
+  const moderatorAllowed = ["Dashboard", "Courses", "Registrations"];
 
   return (
     <Sidebar
