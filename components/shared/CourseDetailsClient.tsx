@@ -13,6 +13,7 @@ import {
   Users,
   AlertCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function CourseDetailsClient({ course }: { course: ICourse }) {
   return (
@@ -134,13 +135,17 @@ export default function CourseDetailsClient({ course }: { course: ICourse }) {
           </InfoCard>
 
           {/* Enroll Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition-colors"
-          >
-            Enroll Now
-          </motion.button>
+          <div>
+            <Link href={`/checkout/${course._id.toString()}`}>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition-colors"
+              >
+                Enroll Now
+              </motion.button>
+            </Link>
+          </div>
         </aside>
       </div>
 

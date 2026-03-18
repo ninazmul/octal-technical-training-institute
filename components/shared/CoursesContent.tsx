@@ -40,7 +40,7 @@ function Courses({
           className="text-3xl md:text-5xl font-bold"
           style={{ color: themeColor }}
         >
-          আমাদের কোর্সসমূহ অন্বেষণ করুন
+          আমাদের কোর্সসমূহ
         </h2>
 
         <motion.p

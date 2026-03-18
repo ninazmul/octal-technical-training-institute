@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
 import { redirect } from "next/navigation";
-import { getAllCourses } from "@/lib/actions/course.actions";
+import { getCourses } from "@/lib/actions/course.actions";
 import CourseTable from "../components/CourseTable";
 
 const Page = async () => {
@@ -16,11 +16,12 @@ const Page = async () => {
     redirect("/dashboard");
   }
 
-  const courses = (await getAllCourses()) || [];
+  // ✅ fetch all courses with normalization
+  const courses = await getCourses({ tab: "all" });
 
   return (
     <>
-      <section className=" py-2 md:py-5">
+      <section className="py-2 md:py-5">
         <div className="wrapper flex flex-wrap justify-between items-center">
           <h3 className="text-3xl font-bold text-center sm:text-left">
             All Courses
