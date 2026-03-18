@@ -12,14 +12,9 @@ import {
   BookOpen,
   Users,
   AlertCircle,
-  Dot,
 } from "lucide-react";
 
-export default function CourseDetailsClient({
-  course,
-}: {
-  course: ICourse;
-}) {
+export default function CourseDetailsClient({ course }: { course: ICourse }) {
   return (
     <main className="w-full max-w-7xl mx-auto py-12 px-6 md:px-12">
       <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-12">
@@ -121,10 +116,12 @@ export default function CourseDetailsClient({
 
           <InfoCard title="Prerequisites">
             {course.prerequisites?.length ? (
-              <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+              <ul className="space-y-1 text-gray-700 dark:text-gray-300">
                 {course.prerequisites.map((item, idx) => (
-                  <li key={idx} className="flex items-start">
-                    <Dot />
+                  <li
+                    key={idx}
+                    className="relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-gray-700 dark:before:text-gray-300"
+                  >
                     {item}
                   </li>
                 ))}
