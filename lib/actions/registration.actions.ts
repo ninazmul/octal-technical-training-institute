@@ -325,6 +325,26 @@ export const getRegistrationByNumber = async (
   }
 };
 
+// -------------------- Get Registration By Email --------------------
+export const getRegistrationByEmail = async (
+  email: string,
+): Promise<SerializedRegistration | null> => {
+  try {
+    await connectToDatabase();
+
+    const raw = await Registration.findOne({ email })
+      .populate("course", "title category batch price discountPrice")
+      .lean<Record<string, unknown>>();
+
+    if (!raw) return null;
+
+    return serializeRegistration(raw);
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
+};
+
 // -------------------- Update Registration --------------------
 export const updateRegistration = async (
   registrationId: string,

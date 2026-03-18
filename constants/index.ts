@@ -4,12 +4,12 @@ export const headerLinks = [
     route: "/about",
   },
   {
-    label: "সাফল্যের গল্প",
-    route: "/success",
-  },
-  {
     label: "যোগাযোগ",
     route: "/contact",
+  },
+  {
+    label: "আমার ক্লাসগুলো",
+    route: "/registration",
   },
 ];
 

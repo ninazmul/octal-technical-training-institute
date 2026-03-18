@@ -141,6 +141,9 @@ const Footer = () => {
                   {link.label}
                 </Link>
               ))}
+              <Link href={"/success-stories"} className="opacity-90">
+                সাফল্যের গল্প
+              </Link>
               <Link href={"/policies"} className="opacity-90">
                 নীতিমালা
               </Link>
@@ -148,24 +151,6 @@ const Footer = () => {
           </div>
         </div>
       </motion.div>
-
-      {/* Middle Bar */}
-      {/* <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        className=""
-      >
-        <div className="relative w-full h-10 lg:h-20">
-          <Image
-            src={"/assets/images/banks.png"}
-            alt="Logo"
-            fill
-            priority
-            className=""
-          />
-        </div>
-      </motion.div> */}
 
       {/* Bottom Bar */}
       <motion.div

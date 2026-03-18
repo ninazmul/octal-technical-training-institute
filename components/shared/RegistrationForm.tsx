@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 // import { useRouter } from "next/navigation";
-// import { createRegistration } from "@/lib/actions/registration.actions";
+import { createRegistration } from "@/lib/actions/registration.actions";
 import {
   Form,
   FormField,
@@ -68,72 +68,72 @@ export default function RegistrationForm({
     },
   });
 
-  async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
-    try {
-      // Temporarily store data until payment is successful
-      localStorage.setItem(
-        "registrationData",
-        JSON.stringify({
-          ...values,
-          courseId: course._id.toString(),
-          paymentAmount: values.paymentAmount,
-        }),
-      );
-
-      const payload = {
-        merchantId: process.env.NEXT_PUBLIC_PAYSTATION_MERCHANT_ID,
-        password: process.env.NEXT_PUBLIC_PAYSTATION_PASSWORD,
-        invoice_number: `REG-${Date.now()}`,
-        currency: "BDT",
-        payment_amount: values.paymentAmount,
-        cust_name: values.englishName,
-        cust_email: values.email,
-        cust_phone: values.number,
-        callback_url: `${window.location.origin}/checkout/callback`,
-        checkout_items: JSON.stringify([
-          { course: course.title, amount: values.paymentAmount },
-        ]),
-      };
-
-      const res = await fetch("/api/paystation/initiate-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (data.status !== "success") throw new Error(data.message);
-
-      // Redirect user to PayStation
-      window.location.href = data.payment_url;
-    } catch (err) {
-      console.error(err);
-      toast.error("Payment initiation failed");
-    }
-  }
-
   // async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
   //   try {
-  //     const payload = {
-  //       ...values,
-  //       email,
-  //       courseId: course._id.toString(),
-  //       paymentAmount: course.discountPrice ?? course.price,
-  //     };
-  //     const registration = await createRegistration(payload);
+  //     // Temporarily store data until payment is successful
+  //     localStorage.setItem(
+  //       "registrationData",
+  //       JSON.stringify({
+  //         ...values,
+  //         courseId: course._id.toString(),
+  //         paymentAmount: values.paymentAmount,
+  //       }),
+  //     );
 
-  //     if (registration) {
-  //       toast.success(
-  //         `Registration successful! Your registration number is ${registration.registrationNumber}`,
-  //       );
-  //       form.reset();
-  //       // router.push("/registrations");
-  //     }
-  //   } catch (error) {
-  //     console.error("Registration failed", error);
-  //     toast.error("Something went wrong.");
+  //     const payload = {
+  //       merchantId: process.env.NEXT_PUBLIC_PAYSTATION_MERCHANT_ID,
+  //       password: process.env.NEXT_PUBLIC_PAYSTATION_PASSWORD,
+  //       invoice_number: `REG-${Date.now()}`,
+  //       currency: "BDT",
+  //       payment_amount: values.paymentAmount,
+  //       cust_name: values.englishName,
+  //       cust_email: values.email,
+  //       cust_phone: values.number,
+  //       callback_url: `${window.location.origin}/checkout/callback`,
+  //       checkout_items: JSON.stringify([
+  //         { course: course.title, amount: values.paymentAmount },
+  //       ]),
+  //     };
+
+  //     const res = await fetch("/api/paystation/initiate-payment", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     const data = await res.json();
+  //     if (data.status !== "success") throw new Error(data.message);
+
+  //     // Redirect user to PayStation
+  //     window.location.href = data.payment_url;
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Payment initiation failed");
   //   }
   // }
+
+  async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
+    try {
+      const payload = {
+        ...values,
+        email,
+        courseId: course._id.toString(),
+        paymentAmount: course.discountPrice ?? course.price,
+      };
+      const registration = await createRegistration(payload);
+
+      if (registration) {
+        toast.success(
+          `Registration successful! Your registration number is ${registration.registrationNumber}`,
+        );
+        form.reset();
+        // router.push("/registrations");
+      }
+    } catch (error) {
+      console.error("Registration failed", error);
+      toast.error("Something went wrong.");
+    }
+  }
 
   return (
     <Form {...form}>
