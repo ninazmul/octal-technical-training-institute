@@ -1,7 +1,7 @@
 "use client";
 
-import { ICourse } from "@/lib/database/models/course.model";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,10 +11,10 @@ function Courses({
   setting,
   courses,
 }: {
-  setting: ISetting;
-  courses?: ICourse[];
+  setting: ISettingSafe | null;
+  courses?: ICourseSafe[];
 }) {
-  const themeColor = setting.theme || "#0055CE";
+  const themeColor = setting?.theme || "#0055CE";
 
   return (
     <main className="relative w-full py-12 md:py-20 flex flex-col items-center justify-center text-center px-6 md:px-12">

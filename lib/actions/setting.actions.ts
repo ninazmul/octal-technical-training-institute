@@ -1,15 +1,18 @@
 "use server";
 
-import { handleError } from "../utils";
+import { handleError, sanitizeSetting } from "../utils";
 import { connectToDatabase } from "../database";
-import Setting, { ISetting } from "../database/models/setting.model";
+import Setting, {
+  ISetting,
+  ISettingSafe,
+} from "../database/models/setting.model";
 import { SettingParams } from "@/types";
 import { Types } from "mongoose";
 
 // ====== CREATE SETTING (only if none exists)
 export const createSetting = async (
   params: SettingParams,
-): Promise<ISetting | null> => {
+): Promise<ISettingSafe | null> => {
   try {
     await connectToDatabase();
 
@@ -19,7 +22,7 @@ export const createSetting = async (
     }
 
     const newSetting = await Setting.create(params);
-    return JSON.parse(JSON.stringify(newSetting)) as ISetting; // consistent plain object
+    return sanitizeSetting(newSetting.toObject() as ISetting);
   } catch (error) {
     handleError(error);
     return null;
@@ -27,7 +30,7 @@ export const createSetting = async (
 };
 
 // ----- In-memory cache -----
-let cachedSetting: ISetting | null = null;
+let cachedSetting: ISettingSafe | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
 
@@ -68,11 +71,10 @@ const DEFAULT_SETTING: Partial<ISetting> = {
 };
 
 // ====== GET SETTING WITH CACHE ======
-export const getSetting = async (): Promise<ISetting> => {
+export const getSetting = async (): Promise<ISettingSafe | null> => {
   try {
     const now = Date.now();
 
-    // Use cache if valid
     if (cachedSetting && now - cacheTimestamp < CACHE_TTL) {
       return cachedSetting;
     }
@@ -85,20 +87,20 @@ export const getSetting = async (): Promise<ISetting> => {
       setting = await Setting.create(DEFAULT_SETTING);
     }
 
-    cachedSetting = JSON.parse(JSON.stringify(setting)) as ISetting;
+    cachedSetting = sanitizeSetting(setting);
     cacheTimestamp = now;
 
     return cachedSetting;
   } catch (error) {
     handleError(error);
-    throw new Error("Unable to fetch setting");
+    return null; // matches Promise<ISettingSafe | null>
   }
 };
 
 // ====== UPSERT SETTING WITH CACHE REFRESH ======
 export const upsertSetting = async (
   updateData: Partial<SettingParams>,
-): Promise<ISetting | null> => {
+): Promise<ISettingSafe | null> => {
   try {
     await connectToDatabase();
 
@@ -109,16 +111,19 @@ export const upsertSetting = async (
         new: true,
         upsert: true,
         runValidators: true,
-        lean: true,
+        lean: true, // returns plain object
       },
     );
 
-    if (setting) {
-      cachedSetting = JSON.parse(JSON.stringify(setting)) as ISetting;
-      cacheTimestamp = Date.now();
+    if (!setting) {
+      return null;
     }
 
-    return setting ? cachedSetting : null;
+    // setting here is a plain object, not ISetting
+    cachedSetting = sanitizeSetting(setting as unknown as ISetting);
+    cacheTimestamp = Date.now();
+
+    return cachedSetting;
   } catch (error) {
     handleError(error);
     return null;

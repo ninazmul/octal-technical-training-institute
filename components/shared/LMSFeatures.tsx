@@ -1,6 +1,6 @@
 "use client";
 
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import {
   FaBookOpen,
   FaChalkboardTeacher,
@@ -20,11 +20,11 @@ const ICONS: Record<string, JSX.Element> = {
   FaUsers: <FaUsers className="w-10 h-10 p-2 text-yellow-500" />,
 };
 
-function LMSFeatures({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#0055CE";
+function LMSFeatures({ setting }: { setting: ISettingSafe | null }) {
+  const themeColor = setting?.theme || "#0055CE";
 
-  // Use setting.features if it exists, otherwise fallback
-  const features = setting.features?.items || [];
+  // Use setting?.features if it exists, otherwise fallback
+  const features = setting?.features?.items || [];
 
   return (
     <main
@@ -39,16 +39,16 @@ function LMSFeatures({ setting }: { setting: ISetting }) {
         className="flex flex-col items-center gap-4"
       >
         <div className="text-white border rounded-full px-4 py-2 text-sm shadow-md flex items-center gap-2 w-max font-semibold bg-black/25">
-          {setting.features?.badge || "বৈশিষ্ট্যসমূহ"}
+          {setting?.features?.badge || "বৈশিষ্ট্যসমূহ"}
         </div>
         <h2 className="text-white text-3xl md:text-5xl font-bold">
-          {setting.features?.title || "আপনার শেখার যাত্রাকে শক্তিশালী করুন"}
+          {setting?.features?.title || "আপনার শেখার যাত্রাকে শক্তিশালী করুন"}
         </h2>
-        <p
+        <div
           className="max-w-3xl text-white text-lg md:text-xl"
           dangerouslySetInnerHTML={{
             __html:
-              setting.features?.description ||
+              setting?.features?.description ||
               "<p>কোর্স অন্বেষণ করুন, বিশেষজ্ঞদের সাথে যুক্ত হোন, এবং সহজেই সার্টিফিকেশন অর্জন করুন।</p>",
           }}
         />

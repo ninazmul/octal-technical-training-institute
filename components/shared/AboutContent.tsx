@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
 import {
   Mail,
@@ -24,24 +24,28 @@ type NavItem = {
   id: string;
 };
 
-export default function AboutContent({ settings }: { settings: ISetting }) {
-  const themeColor = settings.theme || "#0055CE";
+export default function AboutContent({
+  settings,
+}: {
+  settings: ISettingSafe | null;
+}) {
+  const themeColor = settings?.theme || "#0055CE";
   const [activeSection, setActiveSection] = useState("");
 
   const navItems: NavItem[] = useMemo(() => {
     const items: NavItem[] = [];
 
-    if (settings.description)
+    if (settings?.description)
       items.push({ label: "About", id: "about-section" });
-    if (settings.email || settings.phoneNumber || settings.address)
+    if (settings?.email || settings?.phoneNumber || settings?.address)
       items.push({ label: "Contact", id: "contact-section" });
 
     if (
-      settings.facebook ||
-      settings.instagram ||
-      settings.twitter ||
-      settings.youtube ||
-      settings.facebookGroup
+      settings?.facebook ||
+      settings?.instagram ||
+      settings?.twitter ||
+      settings?.youtube ||
+      settings?.facebookGroup
     )
       items.push({ label: "Social", id: "social-section" });
 
@@ -76,15 +80,25 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-16 min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Title */}
-        <motion.h1
+        {/* Page Title */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center text-4xl md:text-5xl font-extrabold mb-16"
-          style={{ color: themeColor }}
+          className="text-center mb-12 md:mb-16"
         >
-          About {settings.name}
-        </motion.h1>
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight"
+            style={{ color: themeColor }}
+          >
+            About Us
+          </h1>
+
+          <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto text-sm sm:text-base">
+            Learn more about who we are, what we stand for, and how we are
+            shaping the future through quality education and practical skill
+            development.
+          </p>
+        </motion.div>
 
         <div className="grid lg:grid-cols-[260px_1fr] gap-12">
           {/* Sidebar */}
@@ -145,7 +159,7 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
           {/* Content */}
           <div className="space-y-4">
             {/* About */}
-            {settings.description && (
+            {settings?.description && (
               <motion.section
                 id="about-section"
                 initial={{ opacity: 0, y: 20 }}
@@ -170,7 +184,7 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
                   <div
                     className={proseClasses}
                     dangerouslySetInnerHTML={{
-                      __html: settings.description,
+                      __html: settings?.description,
                     }}
                   />{" "}
                 </div>
@@ -178,7 +192,9 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
             )}
 
             {/* Contact */}
-            {(settings.email || settings.phoneNumber || settings.address) && (
+            {(settings?.email ||
+              settings?.phoneNumber ||
+              settings?.address) && (
               <motion.section
                 id="contact-section"
                 initial={{ opacity: 0, y: 20 }}
@@ -201,24 +217,24 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
 
                 <div className="p-6">
                   <div className="space-y-4 text-gray-700 dark:text-gray-300">
-                    {settings.email && (
+                    {settings?.email && (
                       <div className="flex items-center gap-3">
                         <Mail size={18} />
-                        {settings.email}
+                        {settings?.email}
                       </div>
                     )}
 
-                    {settings.phoneNumber && (
+                    {settings?.phoneNumber && (
                       <div className="flex items-center gap-3">
                         <Phone size={18} />
-                        {settings.phoneNumber}
+                        {settings?.phoneNumber}
                       </div>
                     )}
 
-                    {settings.address && (
+                    {settings?.address && (
                       <div className="flex items-center gap-3">
                         <MapPin size={18} />
-                        {settings.address}
+                        {settings?.address}
                       </div>
                     )}
                   </div>
@@ -227,11 +243,11 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
             )}
 
             {/* Social */}
-            {(settings.facebook ||
-              settings.instagram ||
-              settings.twitter ||
-              settings.youtube ||
-              settings.facebookGroup) && (
+            {(settings?.facebook ||
+              settings?.instagram ||
+              settings?.twitter ||
+              settings?.youtube ||
+              settings?.facebookGroup) && (
               <motion.section
                 id="social-section"
                 initial={{ opacity: 0, y: 20 }}
@@ -254,32 +270,32 @@ export default function AboutContent({ settings }: { settings: ISetting }) {
 
                 <div className="p-6">
                   <div className="flex flex-wrap gap-4">
-                    {settings.facebook && (
-                      <a href={settings.facebook} target="_blank">
+                    {settings?.facebook && (
+                      <a href={settings?.facebook} target="_blank">
                         <Facebook />
                       </a>
                     )}
 
-                    {settings.instagram && (
-                      <a href={settings.instagram} target="_blank">
+                    {settings?.instagram && (
+                      <a href={settings?.instagram} target="_blank">
                         <Instagram />
                       </a>
                     )}
 
-                    {settings.twitter && (
-                      <a href={settings.twitter} target="_blank">
+                    {settings?.twitter && (
+                      <a href={settings?.twitter} target="_blank">
                         <Twitter />
                       </a>
                     )}
 
-                    {settings.youtube && (
-                      <a href={settings.youtube} target="_blank">
+                    {settings?.youtube && (
+                      <a href={settings?.youtube} target="_blank">
                         <Youtube />
                       </a>
                     )}
 
-                    {settings.facebookGroup && (
-                      <a href={settings.facebookGroup} target="_blank">
+                    {settings?.facebookGroup && (
+                      <a href={settings?.facebookGroup} target="_blank">
                         <Users />
                       </a>
                     )}

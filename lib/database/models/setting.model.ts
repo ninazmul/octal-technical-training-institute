@@ -112,6 +112,102 @@ export interface ISetting extends Document {
   updatedAt?: Date;
 }
 
+export interface ISettingSafe {
+  _id: string;
+
+  // Branding & Contact
+  logo?: string;
+  favicon?: string;
+  name?: string;
+  tagline?: string;
+  description?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  theme?: string;
+
+  // Social Media
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  facebookGroup?: string;
+  youtube?: string;
+
+  // Policies
+  returnPolicy?: string;
+  termsOfService?: string;
+  privacyPolicy?: string;
+
+  // Hero Section
+  hero?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    offerStartDate?: string;
+    offerEndDate?: string;
+  };
+
+  // Features
+  features?: {
+    badge?: string;
+    title?: string;
+    description?: string;
+    items?: {
+      title?: string;
+      description?: string;
+      icon?: string;
+    }[];
+  };
+
+  // Testimonials
+  testimonials?: {
+    badge?: string;
+    title?: string;
+    description?: string;
+    totalEnrollment?: number;
+    totalSucceededStudents?: number;
+    totalIndustryExperts?: number;
+    feedbacks?: {
+      name?: string;
+      photo?: string;
+      rating?: number;
+      comment?: string;
+    }[];
+  };
+
+  // Our Mentors
+  ourMentors?: {
+    badge?: string;
+    title?: string;
+    description?: string;
+    mentors?: {
+      name?: string;
+      photo?: string;
+      expertise?: string;
+      social?: {
+        facebook?: string;
+        linkedIn?: string;
+        twitter?: string;
+        other?: string;
+      };
+    }[];
+  };
+
+  // FAQs
+  faqs?: {
+    badge?: string;
+    title?: string;
+    description?: string;
+    items?: {
+      question?: string;
+      answer?: string;
+    }[];
+  };
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 const FeatureItemSchema = new Schema(
   {
     title: { type: String, default: "" },

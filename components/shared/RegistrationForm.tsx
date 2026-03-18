@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import { useUploadThing } from "@/lib/uploadthing";
 import { FileUploader } from "@/components/shared/FileUploader";
 import toast from "react-hot-toast";
@@ -39,7 +39,7 @@ const registrationFormSchema = z.object({
 });
 
 type RegistrationFormProps = {
-  course: ICourse;
+  course: ICourseSafe;
   email: string;
 };
 

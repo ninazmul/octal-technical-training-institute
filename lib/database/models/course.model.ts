@@ -42,6 +42,30 @@ export interface ICourse extends Document {
   updatedAt: Date;
 }
 
+export interface ICourseSafe {
+  _id: string;
+  title: string;
+  category: string;
+  mode: "Online" | "Offline";
+  photo: string;
+  description: string;
+  prerequisites?: string[];
+  modules: { title: string; content: string }[];
+  price: number;
+  discountPrice?: number;
+  seats?: number;
+  isActive?: boolean;
+  batch?: string;
+  sku?: string;
+  courseStartDate?: string;
+  registrationDeadline?: string;
+  schedule?: { day?: string; start?: string; end?: string }[];
+  duration?: string;
+  sessions?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // -------------------- Schema --------------------
 const CourseSchema = new Schema<ICourse>(
   {

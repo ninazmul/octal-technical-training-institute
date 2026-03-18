@@ -17,8 +17,8 @@ import {
   Printer,
 } from "lucide-react";
 import { SerializedRegistration } from "@/lib/actions/registration.actions";
-import { ICourse } from "@/lib/database/models/course.model";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 
 export default function RegistrationDetailsClient({
   registration,
@@ -26,8 +26,8 @@ export default function RegistrationDetailsClient({
   settings,
 }: {
   registration: SerializedRegistration;
-  course: ICourse | null;
-  settings: ISetting;
+  course: ICourseSafe | null;
+  settings: ISettingSafe | null;
 }) {
   const handlePrint = () => {
     const win = window.open("", "_blank", "width=900,height=650");
@@ -55,8 +55,8 @@ export default function RegistrationDetailsClient({
       </head>
       <body>
         <header>
-          <img src="${settings.logo || "/assets/images/logo.png"}" alt="Institute Logo"/>
-          <h1>${settings.name || "Training Institute"}</h1>
+          <img src="${settings?.logo || "/assets/images/logo.png"}" alt="Institute Logo"/>
+          <h1>${settings?.name || "Training Institute"}</h1>
           <p><em>Official Registration Record</em></p>
           <hr/>
         </header>
@@ -93,8 +93,8 @@ export default function RegistrationDetailsClient({
         </table>
 
         <footer>
-          Generated on ${new Date().toLocaleDateString()} by ${settings.name || "Training Institute"}.<br/>
-          Contact: ${settings.email || "info@example.com"} | ${settings.phoneNumber || "N/A"}<br/>
+          Generated on ${new Date().toLocaleDateString()} by ${settings?.name || "Training Institute"}.<br/>
+          Contact: ${settings?.email || "info@example.com"} | ${settings?.phoneNumber || "N/A"}<br/>
         </footer>
       </body>
     </html>

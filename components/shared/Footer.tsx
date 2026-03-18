@@ -1,6 +1,6 @@
 "use client";
 
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin } from "lucide-react";
@@ -14,7 +14,7 @@ import Link from "next/link";
 const currentYear = new Date().getFullYear();
 
 const Footer = () => {
-  const [setting, setSetting] = useState<ISetting | null>(null);
+  const [setting, setSetting] = useState<ISettingSafe | null>(null);
   const themeColor = setting?.theme || "#0055CE";
 
   useEffect(() => {

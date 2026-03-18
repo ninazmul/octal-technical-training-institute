@@ -17,7 +17,7 @@ import * as z from "zod";
 import { useUploadThing } from "@/lib/uploadthing";
 import { FileUploader } from "@/components/shared/FileUploader";
 import { createCourse, updateCourse } from "@/lib/actions/course.actions";
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { RichTextEditor } from "@/components/shared/RichTextEditor";
@@ -61,7 +61,7 @@ const courseFormSchema = z.object({
 
 type CourseFormProps = {
   type: "Create" | "Update";
-  course?: ICourse & { source?: string };
+  course?: ICourseSafe & { source?: string };
   courseId?: string;
 };
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getSetting } from "@/lib/actions";
 import Image from "next/image";
 import { CourseLink } from "@/components/shared/CourseLink";
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import { getCourses } from "@/lib/actions/course.actions";
 
 type TabKey = "all" | "upcoming" | "ongoing" | "old";
@@ -12,7 +12,7 @@ type TabKey = "all" | "upcoming" | "ongoing" | "old";
 export default function CoursesPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("ongoing");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [courses, setCourses] = useState<ICourseSafe[]>([]);
   const [themeColor, setThemeColor] = useState("#0055CE");
 
   const categories: string[] = [

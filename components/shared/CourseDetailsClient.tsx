@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,7 +15,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function CourseDetailsClient({ course }: { course: ICourse }) {
+export default function CourseDetailsClient({
+  course,
+}: {
+  course: ICourseSafe;
+}) {
   return (
     <main className="w-full max-w-7xl mx-auto py-12 px-6 md:px-12">
       <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-12">

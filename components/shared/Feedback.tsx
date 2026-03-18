@@ -1,12 +1,12 @@
 "use client";
 
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-function Feedback({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#0055CE";
+function Feedback({ setting }: { setting: ISettingSafe | null }) {
+  const themeColor = setting?.theme || "#0055CE";
 
   return (
     <main className="relative w-full py-12 md:py-20 flex flex-col items-center justify-center text-center px-6 md:px-12">
@@ -26,7 +26,7 @@ function Feedback({ setting }: { setting: ISetting }) {
             color: "#000000",
           }}
         >
-          {setting.testimonials?.badge}
+          {setting?.testimonials?.badge}
         </div>
 
         {/* Title */}
@@ -34,18 +34,18 @@ function Feedback({ setting }: { setting: ISetting }) {
           className="text-3xl md:text-5xl font-bold"
           style={{ color: themeColor }}
         >
-          {setting.testimonials?.title}
+          {setting?.testimonials?.title}
         </h2>
 
         {/* Description */}
-        {setting.testimonials?.description && (
+        {setting?.testimonials?.description && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="max-w-3xl text-gray-600 text-lg md:text-xl"
             dangerouslySetInnerHTML={{
-              __html: setting.testimonials.description,
+              __html: setting?.testimonials.description,
             }}
           />
         )}
@@ -63,7 +63,7 @@ function Feedback({ setting }: { setting: ISetting }) {
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalEnrollment}+
+            {setting?.testimonials?.totalEnrollment}+
           </p>
           <p className="text-xs md:text-sm">সর্বমোট এনরোলমেন্ট</p>
         </div>
@@ -72,7 +72,7 @@ function Feedback({ setting }: { setting: ISetting }) {
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalSucceededStudents}%
+            {setting?.testimonials?.totalSucceededStudents}%
           </p>
           <p className="text-xs md:text-sm">সফল শিক্ষার্থী</p>
         </div>
@@ -81,7 +81,7 @@ function Feedback({ setting }: { setting: ISetting }) {
             style={{ color: themeColor }}
             className="text-2xl md:text-4xl font-bold"
           >
-            {setting.testimonials?.totalIndustryExperts}+
+            {setting?.testimonials?.totalIndustryExperts}+
           </p>
           <p className="text-xs md:text-sm">ইন্ডাস্ট্রি এক্সপার্টস</p>
         </div>
@@ -89,7 +89,7 @@ function Feedback({ setting }: { setting: ISetting }) {
 
       {/* Feedback Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-6xl">
-        {setting.testimonials?.feedbacks?.map((feedback, index) => {
+        {setting?.testimonials?.feedbacks?.map((feedback, index) => {
           const firstLetter = feedback.name?.charAt(0).toUpperCase() || "?";
 
           return (

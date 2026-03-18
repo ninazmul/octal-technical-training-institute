@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import Image from "next/image";
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import { searchCourses } from "@/lib/actions/course.actions";
 import { CourseLink } from "./CourseLink";
 
@@ -26,7 +26,7 @@ export default function SearchDrawer({
   headerHeight,
 }: SearchDrawerProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ICourse[]>([]);
+  const [results, setResults] = useState<ICourseSafe[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

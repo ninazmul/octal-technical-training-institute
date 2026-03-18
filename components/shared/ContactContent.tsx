@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
 import {
   Mail,
@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-export default function ContactContent({ settings }: { settings: ISetting }) {
-  const themeColor = settings.theme || "#0055CE";
+export default function ContactContent({ settings }: { settings: ISettingSafe | null }) {
+  const themeColor = settings?.theme || "#0055CE";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -102,7 +102,7 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
             </h2>
 
             <div className="space-y-6 text-gray-700 dark:text-gray-300">
-              {settings.email && (
+              {settings?.email && (
                 <div className="flex items-start gap-4">
                   <div
                     className="p-3 rounded-lg flex-shrink-0"
@@ -112,12 +112,12 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium break-words">{settings.email}</p>
+                    <p className="font-medium break-words">{settings?.email}</p>
                   </div>
                 </div>
               )}
 
-              {settings.phoneNumber && (
+              {settings?.phoneNumber && (
                 <div className="flex items-start gap-4">
                   <div
                     className="p-3 rounded-lg flex-shrink-0"
@@ -127,12 +127,12 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Phone</p>
-                    <p className="font-medium">{settings.phoneNumber}</p>
+                    <p className="font-medium">{settings?.phoneNumber}</p>
                   </div>
                 </div>
               )}
 
-              {settings.address && (
+              {settings?.address && (
                 <div className="flex items-start gap-4">
                   <div
                     className="p-3 rounded-lg flex-shrink-0"
@@ -142,7 +142,7 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Address</p>
-                    <p className="font-medium">{settings.address}</p>
+                    <p className="font-medium">{settings?.address}</p>
                   </div>
                 </div>
               )}
@@ -158,9 +158,9 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
               </h3>
 
               <div className="flex flex-wrap gap-3">
-                {settings.facebook && (
+                {settings?.facebook && (
                   <a
-                    href={settings.facebook}
+                    href={settings?.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full shadow hover:scale-110 transition w-10 h-10 flex items-center justify-center"
@@ -171,9 +171,9 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </a>
                 )}
 
-                {settings.instagram && (
+                {settings?.instagram && (
                   <a
-                    href={settings.instagram}
+                    href={settings?.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full shadow hover:scale-110 transition w-10 h-10 flex items-center justify-center"
@@ -184,9 +184,9 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </a>
                 )}
 
-                {settings.twitter && (
+                {settings?.twitter && (
                   <a
-                    href={settings.twitter}
+                    href={settings?.twitter}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full shadow hover:scale-110 transition w-10 h-10 flex items-center justify-center"
@@ -197,9 +197,9 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </a>
                 )}
 
-                {settings.youtube && (
+                {settings?.youtube && (
                   <a
-                    href={settings.youtube}
+                    href={settings?.youtube}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full shadow hover:scale-110 transition w-10 h-10 flex items-center justify-center"
@@ -210,9 +210,9 @@ export default function ContactContent({ settings }: { settings: ISetting }) {
                   </a>
                 )}
 
-                {settings.facebookGroup && (
+                {settings?.facebookGroup && (
                   <a
-                    href={settings.facebookGroup}
+                    href={settings?.facebookGroup}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-full shadow hover:scale-110 transition w-10 h-10 flex items-center justify-center"

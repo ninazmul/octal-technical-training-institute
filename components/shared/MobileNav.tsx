@@ -4,13 +4,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { getSetting } from "@/lib/actions/setting.actions";
 import NavItems from "./NavItems";
 
 const MobileNav = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [settings, setSettings] = useState<ISetting | null>(null);
+  const [settings, setSettings] = useState<ISettingSafe | null>(null);
 
   useEffect(() => {
     (async () => {

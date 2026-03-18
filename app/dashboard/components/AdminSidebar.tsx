@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { getSetting } from "@/lib/actions/setting.actions";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import {
   LayoutDashboard,
   Shield,
@@ -59,7 +59,7 @@ const sidebarItems = [
 
 const AdminSidebar = ({ role }: { role?: string }) => {
   const currentPath = usePathname();
-  const [settings, setSettings] = useState<ISetting | null>(null);
+  const [settings, setSettings] = useState<ISettingSafe | null>(null);
 
   useEffect(() => {
     (async () => {

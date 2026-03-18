@@ -24,7 +24,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex min-h-screen flex-col">
       <ScrollHeaderWrapper>
         <div ref={headerRef}>
           <Header openSearch={() => setSearchOpen(true)} />
@@ -32,7 +32,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </ScrollHeaderWrapper>
       <main
         style={{ paddingTop: headerHeight }}
-        className="flex items-center justify-center my-12 md:my-16"
+        className="flex items-center justify-center my-12 md:my-14"
       >
         {children}
       </main>

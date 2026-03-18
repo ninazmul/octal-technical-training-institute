@@ -15,14 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import Image from "next/image";
 import { Switch } from "@/components/ui/switch";
 
-const CourseTable = ({ courses }: { courses: ICourse[] }) => {
-  const [courseList, setCourseList] = useState<ICourse[]>(courses);
+const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
+  const [courseList, setCourseList] = useState<ICourseSafe[]>(courses);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortKey, setSortKey] = useState<keyof ICourse | null>(null);
+  const [sortKey, setSortKey] = useState<keyof ICourseSafe | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -76,7 +76,7 @@ const CourseTable = ({ courses }: { courses: ICourse[] }) => {
     }
   };
 
-  const handleSort = (key: keyof ICourse) => {
+  const handleSort = (key: keyof ICourseSafe) => {
     if (sortKey === key) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
@@ -97,9 +97,7 @@ const CourseTable = ({ courses }: { courses: ICourse[] }) => {
       );
       setCourseList((prev) =>
         prev.map((c) =>
-          c._id.toString() === courseId
-            ? { ...(c.toObject ? c.toObject() : c), isActive: updated.isActive }
-            : c,
+          c._id === courseId ? { ...c, isActive: updated.isActive } : c,
         ),
       );
     } catch {
@@ -120,24 +118,29 @@ const CourseTable = ({ courses }: { courses: ICourse[] }) => {
         <TableHeader>
           <TableRow>
             <TableHead>#</TableHead>
-            {["title", "price", "discountPrice", "seats", "SKU", "isActive"].map(
-              (key) => (
-                <TableHead key={key}>
-                  <div
-                    onClick={() => handleSort(key as keyof ICourse)}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                    {sortKey === key &&
-                      (sortOrder === "asc" ? (
-                        <SortAsc size={16} />
-                      ) : (
-                        <SortDesc size={16} />
-                      ))}
-                  </div>
-                </TableHead>
-              ),
-            )}
+            {[
+              "title",
+              "price",
+              "discountPrice",
+              "seats",
+              "SKU",
+              "isActive",
+            ].map((key) => (
+              <TableHead key={key}>
+                <div
+                  onClick={() => handleSort(key as keyof ICourseSafe)}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                  {sortKey === key &&
+                    (sortOrder === "asc" ? (
+                      <SortAsc size={16} />
+                    ) : (
+                      <SortDesc size={16} />
+                    ))}
+                </div>
+              </TableHead>
+            ))}
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import React, {
   useCallback,
   useEffect,
@@ -12,23 +12,23 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Clock, GraduationCap } from "lucide-react";
 
-function Hero({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#0055CE"; // LMS blue default
+function Hero({ setting }: { setting: ISettingSafe | null }) {
+  const themeColor = setting?.theme || "#0055CE"; // LMS blue default
 
   const startDate = useMemo(
     () =>
-      setting.hero?.offerStartDate
-        ? new Date(setting.hero.offerStartDate)
+      setting?.hero?.offerStartDate
+        ? new Date(setting?.hero.offerStartDate)
         : new Date(),
-    [setting.hero?.offerStartDate],
+    [setting?.hero?.offerStartDate],
   );
 
   const endDate = useMemo(
     () =>
-      setting.hero?.offerEndDate
-        ? new Date(setting.hero.offerEndDate)
+      setting?.hero?.offerEndDate
+        ? new Date(setting?.hero.offerEndDate)
         : new Date(),
-    [setting.hero?.offerEndDate],
+    [setting?.hero?.offerEndDate],
   );
 
   const calculateTimeLeft = useCallback((end: Date) => {
@@ -74,8 +74,8 @@ function Hero({ setting }: { setting: ISetting }) {
   );
 
   const titleParts = useMemo(() => {
-    return setting.hero?.title?.split(/[.,]/).filter(Boolean) || [];
-  }, [setting.hero?.title]);
+    return setting?.hero?.title?.split(/[.,]/).filter(Boolean) || [];
+  }, [setting?.hero?.title]);
 
   return (
     <section className="relative w-full bg-gradient-to-r from-blue-50 to-indigo-100 overflow-hidden">
@@ -120,10 +120,10 @@ function Hero({ setting }: { setting: ISetting }) {
             </h1>
 
             {/* Description */}
-            {setting.hero?.description && (
+            {setting?.hero?.description && (
               <div
                 className="text-gray-700 text-base md:text-lg lg:text-xl max-w-xl mx-auto lg:mx-0"
-                dangerouslySetInnerHTML={{ __html: setting.hero.description }}
+                dangerouslySetInnerHTML={{ __html: setting?.hero.description }}
               />
             )}
 
@@ -162,7 +162,7 @@ function Hero({ setting }: { setting: ISetting }) {
 
             {/* Contact */}
             <div className="text-gray-800 text-sm font-medium mb-6">
-              সাহায্য দরকার? কল করুন: {setting.phoneNumber}
+              সাহায্য দরকার? কল করুন: {setting?.phoneNumber}
             </div>
           </motion.div>
 
@@ -174,7 +174,7 @@ function Hero({ setting }: { setting: ISetting }) {
             className="relative w-full lg:w-1/2 h-[300px] md:h-[500px]"
           >
             <Image
-              src={setting.hero?.image || "/assets/images/logo.png"}
+              src={setting?.hero?.image || "/assets/images/logo.png"}
               alt="Learning Hero"
               fill
               className="object-contain"

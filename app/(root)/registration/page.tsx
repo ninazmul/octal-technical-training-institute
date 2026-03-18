@@ -9,6 +9,7 @@ import { getUserEmailById } from "@/lib/actions/user.actions";
 import { ICourse } from "@/lib/database/models/course.model";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getSetting } from "@/lib/actions";
 
 function normalizeRegistration(r: SerializedRegistration) {
   const mapStr = (v: string | null) => (v == null ? undefined : v);
@@ -28,6 +29,9 @@ function normalizeRegistration(r: SerializedRegistration) {
 }
 
 const Page = async () => {
+  const settings = await getSetting();
+  const themeColor = settings?.theme || "#0055CE";
+
   const { sessionClaims } = await auth();
   const userId = sessionClaims?.userId as string;
   const email = await getUserEmailById(userId);
@@ -55,16 +59,29 @@ const Page = async () => {
   await Promise.all(
     registrations.map(async (r) => {
       if (r.courseId && !coursesMap[r.courseId]) {
-        const course = await getCourseById(r.courseId);
+        const course = (await getCourseById(r.courseId)) as ICourse | null;
         coursesMap[r.courseId] = course;
       }
     }),
   );
 
   return (
-    <section className="w-full py-8 px-6 md:px-12 max-w-7xl mx-auto">
+    <section className="w-full py-16 min-h-screen px-6 md:px-12 max-w-7xl mx-auto">
       <div className="wrapper">
-        <h3 className="text-3xl font-bold mb-6">My Registrations</h3>
+        {/* Page Title */}
+        <div className="text-center mb-12 md:mb-16">
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight"
+            style={{ color: themeColor }}
+          >
+            Your Enrollment Overview
+          </h1>
+
+          <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto text-sm sm:text-base">
+            Track your course enrollments, monitor payment status, and access
+            your learning details all in one place.
+          </p>
+        </div>
 
         {registrations.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center border rounded-xl p-10 bg-gray-50">

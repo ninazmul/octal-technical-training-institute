@@ -1,8 +1,8 @@
 "use server";
 
 import { connectToDatabase } from "../database";
-import { handleError } from "../utils";
-import Course, { ICourse } from "../database/models/course.model";
+import { handleError, sanitizeCourse, sanitizeCourses } from "../utils";
+import Course, { ICourse, ICourseSafe } from "../database/models/course.model";
 import { unstable_cache } from "next/cache";
 
 // -------------------- Params --------------------
@@ -49,7 +49,7 @@ function classifyCourse(
 export async function getCourses(options: {
   tab?: "all" | "upcoming" | "ongoing" | "old";
   category?: string;
-}): Promise<ICourse[]> {
+}): Promise<ICourseSafe[]> {
   try {
     await connectToDatabase();
     const courses = await Course.find({ isActive: true }).lean<ICourse[]>();
@@ -70,7 +70,7 @@ export async function getCourses(options: {
       );
     }
 
-    return filtered;
+    return sanitizeCourses(filtered);
   } catch (error) {
     handleError(error);
     return [];
@@ -80,11 +80,11 @@ export async function getCourses(options: {
 // -------------------- Other CRUD actions remain unchanged --------------------
 export const createCourse = async (
   data: CourseParams,
-): Promise<ICourse | undefined> => {
+): Promise<ICourseSafe | undefined> => {
   try {
     await connectToDatabase();
     const newCourse = await Course.create(data);
-    return newCourse.toObject() as ICourse;
+    return newCourse ? sanitizeCourse(newCourse) : undefined;
   } catch (error) {
     handleError(error);
   }
@@ -92,7 +92,7 @@ export const createCourse = async (
 
 export const getCourseById = async (
   courseId: string,
-): Promise<ICourse | null> => {
+): Promise<ICourseSafe | null> => {
   return unstable_cache(
     async () => {
       await connectToDatabase();
@@ -105,7 +105,7 @@ export const getCourseById = async (
         `,
         )
         .lean<ICourse>();
-      return course || null;
+      return course ? sanitizeCourse(course) : null;
     },
     ["course-by-id", courseId],
     { revalidate: 600 },
@@ -113,24 +113,24 @@ export const getCourseById = async (
 };
 
 // -------------------- SEARCH --------------------
-export const searchCourses = async (query: string): Promise<ICourse[]> => {
+export const searchCourses = async (query: string): Promise<ICourseSafe[]> => {
   if (!query.trim()) return [];
 
   try {
     await connectToDatabase();
     const regex = new RegExp(query, "i");
 
-    const courses = await Course.find({ 
+    const courses = await Course.find({
       isActive: true, // only search active courses
-      title: regex 
+      title: regex,
     })
       .limit(10)
       .select(
-        "title category photo price discountPrice seats duration courseStartDate registrationDeadline sku batch"
+        "title category photo price discountPrice seats duration courseStartDate registrationDeadline sku batch",
       )
       .lean<ICourse[]>();
 
-    return courses;
+    return courses ? sanitizeCourses(courses) : [];
   } catch (error) {
     handleError(error);
     return [];

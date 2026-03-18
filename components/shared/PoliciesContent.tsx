@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
@@ -19,7 +19,7 @@ type NavItem = {
   id: string;
 };
 
-export default function PoliciesContent({ settings }: { settings: ISetting }) {
+export default function PoliciesContent({ settings }: { settings: ISettingSafe }) {
   const themeColor = settings.theme || "#0055CE";
   const [activeSection, setActiveSection] = useState<string>("");
 

@@ -1,12 +1,12 @@
 "use client";
 
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Facebook, Linkedin, Twitter, Globe } from "lucide-react";
 
-function OurMentors({ setting }: { setting: ISetting }) {
-  const themeColor = setting.theme || "#0055CE";
+function OurMentors({ setting }: { setting: ISettingSafe | null }) {
+  const themeColor = setting?.theme || "#0055CE";
 
   return (
     <main className="relative w-full py-12 md:py-20 flex flex-col items-center justify-center text-center px-6 md:px-12 bg-gray-100">
@@ -26,7 +26,7 @@ function OurMentors({ setting }: { setting: ISetting }) {
             color: "#000000",
           }}
         >
-          {setting.ourMentors?.badge}
+          {setting?.ourMentors?.badge}
         </div>
 
         {/* Title */}
@@ -34,18 +34,18 @@ function OurMentors({ setting }: { setting: ISetting }) {
           className="text-3xl md:text-5xl font-bold"
           style={{ color: themeColor }}
         >
-          {setting.ourMentors?.title}
+          {setting?.ourMentors?.title}
         </h2>
 
         {/* Description */}
-        {setting.ourMentors?.description && (
+        {setting?.ourMentors?.description && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="max-w-3xl text-gray-600 text-lg md:text-xl"
             dangerouslySetInnerHTML={{
-              __html: setting.ourMentors.description,
+              __html: setting?.ourMentors.description,
             }}
           />
         )}
@@ -53,7 +53,7 @@ function OurMentors({ setting }: { setting: ISetting }) {
 
       {/* Mentors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl mt-10">
-        {setting.ourMentors?.mentors?.map((mentor, index) => {
+        {setting?.ourMentors?.mentors?.map((mentor, index) => {
           const firstLetter = mentor.name?.charAt(0).toUpperCase() || "?";
 
           return (

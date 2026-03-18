@@ -1,6 +1,6 @@
 "use client";
 
-import { ICourse } from "@/lib/database/models/course.model";
+import { ICourseSafe } from "@/lib/database/models/course.model";
 import RegistrationForm from "./RegistrationForm";
 import { motion } from "framer-motion";
 import {
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 type CheckoutProps = {
-  course: ICourse;
+  course: ICourseSafe;
   email: string;
 };
 

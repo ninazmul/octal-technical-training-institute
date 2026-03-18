@@ -9,7 +9,7 @@ import { isAdmin } from "@/lib/actions/admin.actions";
 
 import React, { useEffect, useState } from "react";
 import { getSetting } from "@/lib/actions/setting.actions";
-import { ISetting } from "@/lib/database/models/setting.model";
+import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { FaFacebookF, FaMagnifyingGlass, FaUsers } from "react-icons/fa6";
 import NavItems from "./NavItems";
 import MobileNav from "./MobileNav";
@@ -24,7 +24,7 @@ export default function Header({ openSearch }: HeaderProps) {
   const { user } = useUser();
 
   const [adminStatus, setAdminStatus] = useState(false);
-  const [settings, setSettings] = useState<ISetting | null>(null);
+  const [settings, setSettings] = useState<ISettingSafe | null>(null);
   const themeColor = settings?.theme || "#0055CE";
 
   // Fetch settings once
