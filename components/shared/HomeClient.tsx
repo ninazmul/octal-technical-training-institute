@@ -10,18 +10,23 @@ import { ICourseSafe } from "@/lib/database/models/course.model";
 import CoursesContent from "./CoursesContent";
 import Popup from "./Popup";
 import OurPartners from "./OurPartners";
+import { INotice } from "@/lib/database/models/notice.model";
+import NoticeHeading from "./NoticeHeading";
 
 export default function Home({
   setting,
   courses,
+  notices,
 }: {
   setting: ISettingSafe | null;
   courses?: ICourseSafe[];
+  notices?: INotice[];
 }) {
   return (
     <main>
       <Popup setting={setting} />
       <Hero setting={setting} />
+      <NoticeHeading setting={setting} notices={notices} />
       <section id="courses">
         <CoursesContent setting={setting} courses={courses} />
       </section>
