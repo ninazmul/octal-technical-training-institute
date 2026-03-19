@@ -144,6 +144,9 @@ const Footer = () => {
               <Link href={"/success-stories"} className="opacity-90">
                 সাফল্যের গল্প
               </Link>
+              <Link href={"/notices"} className="opacity-90">
+                নোটিশ সেকশন
+              </Link>
               <Link href={"/policies"} className="opacity-90">
                 নীতিমালা
               </Link>
