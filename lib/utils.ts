@@ -188,11 +188,11 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
           offerEndDate: setting.hero.offerEndDate ?? "",
         }
       : undefined,
-    popup: setting.hero
+    popup: setting.popup
       ? {
-          image: setting.hero.image ?? "",
-          offerStartDate: setting.hero.offerStartDate ?? "",
-          offerEndDate: setting.hero.offerEndDate ?? "",
+          image: setting.popup.image ?? "",
+          offerStartDate: setting.popup.offerStartDate ?? "",
+          offerEndDate: setting.popup.offerEndDate ?? "",
         }
       : undefined,
     features: setting.features

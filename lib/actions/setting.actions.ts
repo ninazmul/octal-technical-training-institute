@@ -83,7 +83,7 @@ export const getSetting = async (): Promise<ISettingSafe | null> => {
     const now = Date.now();
 
     if (cachedSetting && now - cacheTimestamp < CACHE_TTL) {
-      return cachedSetting;
+      return JSON.parse(JSON.stringify(cachedSetting));
     }
 
     await connectToDatabase();
@@ -97,7 +97,7 @@ export const getSetting = async (): Promise<ISettingSafe | null> => {
     cachedSetting = sanitizeSetting(setting);
     cacheTimestamp = now;
 
-    return cachedSetting;
+    return JSON.parse(JSON.stringify(cachedSetting));
   } catch (error) {
     handleError(error);
     return null; // matches Promise<ISettingSafe | null>
@@ -127,10 +127,12 @@ export const upsertSetting = async (
     }
 
     // setting here is a plain object, not ISetting
-    cachedSetting = sanitizeSetting(setting as unknown as ISetting);
+    cachedSetting = JSON.parse(
+      JSON.stringify(sanitizeSetting(setting as unknown as ISetting)),
+    );
     cacheTimestamp = Date.now();
 
-    return cachedSetting;
+    return JSON.parse(JSON.stringify(cachedSetting));
   } catch (error) {
     handleError(error);
     return null;

@@ -673,7 +673,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
           </AccordionItem>
 
           {/* ===== Popup Section ===== */}
-          <AccordionItem value="pop">
+          <AccordionItem value="popup">
             <AccordionTrigger>Popup Section</AccordionTrigger>
             <AccordionContent className="space-y-4">
               {(["image"] as const).map((key) => (
@@ -1365,7 +1365,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   <FormField
                     key={key}
                     control={form.control}
-                    name={`testimonials.${key}` as keyof SettingFormValues}
+                    name={`partners.${key}` as keyof SettingFormValues}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{key}</FormLabel>
@@ -1451,7 +1451,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Customer Name"
+                                    placeholder="Company Name"
                                     value={field.value ?? ""}
                                     onBlur={saveField}
                                   />
