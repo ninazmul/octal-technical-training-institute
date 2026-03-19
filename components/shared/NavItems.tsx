@@ -21,6 +21,7 @@ const NavItems = ({ onItemSelected }: NavItemsProps) => {
   const links = [
     { label: "আমাদের সম্পর্কে", route: "/about" },
     dynamicLink,
+    { label: "নোটিশ", route: "/notices" },
     { label: "যোগাযোগ", route: "/contact" },
   ];
 
