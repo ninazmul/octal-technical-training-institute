@@ -18,6 +18,7 @@ import {
   Settings,
   BookOpen,
   Users,
+  File,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,6 +43,12 @@ const sidebarItems = [
     url: "/dashboard/registrations",
     icon: Users,
     roles: ["admin", "moderator"],
+  },
+  {
+    title: "Notices",
+    url: "/dashboard/notices",
+    icon: File,
+    roles: ["admin"],
   },
   {
     title: "Admins",

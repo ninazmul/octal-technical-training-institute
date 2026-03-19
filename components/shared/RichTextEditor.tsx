@@ -41,7 +41,7 @@ type Props = {
 };
 
 export const RichTextEditor = ({ value, onChange }: Props) => {
-  const { startUpload } = useUploadThing("imageUploader");
+  const { startUpload } = useUploadThing("mediaUploader");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const editor = useEditor({
@@ -211,10 +211,10 @@ export const RichTextEditor = ({ value, onChange }: Props) => {
             align === "left"
               ? AlignLeft
               : align === "center"
-              ? AlignCenter
-              : align === "right"
-              ? AlignRight
-              : AlignJustify;
+                ? AlignCenter
+                : align === "right"
+                  ? AlignRight
+                  : AlignJustify;
           return (
             <button
               key={align}

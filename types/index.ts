@@ -171,3 +171,9 @@ export interface SettingParams {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+// ====== Notice PARAMS
+export type NoticeParams = {
+  title: string;
+  file: string;
+};

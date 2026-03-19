@@ -221,7 +221,7 @@ type Props = {
 // ================= Full Setting Form =================
 export default function SettingForm({ initialData, onSubmit }: Props) {
   const router = useRouter();
-  const { startUpload } = useUploadThing("imageUploader");
+  const { startUpload } = useUploadThing("mediaUploader");
 
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),

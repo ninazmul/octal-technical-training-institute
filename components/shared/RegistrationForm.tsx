@@ -48,7 +48,7 @@ export default function RegistrationForm({
   email,
 }: RegistrationFormProps) {
   // const router = useRouter();
-  const { startUpload } = useUploadThing("imageUploader");
+  const { startUpload } = useUploadThing("mediaUploader");
 
   const form = useForm<z.infer<typeof registrationFormSchema>>({
     resolver: zodResolver(registrationFormSchema),

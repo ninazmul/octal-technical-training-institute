@@ -67,7 +67,7 @@ type CourseFormProps = {
 
 const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
   const router = useRouter();
-  const { startUpload } = useUploadThing("imageUploader");
+  const { startUpload } = useUploadThing("mediaUploader");
 
   const initialValues: z.infer<typeof courseFormSchema> = {
     title: course?.title || "",
