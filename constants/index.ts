@@ -4,12 +4,12 @@ export const headerLinks = [
     route: "/about",
   },
   {
-    label: "যোগাযোগ",
-    route: "/contact",
+    label: "কোর্স সমূহ",
+    route: "/registration",
   },
   {
-    label: "আমার ক্লাসগুলো",
-    route: "/registration",
+    label: "যোগাযোগ",
+    route: "/contact",
   },
 ];
 
