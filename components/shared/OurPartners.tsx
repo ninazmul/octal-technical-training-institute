@@ -39,12 +39,13 @@ function OurPartners({ setting }: { setting: ISettingSafe | null }) {
       </div>
 
       {/* Logos Auto-Scroll Section */}
-      <div className="relative w-full max-w-7xl overflow-hidden mt-10">
+      <div className="relative w-full max-w-7xl mt-10 overflow-hidden">
         <Marquee
           gradient={false} // no fade edges
           speed={40} // adjust scroll speed
-          pauseOnHover // optional: pause when hovered
+          pauseOnHover // pause when hovered
           autoFill
+          className="overflow-hidden" // ensure no scrollbars
         >
           {logos.map((logo, index) => (
             <div

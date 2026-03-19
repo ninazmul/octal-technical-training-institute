@@ -27,7 +27,7 @@ function NoticeHeading({
               color: "#000000",
             }}
           >
-            Latest Notices
+            নোটিশঃ
           </div>
 
           {/* Scrollable notices */}
