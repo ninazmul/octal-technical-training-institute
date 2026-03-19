@@ -8,6 +8,7 @@ import FAQ from "./FAQ";
 import OurMentors from "./OurMentors";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import CoursesContent from "./CoursesContent";
+import Popup from "./Popup";
 
 export default function Home({
   setting,
@@ -18,6 +19,7 @@ export default function Home({
 }) {
   return (
     <main>
+      <Popup setting={setting} />
       <Hero setting={setting} />
       <section id="courses">
         <CoursesContent setting={setting} courses={courses} />
