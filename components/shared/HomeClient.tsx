@@ -9,6 +9,7 @@ import OurMentors from "./OurMentors";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import CoursesContent from "./CoursesContent";
 import Popup from "./Popup";
+import OurPartners from "./OurPartners";
 
 export default function Home({
   setting,
@@ -26,6 +27,7 @@ export default function Home({
       </section>
       <LMSFeatures setting={setting} />
       <OurMentors setting={setting} />
+      <OurPartners setting={setting} />
       <Feedback setting={setting} />
       <FAQ setting={setting} />
     </main>

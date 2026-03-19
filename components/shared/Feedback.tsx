@@ -88,7 +88,7 @@ function Feedback({ setting }: { setting: ISettingSafe | null }) {
       </motion.div>
 
       {/* Feedback Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-6xl">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl">
         {setting?.testimonials?.feedbacks?.map((feedback, index) => {
           const firstLetter = feedback.name?.charAt(0).toUpperCase() || "?";
 
