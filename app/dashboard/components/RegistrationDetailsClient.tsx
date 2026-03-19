@@ -88,7 +88,6 @@ export default function RegistrationDetailsClient({
           <tr><th>Start Date</th><td>${course?.courseStartDate || "TBA"}</td></tr>
           <tr><th>Duration</th><td>${course?.duration || "N/A"}</td></tr>
           <tr><th>Sessions</th><td>${course?.sessions || "N/A"}</td></tr>
-          <tr><th>Seats</th><td>${Number(course?.seats) || "0"}</td></tr>
           <tr><th>Registration Deadline</th><td>${course?.registrationDeadline || "Not specified"}</td></tr>
         </table>
 

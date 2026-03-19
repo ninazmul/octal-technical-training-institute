@@ -27,7 +27,6 @@ import Link from "next/link";
 export type RegistrationItem = {
   _id: string;
   englishName?: string;
-  bengaliName?: string;
   fathersName?: string;
   mothersName?: string;
   gender?: string;
@@ -439,10 +438,6 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   <strong>Name:</strong> {viewModalData.englishName ?? "—"}
                 </p>
                 <p>
-                  <strong>Bengali Name:</strong>{" "}
-                  {viewModalData.bengaliName ?? "—"}
-                </p>
-                <p>
                   <strong>Email:</strong> {viewModalData.email ?? "—"}
                 </p>
                 <p>
@@ -640,16 +635,6 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                     </label>
                     <input
                       {...methods.register("englishName")}
-                      className="border rounded px-2 py-1 w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">
-                      Bengali Name
-                    </label>
-                    <input
-                      {...methods.register("bengaliName")}
                       className="border rounded px-2 py-1 w-full"
                     />
                   </div>

@@ -61,6 +61,18 @@ export interface IFeatures {
   items?: IFeatureItem[];
 }
 
+export interface ILogo {
+  name?: string;
+  photo?: string;
+}
+
+export interface IPartners {
+  badge?: string;
+  title?: string;
+  description?: string;
+  logos?: ILogo[];
+}
+
 export interface ISetting extends Document {
   _id: Types.ObjectId;
 
@@ -96,6 +108,13 @@ export interface ISetting extends Document {
     offerEndDate?: string;
   };
 
+  // PopUp Section
+  popup?: {
+    image?: string;
+    offerStartDate?: string;
+    offerEndDate?: string;
+  };
+
   // Features (single object with arrays inside)
   features?: IFeatures;
 
@@ -104,6 +123,9 @@ export interface ISetting extends Document {
 
   // Our Mentors (single object with mentors array)
   ourMentors?: IOurMentors;
+
+  // Our Mentors (single object with mentors array)
+  partners?: IPartners;
 
   // FAQs (single object with items array)
   faqs?: IFaq;
@@ -142,6 +164,13 @@ export interface ISettingSafe {
   hero?: {
     title?: string;
     description?: string;
+    image?: string;
+    offerStartDate?: string;
+    offerEndDate?: string;
+  };
+
+  // PopUp Section
+  popup?: {
     image?: string;
     offerStartDate?: string;
     offerEndDate?: string;
@@ -190,6 +219,17 @@ export interface ISettingSafe {
         twitter?: string;
         other?: string;
       };
+    }[];
+  };
+
+  // Partners
+  partners?: {
+    badge?: string;
+    title?: string;
+    description?: string;
+    logos?: {
+      name?: string;
+      photo?: string;
     }[];
   };
 
@@ -247,6 +287,12 @@ const SettingSchema = new Schema<ISetting>(
       offerEndDate: { type: String, default: "" },
     },
 
+    popup: {
+      image: { type: String },
+      offerStartDate: { type: String, default: "" },
+      offerEndDate: { type: String, default: "" },
+    },
+
     features: {
       badge: { type: String, default: "" },
       title: { type: String, default: "" },
@@ -290,6 +336,18 @@ const SettingSchema = new Schema<ISetting>(
             twitter: { type: String, default: "" },
             other: { type: String, default: "" },
           },
+        },
+      ],
+    },
+
+    partners: {
+      badge: { type: String, default: "" },
+      title: { type: String, default: "" },
+      description: { type: String, default: "" },
+      logos: [
+        {
+          name: { type: String, default: "" },
+          photo: { type: String, default: "" },
         },
       ],
     },

@@ -92,6 +92,12 @@ export interface Hero {
   offerEndDate?: string;
 }
 
+export interface Popup {
+  image?: string;
+  offerStartDate?: string;
+  offerEndDate?: string;
+}
+
 export interface IFeatureItem {
   title?: string;
   description?: string;
@@ -105,12 +111,16 @@ export interface IFeatures {
   items?: IFeatureItem[];
 }
 
-export interface HowToIdentify {
+export interface ILogo {
+  name?: string;
+  photo?: string;
+}
+
+export interface IPartners {
   badge?: string;
   title?: string;
   description?: string;
-  image?: string;
-  features?: string[];
+  logos?: ILogo[];
 }
 
 export interface SettingParams {
@@ -140,6 +150,9 @@ export interface SettingParams {
   // ===== Hero Section =====
   hero?: Hero;
 
+  // ===== Popup Section =====
+  popup?: Popup;
+
   // ===== Features =====
   features?: IFeatures; // single object
 
@@ -148,6 +161,9 @@ export interface SettingParams {
 
   // ===== Our Mentors =====
   ourMentors?: OurMentors; // single object with mentors array
+
+  // ===== Partners =====
+  partners?: IPartners; // single object with mentors array
 
   // ===== FAQs =====
   faqs?: Faq; // single object with items array

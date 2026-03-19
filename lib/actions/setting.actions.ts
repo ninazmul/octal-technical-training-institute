@@ -54,6 +54,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   termsOfService: "",
   privacyPolicy: "",
   hero: { title: "", description: "", image: "" },
+  popup: { image: "" },
   features: { badge: "", title: "", description: "", items: [] },
   testimonials: {
     badge: "",
@@ -65,6 +66,12 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     feedbacks: [],
   },
   ourMentors: { badge: "", title: "", description: "", mentors: [] },
+  partners: {
+    badge: "",
+    title: "",
+    description: "",
+    logos: [],
+  },
   faqs: { badge: "", title: "", description: "", items: [] },
   createdAt: new Date(),
   updatedAt: new Date(),

@@ -77,6 +77,14 @@ export const settingSchema = z.object({
     })
     .optional(),
 
+  popup: z
+    .object({
+      image: optionalString,
+      offerStartDate: optionalString,
+      offerEndDate: optionalString,
+    })
+    .optional(),
+
   features: z
     .object({
       badge: optionalString,
@@ -159,6 +167,28 @@ export const settingSchema = z.object({
       mentors: [],
     }),
 
+  partners: z
+    .object({
+      badge: optionalString,
+      title: optionalString,
+      description: optionalString,
+
+      logos: z
+        .array(
+          z.object({
+            name: optionalString,
+            photo: optionalString,
+          }),
+        )
+        .default([]),
+    })
+    .default({
+      badge: "",
+      title: "",
+      description: "",
+      logos: [],
+    }),
+
   faqs: z
     .object({
       badge: optionalString,
@@ -226,6 +256,16 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   } = useFieldArray({
     control: form.control,
     name: "ourMentors.mentors",
+  });
+
+  // Partners.logos array
+  const {
+    fields: logoFields,
+    append: appendLogo,
+    remove: removeLogo,
+  } = useFieldArray({
+    control: form.control,
+    name: "partners.logos",
   });
 
   // FAQs.items array
@@ -605,6 +645,73 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   key={key}
                   control={form.control}
                   name={`hero.${key}`}
+                  render={({ field }) => {
+                    // Convert string to yyyy-MM-dd format for date input
+                    const dateValue =
+                      field.value && !isNaN(Date.parse(field.value))
+                        ? new Date(field.value).toISOString().split("T")[0]
+                        : "";
+
+                    return (
+                      <FormItem>
+                        <FormLabel>{key}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={dateValue}
+                            onChange={(e) => field.onChange(e.target.value)} // Keep string
+                            onBlur={saveField}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ===== Popup Section ===== */}
+          <AccordionItem value="pop">
+            <AccordionTrigger>Popup Section</AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              {(["image"] as const).map((key) => (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={`popup.${key}`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{key}</FormLabel>
+                      <FormControl>
+                        <FileUploader
+                          imageUrl={field.value || ""}
+                          onFieldChange={async (_blobUrl, files) => {
+                            if (files?.length) {
+                              const uploaded = await startUpload(files);
+                              if (uploaded?.[0]) {
+                                form.setValue(`popup.${key}`, uploaded[0].url, {
+                                  shouldValidate: true,
+                                });
+                                saveField();
+                              }
+                            }
+                          }}
+                          setFiles={() => {}}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+
+              {(["offerStartDate", "offerEndDate"] as const).map((key) => (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={`popup.${key}`}
                   render={({ field }) => {
                     // Convert string to yyyy-MM-dd format for date input
                     const dateValue =
@@ -1242,6 +1349,144 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     className="btn btn-sm text-green-600"
                   >
                     Add Mentor
+                  </button>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ===== Partners ===== */}
+          <AccordionItem value="partners">
+            <AccordionTrigger>Partners</AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              <div className="border p-4 rounded space-y-2">
+                {/* Badge, Title, Description */}
+                {["badge", "title", "description"].map((key) => (
+                  <FormField
+                    key={key}
+                    control={form.control}
+                    name={`testimonials.${key}` as keyof SettingFormValues}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{key}</FormLabel>
+                        <FormControl>
+                          {key === "description" ? (
+                            <RichTextEditor
+                              value={
+                                typeof field.value === "string"
+                                  ? field.value
+                                  : ""
+                              }
+                              onChange={(val) => {
+                                field.onChange(val);
+                                saveField();
+                              }}
+                            />
+                          ) : (
+                            <Input
+                              {...field}
+                              value={
+                                typeof field.value === "string"
+                                  ? field.value
+                                  : ""
+                              }
+                              onBlur={saveField}
+                            />
+                          )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+
+                {/* Logos */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg">Logos</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {logoFields.map((logo, fIndex) => (
+                      <div
+                        key={logo.id}
+                        className="border p-4 rounded space-y-4 bg-gray-50"
+                      >
+                        {/* Photo */}
+                        <FormField
+                          control={form.control}
+                          name={`partners.logos.${fIndex}.photo`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Photo</FormLabel>
+                              <FormControl>
+                                <FileUploader
+                                  imageUrl={field.value || ""}
+                                  onFieldChange={async (_blobUrl, files) => {
+                                    if (files?.length) {
+                                      const uploaded = await startUpload(files);
+                                      if (uploaded?.[0]) {
+                                        form.setValue(
+                                          `partners.logos.${fIndex}.photo`,
+                                          uploaded[0].url,
+                                          { shouldValidate: true },
+                                        );
+                                        await saveField();
+                                      }
+                                    }
+                                  }}
+                                  setFiles={() => {}}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4">
+                          {/* Name */}
+                          <FormField
+                            control={form.control}
+                            name={`partners.logos.${fIndex}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Customer Name"
+                                    value={field.value ?? ""}
+                                    onBlur={saveField}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            removeLogo(fIndex);
+                            await saveField();
+                          }}
+                          className="btn btn-sm text-red-500"
+                        >
+                          Remove Logo
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      appendLogo({
+                        name: "",
+                        photo: "",
+                      });
+                      await saveField();
+                    }}
+                    className="btn btn-sm text-green-600"
+                  >
+                    Add Logo
                   </button>
                 </div>
               </div>

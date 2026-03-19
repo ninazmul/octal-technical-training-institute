@@ -188,6 +188,13 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
           offerEndDate: setting.hero.offerEndDate ?? "",
         }
       : undefined,
+    popup: setting.hero
+      ? {
+          image: setting.hero.image ?? "",
+          offerStartDate: setting.hero.offerStartDate ?? "",
+          offerEndDate: setting.hero.offerEndDate ?? "",
+        }
+      : undefined,
     features: setting.features
       ? {
           badge: setting.features.badge ?? "",
@@ -214,6 +221,17 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
             photo: f.photo ?? "",
             rating: f.rating ?? 0,
             comment: f.comment ?? "",
+          })),
+        }
+      : undefined,
+    partners: setting.partners
+      ? {
+          badge: setting.partners.badge ?? "",
+          title: setting.partners.title ?? "",
+          description: setting.partners.description ?? "",
+          logos: (setting.partners.logos ?? []).map((f) => ({
+            name: f.name ?? "",
+            photo: f.photo ?? "",
           })),
         }
       : undefined,
