@@ -8,6 +8,10 @@ export const headerLinks = [
     route: "/courses",
   },
   {
+    label: "নোটিশ",
+    route: "/notices",
+  },
+  {
     label: "যোগাযোগ",
     route: "/contact",
   },
