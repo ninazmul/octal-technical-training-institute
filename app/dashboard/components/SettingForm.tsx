@@ -683,7 +683,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   name={`popup.${key}`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{key}</FormLabel>
+                      <FormLabel>Image</FormLabel>
                       <FormControl>
                         <FileUploader
                           imageUrl={field.value || ""}

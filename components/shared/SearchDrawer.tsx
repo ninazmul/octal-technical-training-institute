@@ -106,7 +106,7 @@ export default function SearchDrawer({
               <CourseLink
                 key={idx}
                 id={item._id.toString()}
-                className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border hover:bg-primary-50 transition shadow-sm"
+                className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg border hover:bg-primary-700-50 transition shadow-sm"
                 onClick={() => onOpenChange(false)}
               >
                 {/* Thumbnail */}

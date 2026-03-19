@@ -144,7 +144,7 @@ const Page = async () => {
 
                   <Link
                     href={`/registration/${r._id}`}
-                    className="mt-3 inline-block px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary-600 transition text-center"
+                    className="mt-3 inline-block px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary-700-600 transition text-center"
                   >
                     View Details
                   </Link>
