@@ -196,10 +196,10 @@ export default function Header({ openSearch }: HeaderProps) {
         </Link>
 
         {/* Search */}
-        <div className="flex-grow w-full md:w-auto">
+        <div className="flex-grow w-full">
           <button
             onClick={openSearch}
-            className="flex items-center gap-2 px-4 py-2 w-full md:w-80 rounded-xl border border-gray-300 text-gray-500 hover:border-primary hover:text-primary transition"
+            className="flex items-center gap-2 px-4 py-2 w-full rounded-xl border border-gray-300 text-gray-500 hover:border-primary hover:text-primary transition"
           >
             <FaMagnifyingGlass /> Search...
           </button>
