@@ -54,7 +54,7 @@ export type RegistrationParams = {
   status?: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus?: "Not Certified" | "Certified";
   paymentAmount?: number;
-  paymentStatus?: "Unpaid" | "Partial" | "Paid";
+  paymentStatus?: "Pending" | "Paid" | "Failed";
   transactionId?: string;
   paymentMethod?:
     | "Cash"
@@ -135,7 +135,7 @@ function serializeRegistration(
 // add near top of file (after helpers)
 const STATUS_VALUES = ["Pending", "Ongoing", "Completed", "Closed"] as const;
 const CERT_VALUES = ["Not Certified", "Certified"] as const;
-const PAYMENT_STATUS_VALUES = ["Unpaid", "Partial", "Paid"] as const;
+const PAYMENT_STATUS_VALUES = ["Pending", "Paid", "Failed"] as const;
 const PAYMENT_METHODS = [
   "Cash",
   "Card",
@@ -201,7 +201,7 @@ function buildValidatedUpdate(
 }
 
 // -------------------- Create Registration --------------------
-export const createRegistration = async (
+export const createPendingRegistration = async (
   data: RegistrationParams,
 ): Promise<SerializedRegistration | undefined> => {
   try {
@@ -210,14 +210,6 @@ export const createRegistration = async (
     // Ensure course exists
     const course = await Course.findById(data.courseId);
     if (!course) throw new Error("Course not found");
-
-    // Convert seats string → number
-    const currentSeats = course.seats ? parseInt(course.seats, 10) : 0;
-
-    // Check if seats are available
-    if (currentSeats <= 0) {
-      throw new Error("No seats available for this course");
-    }
 
     // Create registration (registrationNumber auto-generated in model)
     const created = await Registration.create({
@@ -236,20 +228,62 @@ export const createRegistration = async (
       status: data.status ?? "Pending",
       certificateStatus: data.certificateStatus ?? "Not Certified",
       paymentAmount: data.paymentAmount ?? 0,
-      paymentStatus: data.paymentStatus ?? "Unpaid",
+      paymentStatus: data.paymentStatus ?? "Pending",
       transactionId: data.transactionId ?? undefined,
       paymentMethod: data.paymentMethod ?? undefined,
     });
-
-    // Reduce seats by 1 and save back as string
-    course.seats = String(currentSeats - 1);
-    await course.save();
 
     // Serialize and return
     const leanObj = created.toObject
       ? (created.toObject() as Record<string, unknown>)
       : (created as unknown as Record<string, unknown>);
     return serializeRegistration(leanObj);
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+export const confirmRegistrationPayment = async (
+  registrationId: string,
+  trxData: {
+    transactionId: string;
+    paymentMethod?: string;
+  },
+): Promise<SerializedRegistration | undefined> => {
+  try {
+    await connectToDatabase();
+
+    const registration = await Registration.findById(registrationId);
+    if (!registration) throw new Error("Registration not found");
+
+    // 🔒 Idempotency
+    if (registration.paymentStatus === "Paid") {
+      return serializeRegistration(registration.toObject());
+    }
+
+    // 🔥 Get course
+    const course = await Course.findById(registration.course);
+    if (!course) throw new Error("Course not found");
+
+    const currentSeats = course.seats ? parseInt(course.seats, 10) : 0;
+
+    if (currentSeats <= 0) {
+      throw new Error("No seats available");
+    }
+
+    // ✅ Reduce seat ONLY AFTER PAYMENT
+    course.seats = String(currentSeats - 1);
+    await course.save();
+
+    // ✅ Update registration
+    registration.paymentStatus = "Paid";
+    registration.transactionId = trxData.transactionId;
+    registration.paymentMethod =
+      (trxData.paymentMethod) ?? "Mobile Payment";
+
+    await registration.save();
+
+    return serializeRegistration(registration.toObject());
   } catch (error) {
     handleError(error);
   }

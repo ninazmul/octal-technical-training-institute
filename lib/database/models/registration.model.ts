@@ -1,4 +1,5 @@
 import { Document, Schema, Types, model, models } from "mongoose";
+import Counter from "./counter.model";
 
 // -------------------- Interface --------------------
 export interface IRegistration extends Document {
@@ -27,7 +28,7 @@ export interface IRegistration extends Document {
   status: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus: "Not Certified" | "Certified";
   paymentAmount: number;
-  paymentStatus: "Unpaid" | "Partial" | "Paid";
+  paymentStatus: "Pending" | "Paid" | "Failed";
 
   // Transaction Info
   transactionId?: string; // reference from payment gateway/bank
@@ -76,8 +77,8 @@ const RegistrationSchema = new Schema<IRegistration>(
     paymentAmount: { type: Number, default: 0 },
     paymentStatus: {
       type: String,
-      enum: ["Unpaid", "Partial", "Paid"],
-      default: "Unpaid",
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
     },
     transactionId: { type: String, trim: true },
     paymentMethod: {
@@ -92,9 +93,16 @@ const RegistrationSchema = new Schema<IRegistration>(
 RegistrationSchema.pre<IRegistration>("save", async function (next) {
   if (!this.registrationNumber) {
     const year = new Date().getFullYear();
-    const count = await model<IRegistration>("Registration").countDocuments();
-    this.registrationNumber = `REG-${year}-${String(count + 1).padStart(5, "0")}`;
+
+    const counter = await Counter.findOneAndUpdate(
+      { name: "registration" },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true },
+    );
+
+    this.registrationNumber = `REG-${year}-${String(counter.seq).padStart(5, "0")}`;
   }
+
   next();
 });
 

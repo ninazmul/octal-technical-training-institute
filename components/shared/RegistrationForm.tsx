@@ -70,45 +70,41 @@ export default function RegistrationForm({
 
   async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
     try {
-      // Temporarily store data until payment is successful
-      localStorage.setItem(
-        "registrationData",
-        JSON.stringify({
-          ...values,
-          courseId: course._id.toString(),
-          paymentAmount: values.paymentAmount,
-        }),
-      );
-
-      const payload = {
-        merchantId: process.env.NEXT_PUBLIC_PAYSTATION_MERCHANT_ID,
-        password: process.env.NEXT_PUBLIC_PAYSTATION_PASSWORD,
-        invoice_number: `REG-${Date.now()}`,
-        currency: "BDT",
-        payment_amount: values.paymentAmount,
-        cust_name: values.englishName,
-        cust_email: values.email,
-        cust_phone: values.number,
-        callback_url: `${window.location.origin}/checkout/callback`,
-        checkout_items: JSON.stringify([
-          { course: course.title, amount: values.paymentAmount },
-        ]),
-      };
-
-      const res = await fetch("/api/paystation/initiate-payment", {
+      // 1. Create pending registration
+      const res = await fetch("/api/registration/create-pending", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...values,
+          courseId: course._id,
+        }),
       });
 
       const data = await res.json();
-      if (data.status !== "success") throw new Error(data.message);
+      if (!data.success) throw new Error();
 
-      // Redirect user to PayStation
-      window.location.href = data.payment_url;
-    } catch (err) {
-      console.error(err);
-      toast.error("Payment initiation failed");
+      // 2. Initiate payment
+      const paymentRes = await fetch("/api/paystation/initiate-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          registrationId: data.registrationId,
+        }),
+      });
+
+      const paymentData = await paymentRes.json();
+
+      if (paymentData.status !== "success") {
+        throw new Error(paymentData.message);
+      }
+
+      window.location.href = paymentData.payment_url;
+    } catch {
+      toast.error("Something went wrong");
     }
   }
 

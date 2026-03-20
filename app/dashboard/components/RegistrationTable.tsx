@@ -337,7 +337,12 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           {filtered.map((r) => (
             <TableRow key={r._id}>
               <TableCell>
-                <Link href={`/dashboard/registrations/${r._id}`} className="text-primary font-semibold">{r.registrationNumber ?? "—"}</Link>
+                <Link
+                  href={`/dashboard/registrations/${r._id}`}
+                  className="text-primary font-semibold"
+                >
+                  {r.registrationNumber ?? "—"}
+                </Link>
               </TableCell>
               <TableCell>{r.englishName ?? "—"}</TableCell>
               <TableCell>{r.email ?? "—"}</TableCell>
@@ -480,7 +485,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <p>
                   <strong>Status:</strong>{" "}
-                  {viewModalData.paymentStatus ?? "Unpaid"}
+                  {viewModalData.paymentStatus ?? "Pending"}
                 </p>
                 <p>
                   <strong>Amount:</strong> {viewModalData.paymentAmount ?? 0}
@@ -552,9 +557,9 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                     type CertType = (typeof CERT_OPTIONS)[number];
 
                     const PAYMENT_STATUS_OPTIONS = [
-                      "Unpaid",
-                      "Partial",
+                      "Pending",
                       "Paid",
+                      "Failed",
                     ] as const;
                     type PaymentStatusType =
                       (typeof PAYMENT_STATUS_OPTIONS)[number];
@@ -591,7 +596,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                         data.paymentStatus as PaymentStatusType,
                       )
                         ? (data.paymentStatus as PaymentStatusType)
-                        : "Unpaid",
+                        : "Pending",
 
                       // Payment Method
                       paymentMethod: PAYMENT_METHOD_OPTIONS.includes(

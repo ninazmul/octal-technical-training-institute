@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createRegistration } from "@/lib/actions/registration.actions";
 import toast from "react-hot-toast";
 
 export default function CallbackPage() {
@@ -10,31 +9,32 @@ export default function CallbackPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const status = params.get("status");
-    const trx_id = params.get("trx_id");
+    const invoice = params.get("invoice_number");
 
-    if (status === "Successful" && trx_id) {
-      const data = JSON.parse(localStorage.getItem("registrationData") || "{}");
-
-      createRegistration({
-        ...data,
-        transactionId: trx_id,
-        paymentStatus: "Paid",
-        paymentMethod: "Mobile Payment", // or Card / Bank Transfer
-      })
-        .then((reg) => {
-          toast.success(
-            `Registration successful! Number: ${reg?.registrationNumber}`,
-          );
-          localStorage.removeItem("registrationData");
-          router.push("/registrations");
-        })
-        .catch(() => toast.error("Registration save failed"));
-    } else {
-      toast.error("Payment failed or cancelled");
+    if (!invoice) {
+      toast.error("Invalid payment");
       router.push("/courses");
+      return;
     }
+
+    fetch("/api/paystation/verify-payment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ invoice_number: invoice }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          toast.success("Payment successful!");
+          router.push("/registrations");
+        } else {
+          toast.error("Payment verification failed");
+          router.push("/courses");
+        }
+      });
   }, [router]);
 
-  return <div className="text-center py-12">Processing payment...</div>;
+  return <div className="text-center py-12">Verifying payment...</div>;
 }
