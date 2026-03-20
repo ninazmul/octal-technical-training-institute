@@ -149,7 +149,7 @@ export default function Header({ openSearch }: HeaderProps) {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="bg-white text-primary border-primary hover:bg-primary hover:text-white"
+                    className="bg-white text-primary border-primary hover:bg-primary-700 hover:text-white"
                   >
                     <a
                       href="/dashboard"
@@ -169,7 +169,7 @@ export default function Header({ openSearch }: HeaderProps) {
                   asChild
                   variant="outline"
                   size="sm"
-                  className="bg-white text-primary border-primary hover:bg-primary hover:text-white"
+                  className="bg-white text-primary border-primary hover:bg-primary-700 hover:text-white"
                 >
                   <a href={"/sign-in"} className="flex items-center gap-1">
                     <LogIn size={16} /> <span>Login</span>

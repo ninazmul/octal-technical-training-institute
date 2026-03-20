@@ -49,10 +49,15 @@ function classifyCourse(
 export async function getCourses(options: {
   tab?: "all" | "upcoming" | "ongoing" | "old";
   category?: string;
+  status?: "all" | "active"; // NEW option
 }): Promise<ICourseSafe[]> {
   try {
     await connectToDatabase();
-    const courses = await Course.find({ isActive: true }).lean<ICourse[]>();
+
+    // Decide query based on status
+    const query = options.status === "active" ? { isActive: true } : {};
+
+    const courses = await Course.find(query).lean<ICourse[]>();
 
     let filtered = courses;
 
