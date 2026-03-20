@@ -10,11 +10,11 @@ import { isAdmin } from "@/lib/actions/admin.actions";
 import React, { useEffect, useState } from "react";
 import { getSetting } from "@/lib/actions/setting.actions";
 import { ISettingSafe } from "@/lib/database/models/setting.model";
-import { FaFacebookF, FaMagnifyingGlass, FaUsers } from "react-icons/fa6";
+import { FaFacebookF, FaMagnifyingGlass } from "react-icons/fa6";
 import NavItems from "./NavItems";
 import MobileNav from "./MobileNav";
 import Link from "next/link";
-import { FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
+import { FaInstagram, FaTwitter, FaUsers, FaYoutube } from "react-icons/fa";
 
 interface HeaderProps {
   openSearch: () => void;
@@ -64,20 +64,26 @@ export default function Header({ openSearch }: HeaderProps) {
   }, [user?.id]);
 
   return (
-    <header className="text-white bg-white">
+    <header className="bg-white text-gray-900 shadow-md">
       {/* Top support bar */}
       <div style={{ backgroundColor: themeColor }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between py-2 px-4 w-full">
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <p className="flex items-center gap-1 text-white text-xs md:text-sm font-semibold">
-              <Phone size={14} /> {settings?.phoneNumber}
-            </p>
-            <p className="hidden md:flex items-center gap-1 text-white text-xs md:text-sm font-semibold">
-              <Mail size={14} /> {settings?.email}
-            </p>
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between py-2 px-4">
+          {/* Contact Info */}
+          <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm font-semibold text-white">
+            {settings?.phoneNumber && (
+              <p className="flex items-center gap-1">
+                <Phone size={14} /> {settings.phoneNumber}
+              </p>
+            )}
+            {settings?.email && (
+              <p className="hidden md:flex items-center gap-1">
+                <Mail size={14} /> {settings.email}
+              </p>
+            )}
           </div>
 
-          <div className="flex items-center justify-between gap-4 w-full md:w-auto">
+          {/* Social + Auth */}
+          <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center justify-center gap-2 text-sm md:text-base">
               {settings?.facebook && (
                 <a
@@ -135,26 +141,26 @@ export default function Header({ openSearch }: HeaderProps) {
               )}
             </div>
 
-            <div className="flex items-center justify-end w-full gap-3">
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-2">
               <SignedIn>
                 {adminStatus && (
                   <Button
                     asChild
                     variant="outline"
                     size="sm"
-                    className="rounded-md bg-white text-primary hover:bg-primary-700 hover:text-white border-primary"
+                    className="bg-white text-primary border-primary hover:bg-primary hover:text-white"
                   >
                     <a
                       href="/dashboard"
                       target="_blank"
                       className="flex items-center gap-1"
                     >
-                      <Shield />
+                      <Shield size={16} />{" "}
                       <span className="hidden md:flex">Dashboard</span>
                     </a>
                   </Button>
                 )}
-
                 <UserButton afterSwitchSessionUrl="/" />
               </SignedIn>
 
@@ -163,11 +169,10 @@ export default function Header({ openSearch }: HeaderProps) {
                   asChild
                   variant="outline"
                   size="sm"
-                  className="rounded-md bg-white text-primary hover:bg-primary-700 hover:text-white border-primary"
+                  className="bg-white text-primary border-primary hover:bg-primary hover:text-white"
                 >
                   <a href={"/sign-in"} className="flex items-center gap-1">
-                    <LogIn />
-                    <span>Login</span>
+                    <LogIn size={16} /> <span>Login</span>
                   </a>
                 </Button>
               </SignedOut>
@@ -177,8 +182,9 @@ export default function Header({ openSearch }: HeaderProps) {
       </div>
 
       {/* Main header */}
-      <div className="flex items-center justify-between gap-2 px-4 py-2 max-w-7xl mx-auto bg-white">
-        <Link href={"/"}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 py-3">
+        {/* Logo */}
+        <Link href="/" className="flex-shrink-0">
           <div className="relative w-16 md:w-32 h-10 rounded-md overflow-hidden bg-primary-500">
             <Image
               src={settings?.logo || "/assets/images/logo.png"}
@@ -190,17 +196,17 @@ export default function Header({ openSearch }: HeaderProps) {
         </Link>
 
         {/* Search */}
-        <div className="flex-1 max-w-md w-full mx-4">
+        <div className="flex-grow w-full md:w-auto">
           <button
             onClick={openSearch}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-400 text-gray-400 transition w-full"
+            className="flex items-center gap-2 px-4 py-2 w-full md:w-80 rounded-xl border border-gray-300 text-gray-500 hover:border-primary hover:text-primary transition"
           >
-            <FaMagnifyingGlass />
-            Search...
+            <FaMagnifyingGlass /> Search...
           </button>
         </div>
 
-        <nav className="lg:flex hidden w-full max-w-xs">
+        {/* Navigation */}
+        <nav className="hidden lg:flex flex-grow justify-center">
           <NavItems />
         </nav>
         <MobileNav />

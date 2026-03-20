@@ -46,7 +46,7 @@ const Footer = () => {
             width={150}
             height={150}
             priority
-            className="mx-auto md:mx-0 rounded-md"
+            className="mx-auto md:mx-0 rounded-md border border-white"
           />
           <h2 className="text-xl font-bold">{setting?.name}</h2>
           {setting?.tagline && (
