@@ -95,26 +95,37 @@ export const createCourse = async (
   }
 };
 
+// -------------------- GET COURSE BY ID --------------------
 export const getCourseById = async (
   courseId: string,
 ): Promise<ICourseSafe | null> => {
-  return unstable_cache(
-    async () => {
-      await connectToDatabase();
-      const course = await Course.findById(courseId)
-        .select(
-          `
-          title category photo price discountPrice seats batch
-          courseStartDate duration sessions registrationDeadline
-          prerequisites description modules schedule
-        `,
-        )
-        .lean<ICourse>();
-      return course ? sanitizeCourse(course) : null;
-    },
-    ["course-by-id", courseId],
-    { revalidate: 600 },
-  )();
+  try {
+    return unstable_cache(
+      async () => {
+        await connectToDatabase();
+        const course = await Course.findById(courseId)
+          .select(
+            `
+            title category photo price discountPrice seats batch
+            courseStartDate duration sessions registrationDeadline
+            prerequisites description modules schedule isActive sku
+          `,
+          )
+          .lean<ICourse>();
+
+        return course ? sanitizeCourse(course) : null;
+      },
+      // Cache key
+      [`course-by-id-${courseId}`],
+      {
+        revalidate: 600, // 10 minutes
+        tags: [`course-by-id-${courseId}`], // Tag for invalidation
+      },
+    )();
+  } catch (error) {
+    handleError(error);
+    return null;
+  }
 };
 
 // -------------------- SEARCH --------------------
