@@ -1,8 +1,6 @@
-// /app/api/payment-callback/route.ts
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/database";
 import Registration from "@/lib/database/models/registration.model";
-// import { confirmRegistrationPayment } from "@/lib/actions/registration.actions";
 
 export async function GET(req: Request) {
   try {
@@ -11,19 +9,18 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const invoice_number = url.searchParams.get("invoice_number");
     const status = url.searchParams.get("status");
-    // const trx_id = url.searchParams.get("trx_id");
 
     if (!invoice_number) {
-      return NextResponse.redirect("/registration");
+      return NextResponse.redirect(new URL("/registration", req.url));
     }
 
+    // ✅ Since invoice_number is MongoDB _id, use findById
     const registration = await Registration.findById(invoice_number);
     if (!registration) {
-      return NextResponse.redirect("/registration");
+      return NextResponse.redirect(new URL("/registration", req.url));
     }
 
     if (status === "Successful") {
-      // Call your verify-payment API internally to confirm everything
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/paystation/verify-payment`,
         {
@@ -42,10 +39,9 @@ export async function GET(req: Request) {
       await registration.save();
     }
 
-    // ✅ Redirect user safely after handling
-    return NextResponse.redirect("/registration");
+    return NextResponse.redirect(new URL("/registration", req.url));
   } catch (err) {
-    console.error(err);
-    return NextResponse.redirect("/registration");
+    console.error("Payment callback error:", err);
+    return NextResponse.redirect(new URL("/registration", req.url));
   }
 }
