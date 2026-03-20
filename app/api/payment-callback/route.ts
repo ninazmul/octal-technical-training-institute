@@ -32,17 +32,16 @@ export async function GET(req: Request) {
       );
 
       const data = await res.json();
-      if (
-        data.status_code === "200" &&
-        data.data.trx_status?.toLowerCase() === "success"
-      ) {
+      if (data.status_code === "200") {
         const trx = data.data;
+        const trxStatus = (trx.trx_status || "").toLowerCase();
+        const paidAmount = parseFloat(trx.payment_amount);
+        const expectedAmount = parseFloat(registration.paymentAmount);
 
-        const expectedAmount = Number(registration.paymentAmount);
-        const paidAmount = Number(trx.payment_amount);
-
-        if (paidAmount === expectedAmount) {
-          // ✅ Confirm payment and reduce seats
+        if (
+          trxStatus === "success" &&
+          Math.abs(paidAmount - expectedAmount) < 0.01
+        ) {
           await confirmRegistrationPayment(invoice_number, {
             transactionId: trx_id || trx.trx_id,
             paymentMethod: trx.payment_method || "Mobile Payment",
@@ -50,12 +49,13 @@ export async function GET(req: Request) {
         } else {
           registration.paymentStatus = "Failed";
           await registration.save();
-          console.error("Amount mismatch", invoice_number);
+          console.error("Payment verification failed", {
+            invoice_number,
+            trxStatus,
+            paidAmount,
+            expectedAmount,
+          });
         }
-      } else {
-        registration.paymentStatus = "Failed";
-        await registration.save();
-        console.error("PayStation verification failed", invoice_number, data);
       }
     } else {
       registration.paymentStatus = "Failed";
