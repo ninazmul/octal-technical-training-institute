@@ -20,6 +20,7 @@ export async function GET(req: Request) {
       return NextResponse.redirect(new URL("/registration", req.url));
 
     if (status === "Successful") {
+      // 🔒 Verify payment with PayStation
       const res = await fetch(
         "https://api.paystation.com.bd/transaction-status",
         {
@@ -32,34 +33,42 @@ export async function GET(req: Request) {
       );
 
       const data = await res.json();
+
       if (data.status_code === "200") {
         const trx = data.data;
         const trxStatus = (trx.trx_status || "").toLowerCase();
-        const paidAmount = parseFloat(trx.payment_amount);
-        const expectedAmount = parseFloat(registration.paymentAmount);
 
-        if (
-          trxStatus === "success" &&
-          Math.abs(paidAmount - expectedAmount) < 0.01
-        ) {
+        if (trxStatus === "success") {
+          // ✅ Confirm payment and reduce seats
           await confirmRegistrationPayment(invoice_number, {
             transactionId: trx_id || trx.trx_id,
             paymentMethod: trx.payment_method || "Mobile Payment",
           });
         } else {
+          // ❌ Payment failed at gateway
           registration.paymentStatus = "Failed";
           await registration.save();
-          console.error("Payment verification failed", {
+          console.error(
+            "Payment failed at PayStation:",
             invoice_number,
             trxStatus,
-            paidAmount,
-            expectedAmount,
-          });
+          );
         }
+      } else {
+        // ❌ PayStation verification failed
+        registration.paymentStatus = "Failed";
+        await registration.save();
+        console.error(
+          "PayStation API verification failed",
+          invoice_number,
+          data,
+        );
       }
     } else {
+      // ❌ User redirected with failed/cancelled payment
       registration.paymentStatus = "Failed";
       await registration.save();
+      console.error("Payment status not Successful:", invoice_number, status);
     }
 
     return NextResponse.redirect(new URL("/registration", req.url));
