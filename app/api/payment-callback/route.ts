@@ -12,17 +12,14 @@ export async function GET(req: Request) {
     const status = url.searchParams.get("status");
     const trx_id = url.searchParams.get("trx_id");
 
-    if (!invoice_number) {
+    if (!invoice_number)
       return NextResponse.redirect(new URL("/registration", req.url));
-    }
 
     const registration = await Registration.findById(invoice_number);
-    if (!registration) {
+    if (!registration)
       return NextResponse.redirect(new URL("/registration", req.url));
-    }
 
     if (status === "Successful") {
-      // 1️⃣ Verify payment with PayStation
       const res = await fetch(
         "https://api.paystation.com.bd/transaction-status",
         {
@@ -30,49 +27,41 @@ export async function GET(req: Request) {
           headers: {
             merchantId: process.env.NEXT_PUBLIC_PAYSTATION_MERCHANT_ID!,
           },
-          body: new URLSearchParams({
-            invoice_number,
-          }),
+          body: new URLSearchParams({ invoice_number }),
         },
       );
 
       const data = await res.json();
-
-      if (data.status_code === "200") {
+      if (
+        data.status_code === "200" &&
+        data.data.trx_status?.toLowerCase() === "success"
+      ) {
         const trx = data.data;
 
-        // 2️⃣ Validate transaction status
-        if (trx.trx_status?.toLowerCase() === "success") {
-          // 3️⃣ Validate amount
-          const paidAmount = Number(trx.payment_amount);
-          const expectedAmount = Number(registration.paymentAmount);
-          if (paidAmount === expectedAmount) {
-            // 4️⃣ Confirm payment (updates registration & seat reduction)
-            await confirmRegistrationPayment(invoice_number, {
-              transactionId: trx_id || trx.trx_id,
-              paymentMethod: trx.payment_method || "Mobile Payment",
-            });
-          } else {
-            console.error("Amount mismatch for registration", invoice_number);
-            registration.paymentStatus = "Failed";
-            await registration.save();
-          }
+        const expectedAmount = Number(registration.paymentAmount);
+        const paidAmount = Number(trx.payment_amount);
+
+        if (paidAmount === expectedAmount) {
+          // ✅ Confirm payment and reduce seats
+          await confirmRegistrationPayment(invoice_number, {
+            transactionId: trx_id || trx.trx_id,
+            paymentMethod: trx.payment_method || "Mobile Payment",
+          });
         } else {
           registration.paymentStatus = "Failed";
           await registration.save();
+          console.error("Amount mismatch", invoice_number);
         }
       } else {
-        console.error("PayStation verification failed", data);
         registration.paymentStatus = "Failed";
         await registration.save();
+        console.error("PayStation verification failed", invoice_number, data);
       }
     } else {
-      // Payment failed or cancelled
       registration.paymentStatus = "Failed";
       await registration.save();
     }
 
-    // ✅ Redirect user to registration page
     return NextResponse.redirect(new URL("/registration", req.url));
   } catch (err) {
     console.error("Payment callback error:", err);
