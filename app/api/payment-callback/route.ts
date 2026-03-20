@@ -2,39 +2,50 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/database";
 import Registration from "@/lib/database/models/registration.model";
-import { confirmRegistrationPayment } from "@/lib/actions/registration.actions";
+// import { confirmRegistrationPayment } from "@/lib/actions/registration.actions";
 
 export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const invoice_number = url.searchParams.get("invoice_number");
-  const status = url.searchParams.get("status");
-  const trx_id = url.searchParams.get("trx_id");
-
   try {
     await connectToDatabase();
 
-    if (invoice_number) {
-      const registration = await Registration.findById(invoice_number);
+    const url = new URL(req.url);
+    const invoice_number = url.searchParams.get("invoice_number");
+    const status = url.searchParams.get("status");
+    // const trx_id = url.searchParams.get("trx_id");
 
-      if (registration) {
-        if (status === "Successful") {
-          // Confirm payment and reduce seat safely
-          await confirmRegistrationPayment(invoice_number, {
-            transactionId: trx_id || "",
-            paymentMethod: "Mobile Payment", // can adjust dynamically
-          });
-        } else {
-          registration.paymentStatus = "Failed";
-          await registration.save();
-        }
-      }
+    if (!invoice_number) {
+      return NextResponse.redirect("/registration");
     }
-  } catch (err) {
-    console.error("Payment callback error:", err);
-    // don't throw, always redirect
-  }
 
-  // Redirect to registration page (absolute URL)
-  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/registration`;
-  return NextResponse.redirect(redirectUrl);
+    const registration = await Registration.findById(invoice_number);
+    if (!registration) {
+      return NextResponse.redirect("/registration");
+    }
+
+    if (status === "Successful") {
+      // Call your verify-payment API internally to confirm everything
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/paystation/verify-payment`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_number }),
+        },
+      );
+
+      const data = await res.json();
+      if (!data.success) {
+        console.error("Verification failed", data.message);
+      }
+    } else {
+      registration.paymentStatus = "Failed";
+      await registration.save();
+    }
+
+    // ✅ Redirect user safely after handling
+    return NextResponse.redirect("/registration");
+  } catch (err) {
+    console.error(err);
+    return NextResponse.redirect("/registration");
+  }
 }
