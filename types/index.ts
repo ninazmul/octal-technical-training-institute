@@ -177,3 +177,10 @@ export type NoticeParams = {
   title: string;
   file: string;
 };
+
+// ====== SuccessStories PARAMS
+export type SuccessStoriesParams = {
+  title: string;
+  description: string;
+  photo: string;
+};

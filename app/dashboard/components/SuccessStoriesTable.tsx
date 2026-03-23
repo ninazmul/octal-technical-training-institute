@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { deleteNotice } from "@/lib/actions/notice.actions";
 import {
   Table,
   TableBody,
@@ -10,6 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { deleteSuccessStories } from "@/lib/actions/success-stories.actions";
+import Image from "next/image";
 import {
   Sheet,
   SheetContent,
@@ -18,14 +23,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
-import toast from "react-hot-toast";
-import { INotice } from "@/lib/database/models/notice.model";
-import NoticeForm from "./NoticeForm";
+import SuccessStoriesForm from "./SuccessStoriesForm";
+import { ISuccessStories } from "@/lib/database/models/success-stories.model";
 
-const NoticeTable = ({ notices }: { notices: INotice[] }) => {
+const SuccessStoriesTable = ({
+  successStories,
+}: {
+  successStories: ISuccessStories[];
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"title" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -33,9 +38,9 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
   const [itemsPerPage] = useState(10);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const filteredNotices = useMemo(() => {
-    const filtered = notices.filter((notice) =>
-      notice.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredSuccessStories = useMemo(() => {
+    const filtered = successStories.filter((SuccessStory) =>
+      SuccessStory.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     if (sortKey) {
@@ -49,21 +54,21 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
     }
 
     return filtered;
-  }, [notices, searchQuery, sortKey, sortOrder]);
+  }, [successStories, searchQuery, sortKey, sortOrder]);
 
-  const paginatedNotices = useMemo(() => {
+  const paginatedSuccessStories = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredNotices.slice(start, start + itemsPerPage);
-  }, [filteredNotices, currentPage, itemsPerPage]);
+    return filteredSuccessStories.slice(start, start + itemsPerPage);
+  }, [filteredSuccessStories, currentPage, itemsPerPage]);
 
-  const handleDeleteNotice = async (noticeId: string) => {
+  const handleDeleteStory = async (successStoryId: string) => {
     try {
-      const response = await deleteNotice(noticeId);
+      const response = await deleteSuccessStories(successStoryId);
       if (response) {
-        toast.success("Notice deleted successfully");
+        toast.success("Success Story deleted successfully");
       }
     } catch (error) {
-      toast.error("Failed to delete notice");
+      toast.error("Failed to delete Success Story");
       console.error(error);
     } finally {
       setConfirmDeleteId(null);
@@ -104,31 +109,24 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
                   (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
               </div>
             </TableHead>
-            <TableHead>File</TableHead>
+            <TableHead>Photo</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedNotices.map((notice, index) => (
+          {paginatedSuccessStories.map((story, index) => (
             <TableRow key={index} className="hover:bg-gray-100">
               <TableCell>
                 {(currentPage - 1) * itemsPerPage + index + 1}
               </TableCell>
-              <TableCell className="w-72 line-clamp-1 truncate">
-                {notice.title}
-              </TableCell>
+              <TableCell className="w-72 line-clamp-1 truncate">{story.title}</TableCell>
               <TableCell>
-                {notice.file ? (
-                  <a
-                    href={notice.file}
-                    target="_blank"
-                    className="text-primary hover:underline"
-                  >
-                    Download
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground text-sm">No file</span>
-                )}
+                <Image
+                  src={story.photo || "/assets/images/logo.png"}
+                  alt={story.title}
+                  height={50}
+                  width={50}
+                />
               </TableCell>
               <TableCell className="flex items-center gap-2">
                 <Sheet>
@@ -140,25 +138,25 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
 
                   <SheetContent className="bg-white">
                     <SheetHeader>
-                      <SheetTitle>Update Notice</SheetTitle>
+                      <SheetTitle>Update Success Story</SheetTitle>
                       <SheetDescription>
-                        Review and update the notice details to keep our records
-                        accurate and up to date. Make any necessary edits while
-                        following system guidelines for proper management and
-                        organization.
+                        Review and update the success story details to ensure
+                        our records remain accurate and current. Make any
+                        necessary changes while following system guidelines for
+                        proper record management.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="py-5">
-                      <NoticeForm
-                        notices={notice}
-                        noticeId={notice?._id.toString()}
+                      <SuccessStoriesForm
+                        successStories={story}
+                        successStoriesId={story?._id.toString()}
                         type="Update"
                       />
                     </div>
                   </SheetContent>
                 </Sheet>
                 <Button
-                  onClick={() => setConfirmDeleteId(notice._id.toString())}
+                  onClick={() => setConfirmDeleteId(story._id.toString())}
                   variant="outline"
                   className="text-red-500"
                 >
@@ -173,8 +171,9 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
         <span className="text-sm text-muted-foreground line-clamp-1">
-          Showing {Math.min(itemsPerPage * currentPage, filteredNotices.length)}{" "}
-          of {filteredNotices.length} notices
+          Showing{" "}
+          {Math.min(itemsPerPage * currentPage, filteredSuccessStories.length)}{" "}
+          of {filteredSuccessStories.length} successStories
         </span>
         <div className="flex items-center space-x-2">
           <Button
@@ -186,7 +185,8 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
           </Button>
           <Button
             disabled={
-              currentPage === Math.ceil(filteredNotices.length / itemsPerPage)
+              currentPage ===
+              Math.ceil(filteredSuccessStories.length / itemsPerPage)
             }
             onClick={() => setCurrentPage((prev) => prev + 1)}
             size="sm"
@@ -200,7 +200,7 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
       {confirmDeleteId && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-md space-y-4">
-            <p>Are you sure you want to delete this notice?</p>
+            <p>Are you sure you want to delete this Success Story?</p>
             <div className="flex justify-end space-x-2">
               <Button
                 onClick={() => setConfirmDeleteId(null)}
@@ -209,7 +209,7 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
                 Cancel
               </Button>
               <Button
-                onClick={() => handleDeleteNotice(confirmDeleteId)}
+                onClick={() => handleDeleteStory(confirmDeleteId)}
                 variant="destructive"
               >
                 Confirm
@@ -222,4 +222,4 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
   );
 };
 
-export default NoticeTable;
+export default SuccessStoriesTable;

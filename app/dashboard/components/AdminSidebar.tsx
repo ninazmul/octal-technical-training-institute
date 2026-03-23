@@ -19,6 +19,7 @@ import {
   BookOpen,
   Users,
   File,
+  GalleryThumbnails,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -48,6 +49,12 @@ const sidebarItems = [
     title: "Notices",
     url: "/dashboard/notices",
     icon: File,
+    roles: ["admin"],
+  },
+  {
+    title: "Success Stories",
+    url: "/dashboard/success-stories",
+    icon: GalleryThumbnails,
     roles: ["admin"],
   },
   {
