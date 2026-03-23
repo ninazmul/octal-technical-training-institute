@@ -7,13 +7,16 @@ import { Button } from "../ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { useState } from "react";
+import { PlaylistVideo } from "@/types/youtube";
 
 export default function SuccessStoryContent({
   settings,
   stories,
+  videos,
 }: {
   settings: ISettingSafe | null;
   stories: ISuccessStories[];
+  videos: PlaylistVideo[];
 }) {
   const themeColor = settings?.theme || "#0055CE";
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -91,7 +94,6 @@ export default function SuccessStoryContent({
         </motion.div>
 
         {/* Tabs */}
-        {/* Tabs */}
         <Tabs defaultValue="photos" className="flex flex-col gap-6">
           <TabsList className="flex gap-4 justify-center">
             <TabsTrigger
@@ -118,9 +120,34 @@ export default function SuccessStoryContent({
 
           <TabsContent value="photos">{renderPhotos()}</TabsContent>
           <TabsContent value="videos">
-            <p className="text-center text-gray-400">
-              Videos will be displayed here soon...
-            </p>
+            {videos.length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {videos.map((video) => (
+                  <a
+                    key={video.videoId}
+                    href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border rounded-2xl overflow-hidden shadow hover:shadow-lg transition block"
+                  >
+                    <Image
+                      src={video.thumbnail}
+                      width={320}
+                      height={180}
+                      alt={video.title}
+                      className="w-full bg-white"
+                    />
+                    <p className="p-3 font-semibold text-primary dark:text-gray-100">
+                      {video.title}
+                    </p>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">
+                No valid videos found in this playlist.
+              </p>
+            )}
           </TabsContent>
         </Tabs>
 
