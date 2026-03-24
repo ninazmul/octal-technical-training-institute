@@ -35,7 +35,6 @@ export async function GET(req: NextRequest) {
     }
 
     if (status === "Successful") {
-      // ✅ Confirm payment: mark Paid, save trx_id, reduce seats
       await confirmRegistrationPayment(invoice_number, {
         transactionId: trx_id || "N/A",
         paymentMethod: "PayStation",
@@ -46,7 +45,6 @@ export async function GET(req: NextRequest) {
       console.error("Payment not successful:", invoice_number, status);
     }
 
-    // ✅ Always redirect user to registration page
     return NextResponse.redirect(
       new URL("/registration", process.env.NEXT_PUBLIC_SERVER_URL),
     );

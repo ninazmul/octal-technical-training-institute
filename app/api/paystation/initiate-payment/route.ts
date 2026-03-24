@@ -15,16 +15,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ✅ Mandatory fields
+    // ✅ Ensure mandatory fields are valid
     const custName = registration.englishName || "Customer";
     const custEmail =
       registration.email && registration.email.includes("@")
         ? registration.email
-        : "test@example.com";
+        : "test@example.com"; // fallback valid email
     const custPhone =
       registration.number && /^\d+$/.test(registration.number)
         ? registration.number
-        : "01700000000";
+        : "01700000000"; // fallback valid phone
 
     const params = new URLSearchParams({
       merchantId: process.env.NEXT_PUBLIC_PAYSTATION_MERCHANT_ID!,
@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
       pay_with_charge: "1",
       reference: "Course Registration",
       cust_name: custName,
-      cust_phone: custPhone,
       cust_email: custEmail,
+      cust_phone: custPhone,
       cust_address: registration.address || "Dhaka, Bangladesh",
       callback_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/payment-callback`,
       checkout_items: JSON.stringify([{ name: "Course", qty: 1 }]),
@@ -53,17 +53,7 @@ export async function POST(req: NextRequest) {
     const data = await res.json();
     console.log("PayStation initiate response:", data);
 
-    if (data?.status_code === "200" && data?.payment_url) {
-      // ✅ Redirect user to PayStation checkout page
-      return NextResponse.redirect(data.payment_url);
-    }
-
-    registration.paymentStatus = "Failed";
-    await registration.save();
-    return NextResponse.json({
-      status: "failed",
-      reason: data?.message || "Payment initiation failed",
-    });
+    return NextResponse.json(data);
   } catch (err) {
     console.error("Initiate payment error:", err);
     return NextResponse.json({ status: "failed", reason: "Server error" });
