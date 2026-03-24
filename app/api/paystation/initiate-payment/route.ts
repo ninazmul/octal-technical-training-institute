@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/database";
 import Registration from "@/lib/database/models/registration.model";
+import { confirmRegistrationPayment } from "@/lib/actions/registration.actions";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,9 +11,12 @@ export async function POST(req: NextRequest) {
 
     const registration = await Registration.findById(registrationId);
     if (!registration) {
-      return NextResponse.json({ status: "failed" });
+      return NextResponse.redirect(
+        new URL("/registration", process.env.NEXT_PUBLIC_SERVER_URL),
+      );
     }
 
+    // 🔒 Initiate payment with PayStation
     const res = await fetch("https://api.paystation.com.bd/initiate-payment", {
       method: "POST",
       body: new URLSearchParams({
@@ -25,16 +29,36 @@ export async function POST(req: NextRequest) {
         cust_email: registration.email || "N/A",
         cust_phone: registration.number || "N/A",
         checkout_items: JSON.stringify([{ name: "Course", qty: 1 }]),
-
-        // ✅ This is the key:
-        callback_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/payment-callback`,
       }),
     });
 
     const data = await res.json();
-    return NextResponse.json(data);
+    console.log("PayStation initiate response:", data);
+
+    if (data?.status_code === "200" && data?.trx_id) {
+      // ✅ Confirm payment immediately
+      await confirmRegistrationPayment(registration._id.toString(), {
+        transactionId: data.trx_id,
+        paymentMethod: "PayStation",
+      });
+
+      // Push user to registration page
+      return NextResponse.redirect(
+        new URL("/registration", process.env.NEXT_PUBLIC_SERVER_URL),
+      );
+    }
+
+    // ❌ Mark as failed
+    registration.paymentStatus = "Failed";
+    await registration.save();
+
+    return NextResponse.redirect(
+      new URL("/registration", process.env.NEXT_PUBLIC_SERVER_URL),
+    );
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ status: "failed" });
+    console.error("Initiate payment error:", err);
+    return NextResponse.redirect(
+      new URL("/registration", process.env.NEXT_PUBLIC_SERVER_URL),
+    );
   }
 }
