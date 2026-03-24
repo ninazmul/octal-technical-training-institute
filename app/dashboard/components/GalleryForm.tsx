@@ -8,25 +8,23 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { addPhoto } from "@/lib/actions/gallery.actions";
-import { useState } from "react";
 import { useUploadThing } from "@/lib/uploadthing";
+import { addPhoto } from "@/lib/actions/gallery.actions";
 import { FileUploader } from "@/components/shared/FileUploader";
 
 export const galleryFormSchema = z.object({
-  title: z.string().min(3, "Name must be at least 3 characters."),
-  image: z.string(),
+  title: z.string().min(3, "Title must be at least 3 characters."),
+  image: z.string().optional(),
 });
 
 const GalleryForm = ({ userId, type }: { userId: string; type: "Create" }) => {
   const router = useRouter();
-  const [files, setFiles] = useState<File[]>([]);
-
   const { startUpload } = useUploadThing("mediaUploader");
 
   const form = useForm<z.infer<typeof galleryFormSchema>>({
@@ -38,31 +36,31 @@ const GalleryForm = ({ userId, type }: { userId: string; type: "Create" }) => {
   });
 
   async function onSubmit(values: z.infer<typeof galleryFormSchema>) {
-    let uploadedImageUrl = values.image;
+    try {
+      const uploadedImageUrl = values.image || "";
 
-    if (files.length > 0) {
-      const uploadedImages = await startUpload(files);
-
-      if (!uploadedImages) {
-        return;
+      // If user selected files, upload them
+      if (
+        uploadedImageUrl === "" &&
+        values.image === "" &&
+        form.getValues("image") === ""
+      ) {
+        // nothing yet, rely on FileUploader
       }
 
-      uploadedImageUrl = uploadedImages[0].url;
-    }
+      if (uploadedImageUrl) {
+        form.setValue("image", uploadedImageUrl);
+      }
 
-    try {
       if (type === "Create" && userId) {
         const newPhoto = await addPhoto({
-          Title: values.title,
-          Image: uploadedImageUrl,
+          title: values.title,
+          image: uploadedImageUrl,
         });
 
         if (newPhoto) {
-          form.reset({
-            title: "",
-            image: "",
-          });
-          router.push(`/dashboard/gallery`);
+          form.reset({ title: "", image: "" });
+          router.push("/dashboard/gallery");
         }
       }
     } catch (error) {
@@ -76,31 +74,42 @@ const GalleryForm = ({ userId, type }: { userId: string; type: "Create" }) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-5"
       >
-        {/* Name Field */}
+        {/* Title Field */}
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem className="w-full">
+              <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="Title" {...field} className="input-field" />
+                <Input
+                  placeholder="Enter photo title"
+                  {...field}
+                  className="input-field"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Photo Field */}
+        {/* Image Field */}
         <FormField
           control={form.control}
           name="image"
           render={({ field }) => (
             <FormItem className="w-full">
+              <FormLabel>Photo</FormLabel>
               <FormControl className="h-72">
                 <FileUploader
-                  onFieldChange={field.onChange}
-                  imageUrl={field.value}
-                  setFiles={setFiles}
+                  imageUrl={field.value || ""}
+                  setFiles={() => {}}
+                  onFieldChange={async (_blobUrl, files) => {
+                    if (files?.length) {
+                      const uploaded = await startUpload(files);
+                      if (uploaded?.[0]) field.onChange(uploaded[0].url);
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />

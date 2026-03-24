@@ -5,11 +5,11 @@ import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
 import Gallery from "../database/models/gallery.model";
 
-export const addPhoto = async ({ Title, Image }: AddPhotoParams) => {
+export const addPhoto = async ({ title, image }: AddPhotoParams) => {
   try {
     await connectToDatabase();
 
-    const newPhoto = await Gallery.create({ title: Title, image: Image});
+    const newPhoto = await Gallery.create({ title, image });
 
     return JSON.parse(JSON.stringify(newPhoto));
   } catch (error) {
@@ -44,5 +44,3 @@ export const deletePhoto = async (photoId: string) => {
     handleError(error);
   }
 };
-
-

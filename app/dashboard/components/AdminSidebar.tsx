@@ -20,6 +20,7 @@ import {
   Users,
   File,
   GalleryThumbnails,
+  Images,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,6 +56,12 @@ const sidebarItems = [
     title: "Success Stories",
     url: "/dashboard/success-stories",
     icon: GalleryThumbnails,
+    roles: ["admin"],
+  },
+  {
+    title: "Gallery",
+    url: "/dashboard/gallery",
+    icon: Images,
     roles: ["admin"],
   },
   {

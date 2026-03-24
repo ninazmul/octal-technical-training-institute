@@ -187,6 +187,6 @@ export type SuccessStoriesParams = {
 
 // ====== GALLERY PARAMS
 export type AddPhotoParams = {
-  Title: string;
-  Image: string;
+  title: string;
+  image: string;
 };

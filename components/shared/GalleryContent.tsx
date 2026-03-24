@@ -50,7 +50,7 @@ export default function GalleryContent({
   const renderGallery = () =>
     photos.length > 0 ? (
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 bg-primary-50 bg-dotted-pattern bg-contain p-5 md:p-10 mx-auto gap-4"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -62,13 +62,18 @@ export default function GalleryContent({
             whileHover={{ scale: 1.05 }}
             onClick={() => openModal(index)}
           >
-            <Image
-              src={image.image}
-              alt={image.title}
-              width={500}
-              height={500}
-              className="w-full aspect-square object-cover rounded-lg shadow-md"
-            />
+            {/* Square container with black background */}
+            <div className="w-full aspect-square flex items-center justify-center bg-black rounded-lg shadow-md">
+              <Image
+                src={image.image}
+                alt={image.title}
+                width={500}
+                height={500}
+                className="max-h-full max-w-full object-contain rounded-lg"
+              />
+            </div>
+
+            {/* Caption overlay */}
             <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-sm p-1 rounded-b-lg w-full text-center">
               {image.title}
             </div>
@@ -130,6 +135,7 @@ export default function GalleryContent({
                   height={600}
                   className="w-full max-h-[80vh] object-contain rounded-lg"
                 />
+
                 <div className="absolute top-2 right-2 flex gap-2">
                   <Button
                     size="sm"
