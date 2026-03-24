@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
     );
     const invoice_number = url.searchParams.get("invoice_number");
-    const status = url.searchParams.get("status");
+    const status = url.searchParams.get("status")?.toLowerCase(); // normalize
     const trx_id = url.searchParams.get("trx_id");
 
     console.log("Payment callback received:", {
@@ -34,11 +34,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (status === "Successful") {
-      await confirmRegistrationPayment(invoice_number, {
+    if (status === "successful") {
+      console.log("Confirming payment for", invoice_number);
+      const confirmed = await confirmRegistrationPayment(invoice_number, {
         transactionId: trx_id || "N/A",
         paymentMethod: "PayStation",
       });
+      console.log("Registration updated:", confirmed);
     } else {
       registration.paymentStatus = "Failed";
       await registration.save();
