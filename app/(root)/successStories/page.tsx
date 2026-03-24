@@ -3,7 +3,7 @@ import { getSetting } from "@/lib/actions/setting.actions";
 import { getAllSuccessStories } from "@/lib/actions/success-stories.actions";
 import { getPlaylistVideos } from "@/lib/actions/youtube.actions";
 
-export default async function NoticePage() {
+export default async function Page() {
   const settings = await getSetting();
   const stories = await getAllSuccessStories();
 
