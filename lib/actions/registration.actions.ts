@@ -211,6 +211,17 @@ export const createPendingRegistration = async (
     const course = await Course.findById(data.courseId);
     if (!course) throw new Error("Course not found");
 
+    // 🚫 Prevent duplicate registration for same course + email
+    const existing = await Registration.findOne({
+      course: course._id,
+      email: data.email,
+    });
+    if (existing) {
+      throw new Error(
+        "You are already registered for this course with this email",
+      );
+    }
+
     // Create registration (registrationNumber auto-generated in model)
     const created = await Registration.create({
       englishName: data.englishName,
@@ -233,7 +244,6 @@ export const createPendingRegistration = async (
       paymentMethod: data.paymentMethod ?? undefined,
     });
 
-    // Serialize and return
     const leanObj = created.toObject
       ? (created.toObject() as Record<string, unknown>)
       : (created as unknown as Record<string, unknown>);
@@ -278,8 +288,7 @@ export const confirmRegistrationPayment = async (
     // ✅ Update registration
     registration.paymentStatus = "Paid";
     registration.transactionId = trxData.transactionId;
-    registration.paymentMethod =
-      (trxData.paymentMethod) ?? "Mobile Payment";
+    registration.paymentMethod = trxData.paymentMethod ?? "Mobile Payment";
 
     await registration.save();
 
