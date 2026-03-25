@@ -14,14 +14,14 @@ import { getSetting } from "@/lib/actions/setting.actions";
 import { ISettingSafe } from "@/lib/database/models/setting.model";
 import {
   LayoutDashboard,
-  Shield,
+  GraduationCap,
+  ClipboardList,
+  Megaphone,
+  Award,
+  ImageIcon,
+  UserPlus,
+  ShieldCheck,
   Settings,
-  BookOpen,
-  Users,
-  File,
-  GalleryThumbnails,
-  Images,
-  Users2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,43 +38,43 @@ const sidebarItems = [
   {
     title: "Courses",
     url: "/dashboard/courses",
-    icon: BookOpen,
+    icon: GraduationCap, // clearer than BookOpen
     roles: ["admin", "moderator"],
   },
   {
     title: "Registrations",
     url: "/dashboard/registrations",
-    icon: Users,
+    icon: ClipboardList, // better for tracking entries
     roles: ["admin", "moderator"],
   },
   {
     title: "Notices",
     url: "/dashboard/notices",
-    icon: File,
+    icon: Megaphone, // announcements = loudspeaker
     roles: ["admin"],
   },
   {
     title: "Success Stories",
     url: "/dashboard/success-stories",
-    icon: GalleryThumbnails,
+    icon: Award, // achievement = stronger signal
     roles: ["admin"],
   },
   {
     title: "Gallery",
     url: "/dashboard/gallery",
-    icon: Images,
+    icon: ImageIcon, // cleaner & modern
     roles: ["admin"],
   },
   {
     title: "Trainers Applications",
     url: "/dashboard/trainers",
-    icon: Users2,
+    icon: UserPlus, // onboarding / application intent
     roles: ["admin"],
   },
   {
     title: "Admins",
     url: "/dashboard/admins",
-    icon: Shield,
+    icon: ShieldCheck, // authority + verified
     roles: ["admin"],
   },
   {
