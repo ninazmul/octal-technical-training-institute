@@ -149,6 +149,18 @@ export default function CoursesPage() {
                       টাকা {course.price}
                     </span>
                   )}
+
+                  {course.certification && (
+                    <span
+                      className="text-xs font-semibold px-2 py-1 rounded-full"
+                      style={{
+                        backgroundColor: `${themeColor}20`,
+                        color: themeColor,
+                      }}
+                    >
+                      {course.certification}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

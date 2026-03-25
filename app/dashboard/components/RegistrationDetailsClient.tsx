@@ -19,6 +19,7 @@ import {
 import { SerializedRegistration } from "@/lib/actions/registration.actions";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import { ISettingSafe } from "@/lib/database/models/setting.model";
+import { FaCertificate } from "react-icons/fa";
 
 export default function RegistrationDetailsClient({
   registration,
@@ -286,6 +287,15 @@ export default function RegistrationDetailsClient({
                 </span>
               )}
             </InfoItem>
+
+            {course?.certification && (
+              <InfoItem
+                icon={<FaCertificate size={18} />}
+                label="Certification"
+              >
+                {course.certification || "N/A"}
+              </InfoItem>
+            )}
 
             <InfoItem icon={<CalendarDays size={18} />} label="Start Date">
               {course?.courseStartDate || "TBA"}

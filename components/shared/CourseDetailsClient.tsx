@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { FaCertificate } from "react-icons/fa";
 
 export default function CourseDetailsClient({
   course,
@@ -94,6 +95,14 @@ export default function CourseDetailsClient({
                 </span>
               )}
             </InfoItem>
+            {course.certification && (
+              <InfoItem
+                icon={<FaCertificate size={18} />}
+                label="Certification"
+              >
+                {course.certification || "N/A"}
+              </InfoItem>
+            )}
             <InfoItem icon={<GraduationCap size={18} />} label="Batch">
               {course.batch || "N/A"}
             </InfoItem>

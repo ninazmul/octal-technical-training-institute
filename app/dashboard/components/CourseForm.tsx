@@ -41,6 +41,7 @@ const courseFormSchema = z.object({
   price: z.coerce.number().min(0, "Price is required"),
   discountPrice: z.coerce.number().optional(),
   seats: z.coerce.number().min(0, "Seats are required"),
+  certification: z.string().min(1, "Certification is required"),
   isActive: z.boolean().default(true),
   batch: z.string().optional(),
   sku: z.string().optional(),
@@ -83,6 +84,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     price: course?.price || 0,
     discountPrice: course?.discountPrice,
     seats: course?.seats || 0,
+    certification: course?.certification || "",
     isActive: course?.isActive ?? true,
     batch: course?.batch || "",
     sku: course?.sku || "",
@@ -198,26 +200,42 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
         />
 
         {/* ---- Put Online/Offline mode here ---- */}
-        <FormField
-          control={form.control}
-          name="mode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mode</FormLabel>
-              <FormControl>
-                <select
-                  {...field}
-                  className="w-full border rounded px-3 py-2"
-                  defaultValue={field.value || "Online"}
-                >
-                  <option value="Online">Online</option>
-                  <option value="Offline">Offline</option>
-                </select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="mode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mode</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className="w-full border rounded px-3 py-2"
+                    defaultValue={field.value || "Online"}
+                  >
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="certification"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Certification</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter certification title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Photo */}
         <FormField

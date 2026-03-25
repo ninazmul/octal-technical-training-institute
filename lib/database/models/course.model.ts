@@ -22,6 +22,7 @@ export interface ICourse extends Document {
   price: number;
   discountPrice?: number;
   seats: number;
+  certification?: string;
 
   // Meta Info
   isActive: boolean;
@@ -54,6 +55,7 @@ export interface ICourseSafe {
   price: number;
   discountPrice?: number;
   seats?: number;
+  certification?: string;
   isActive?: boolean;
   batch?: string;
   sku?: string;
@@ -94,6 +96,7 @@ const CourseSchema = new Schema<ICourse>(
     price: { type: Number, required: true },
     discountPrice: { type: Number },
     seats: { type: Number, required: true, default: 0 },
+    certification: { type: String },
 
     // Meta Info
     isActive: { type: Boolean, default: true },

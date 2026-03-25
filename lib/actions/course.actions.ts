@@ -17,6 +17,7 @@ export type CourseParams = {
   price: number;
   discountPrice?: number;
   seats?: number;
+  certification?: string;
   isActive?: boolean;
   batch?: string;
   sku?: string;

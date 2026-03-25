@@ -135,6 +135,7 @@ export function sanitizeCourse(course: ICourse): ICourseSafe {
     price: course.price,
     discountPrice: course.discountPrice ?? undefined,
     seats: course.seats ?? 0,
+    certification: course.certification ?? "",
     isActive: course.isActive ?? false,
     batch: course.batch ?? "",
     sku: course.sku ?? "",

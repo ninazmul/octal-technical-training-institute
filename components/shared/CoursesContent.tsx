@@ -105,7 +105,7 @@ function Courses({
                     </span>
                   )}
 
-                  {course.isActive && (
+                  {course.certification && (
                     <span
                       className="text-xs font-semibold px-2 py-1 rounded-full"
                       style={{
@@ -113,7 +113,7 @@ function Courses({
                         color: themeColor,
                       }}
                     >
-                      সক্রিয়
+                      {course.certification}
                     </span>
                   )}
                 </div>
