@@ -4,6 +4,7 @@ import { ISettingSafe } from "@/lib/database/models/setting.model";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Facebook, Linkedin, Twitter, Globe } from "lucide-react";
+import TrainerModal from "./TrainerModal";
 
 function OurMentors({ setting }: { setting: ISettingSafe | null }) {
   const themeColor = setting?.theme || "#0055CE";
@@ -135,6 +136,13 @@ function OurMentors({ setting }: { setting: ISettingSafe | null }) {
             </motion.div>
           );
         })}
+      </div>
+      <div className="flex flex-wrap justify-center items-center gap-2 py-4">
+        <p>
+          প্রশিক্ষকের অপেক্ষায় হাজার হাজার শিক্ষার্থী। এখন শেখানো শুরু করুন এবং
+          উপার্জন শুরু করুন!
+        </p>{" "}
+        <TrainerModal />
       </div>
     </main>
   );

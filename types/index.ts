@@ -190,3 +190,12 @@ export type AddPhotoParams = {
   title: string;
   image: string;
 };
+
+// ====== TRAINER PARAMS
+export type TrainerParams = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  cv?: string;
+};
