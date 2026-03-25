@@ -90,99 +90,137 @@ const TrainerTable = ({ trainers }: { trainers: ITrainer[] }) => {
       />
 
       {/* Table */}
-      <Table className="border border-gray-200 rounded-md">
-        <TableHeader>
+      <Table className="border rounded-xl overflow-hidden">
+        <TableHeader className="bg-gray-50">
           <TableRow>
             <TableHead>#</TableHead>
             <TableHead>
               <div
                 onClick={() => handleSort("name")}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer select-none"
               >
                 Name
                 {sortKey === "name" &&
-                  (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
+                  (sortOrder === "asc" ? (
+                    <SortAsc size={16} />
+                  ) : (
+                    <SortDesc size={16} />
+                  ))}
               </div>
             </TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>CV</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {paginatedTrainers.map((trainer, index) => (
-            <TableRow key={index} className="hover:bg-gray-100">
-              <TableCell>
-                {(currentPage - 1) * itemsPerPage + index + 1}
-              </TableCell>
-              <TableCell className="w-72 line-clamp-1 truncate">
-                {trainer.name}
-              </TableCell>
-              <TableCell className="w-72 line-clamp-1 truncate">
-                {trainer.email}
-              </TableCell>
-              <TableCell className="w-72 line-clamp-1 truncate">
-                {trainer.phone}
-              </TableCell>
-              <TableCell>
-                {trainer.cv ? (
-                  <a
-                    href={trainer.cv}
-                    target="_blank"
-                    className="text-primary hover:underline"
-                  >
-                    CV/Resume
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground text-sm">No file</span>
-                )}
-              </TableCell>
-              <TableCell className="flex items-center gap-2">
-                <Sheet>
-                  <SheetTrigger>
-                    <Button variant="outline" className="text-purple-500">
-                      <Edit2 />
-                    </Button>
-                  </SheetTrigger>
 
-                  <SheetContent className="bg-white">
-                    <SheetHeader>
-                      <SheetTitle>Update trainer</SheetTitle>
-                      <SheetDescription>
-                        Review and update the trainer details to keep our records
-                        accurate and up to date. Make any necessary edits while
-                        following system guidelines for proper management and
-                        organization.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-5">
-                      <TrainerForm
-                        trainers={trainer}
-                        trainerId={trainer?._id.toString()}
-                        type="Update"
-                      />
-                    </div>
-                  </SheetContent>
-                </Sheet>
-                <Button
-                  onClick={() => setConfirmDeleteId(trainer._id.toString())}
-                  variant="outline"
-                  className="text-red-500"
-                >
-                  <Trash />
-                </Button>
+        <TableBody>
+          {paginatedTrainers.length > 0 ? (
+            paginatedTrainers.map((trainer, index) => (
+              <TableRow
+                key={index}
+                className="hover:bg-gray-50 transition-all"
+              >
+                <TableCell className="text-muted-foreground text-sm">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </TableCell>
+
+                {/* Name with Avatar */}
+                <TableCell className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-semibold">
+                    {trainer.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="font-medium">{trainer.name}</span>
+                </TableCell>
+
+                <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">
+                  {trainer.email}
+                </TableCell>
+
+                <TableCell className="text-sm text-muted-foreground">
+                  {trainer.phone}
+                </TableCell>
+
+                {/* CV */}
+                <TableCell>
+                  {trainer.cv ? (
+                    <a
+                      href={trainer.cv}
+                      target="_blank"
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      View CV
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      No file
+                    </span>
+                  )}
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="flex justify-end gap-2">
+                  {/* Edit */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="hover:bg-purple-100 hover:text-purple-600"
+                      >
+                        <Edit2 size={16} />
+                      </Button>
+                    </SheetTrigger>
+
+                    <SheetContent className="bg-white">
+                      <SheetHeader>
+                        <SheetTitle>Update trainer</SheetTitle>
+                        <SheetDescription>
+                          Update trainer details.
+                        </SheetDescription>
+                      </SheetHeader>
+
+                      <div className="py-5">
+                        <TrainerForm
+                          trainers={trainer}
+                          trainerId={trainer._id.toString()}
+                          type="Update"
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Delete */}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setConfirmDeleteId(trainer._id.toString())}
+                    className="hover:bg-red-100 hover:text-red-600"
+                  >
+                    <Trash size={16} />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-10">
+                <p className="text-muted-foreground text-sm">
+                  No trainers found
+                </p>
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
         <span className="text-sm text-muted-foreground line-clamp-1">
-          Showing {Math.min(itemsPerPage * currentPage, filteredTrainers.length)}{" "}
-          of {filteredTrainers.length} trainers
+          Showing{" "}
+          {Math.min(itemsPerPage * currentPage, filteredTrainers.length)} of{" "}
+          {filteredTrainers.length} trainers
         </span>
         <div className="flex items-center space-x-2">
           <Button

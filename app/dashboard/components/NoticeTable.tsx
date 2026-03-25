@@ -90,83 +90,121 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
       />
 
       {/* Table */}
-      <Table className="border border-gray-200 rounded-md">
-        <TableHeader>
+      <Table className="border rounded-xl overflow-hidden">
+        <TableHeader className="bg-gray-50">
           <TableRow>
-            <TableHead>#</TableHead>
+            <TableHead className="w-10">#</TableHead>
+
             <TableHead>
               <div
                 onClick={() => handleSort("title")}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer select-none"
               >
                 Title
                 {sortKey === "title" &&
-                  (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
+                  (sortOrder === "asc" ? (
+                    <SortAsc size={16} />
+                  ) : (
+                    <SortDesc size={16} />
+                  ))}
               </div>
             </TableHead>
+
             <TableHead>File</TableHead>
-            <TableHead>Actions</TableHead>
+
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {paginatedNotices.map((notice, index) => (
-            <TableRow key={index} className="hover:bg-gray-100">
-              <TableCell>
-                {(currentPage - 1) * itemsPerPage + index + 1}
-              </TableCell>
-              <TableCell className="w-72 line-clamp-1 truncate">
-                {notice.title}
-              </TableCell>
-              <TableCell>
-                {notice.file ? (
-                  <a
-                    href={notice.file}
-                    target="_blank"
-                    className="text-primary hover:underline"
-                  >
-                    Download
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground text-sm">No file</span>
-                )}
-              </TableCell>
-              <TableCell className="flex items-center gap-2">
-                <Sheet>
-                  <SheetTrigger>
-                    <Button variant="outline" className="text-purple-500">
-                      <Edit2 />
-                    </Button>
-                  </SheetTrigger>
 
-                  <SheetContent className="bg-white">
-                    <SheetHeader>
-                      <SheetTitle>Update Notice</SheetTitle>
-                      <SheetDescription>
-                        Review and update the notice details to keep our records
-                        accurate and up to date. Make any necessary edits while
-                        following system guidelines for proper management and
-                        organization.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-5">
-                      <NoticeForm
-                        notices={notice}
-                        noticeId={notice?._id.toString()}
-                        type="Update"
-                      />
-                    </div>
-                  </SheetContent>
-                </Sheet>
-                <Button
-                  onClick={() => setConfirmDeleteId(notice._id.toString())}
-                  variant="outline"
-                  className="text-red-500"
-                >
-                  <Trash />
-                </Button>
+        <TableBody>
+          {paginatedNotices.length > 0 ? (
+            paginatedNotices.map((notice, index) => (
+              <TableRow
+                key={index}
+                className="hover:bg-gray-50 transition-all"
+              >
+                {/* Index */}
+                <TableCell className="text-muted-foreground text-sm">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </TableCell>
+
+                {/* Title */}
+                <TableCell className="font-medium text-sm line-clamp-1 truncate">
+                  {notice.title}
+                </TableCell>
+
+                {/* File */}
+                <TableCell>
+                  {notice.file ? (
+                    <a
+                      href={notice.file}
+                      target="_blank"
+                      className="text-primary hover:underline font-medium text-sm"
+                    >
+                      Download
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">
+                      No file
+                    </span>
+                  )}
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="flex justify-end gap-2">
+                  {/* Edit */}
+                  <Sheet>
+                    <SheetTrigger>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="hover:bg-purple-100 hover:text-purple-600"
+                      >
+                        <Edit2 size={16} />
+                      </Button>
+                    </SheetTrigger>
+
+                    <SheetContent className="bg-white">
+                      <SheetHeader>
+                        <SheetTitle>Update Notice</SheetTitle>
+                        <SheetDescription>
+                          Review and update the notice details to keep records
+                          accurate. Make necessary changes while following
+                          system guidelines for proper record management.
+                        </SheetDescription>
+                      </SheetHeader>
+                      <div className="py-5">
+                        <NoticeForm
+                          notices={notice}
+                          noticeId={notice?._id.toString()}
+                          type="Update"
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Delete */}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setConfirmDeleteId(notice._id.toString())}
+                    className="hover:bg-red-100 hover:text-red-600"
+                  >
+                    <Trash size={16} />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="text-center py-10 text-muted-foreground"
+              >
+                No notices found
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
 

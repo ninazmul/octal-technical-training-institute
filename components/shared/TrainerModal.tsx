@@ -39,7 +39,7 @@ const TrainerModal = () => {
         "
       >
         <DialogHeader>
-          <DialogTitle>Add Admin</DialogTitle>
+          <DialogTitle>Trainer Registration</DialogTitle>
         </DialogHeader>
 
         <TrainerForm type="Create" onSuccess={() => setOpen(false)} />

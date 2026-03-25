@@ -95,76 +95,118 @@ const SuccessStoriesTable = ({
       />
 
       {/* Table */}
-      <Table className="border border-gray-200 rounded-md">
-        <TableHeader>
+      <Table className="border rounded-xl overflow-hidden">
+        <TableHeader className="bg-gray-50">
           <TableRow>
-            <TableHead>#</TableHead>
+            <TableHead className="w-10">#</TableHead>
+
             <TableHead>
               <div
                 onClick={() => handleSort("title")}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer select-none"
               >
                 Title
                 {sortKey === "title" &&
-                  (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
+                  (sortOrder === "asc" ? (
+                    <SortAsc size={16} />
+                  ) : (
+                    <SortDesc size={16} />
+                  ))}
               </div>
             </TableHead>
+
             <TableHead>Photo</TableHead>
-            <TableHead>Actions</TableHead>
+
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {paginatedSuccessStories.map((story, index) => (
-            <TableRow key={index} className="hover:bg-gray-100">
-              <TableCell>
-                {(currentPage - 1) * itemsPerPage + index + 1}
-              </TableCell>
-              <TableCell className="w-72 line-clamp-1 truncate">{story.title}</TableCell>
-              <TableCell>
-                <Image
-                  src={story.photo || "/assets/images/logo.png"}
-                  alt={story.title}
-                  height={50}
-                  width={50}
-                />
-              </TableCell>
-              <TableCell className="flex items-center gap-2">
-                <Sheet>
-                  <SheetTrigger>
-                    <Button variant="outline" className="text-purple-500">
-                      <Edit2 />
-                    </Button>
-                  </SheetTrigger>
 
-                  <SheetContent className="bg-white">
-                    <SheetHeader>
-                      <SheetTitle>Update Success Story</SheetTitle>
-                      <SheetDescription>
-                        Review and update the success story details to ensure
-                        our records remain accurate and current. Make any
-                        necessary changes while following system guidelines for
-                        proper record management.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <div className="py-5">
-                      <SuccessStoriesForm
-                        successStories={story}
-                        successStoriesId={story?._id.toString()}
-                        type="Update"
-                      />
-                    </div>
-                  </SheetContent>
-                </Sheet>
-                <Button
-                  onClick={() => setConfirmDeleteId(story._id.toString())}
-                  variant="outline"
-                  className="text-red-500"
-                >
-                  <Trash />
-                </Button>
+        <TableBody>
+          {paginatedSuccessStories.length > 0 ? (
+            paginatedSuccessStories.map((story, index) => (
+              <TableRow
+                key={index}
+                className="hover:bg-gray-50 transition-all"
+              >
+                {/* Index */}
+                <TableCell className="text-muted-foreground text-sm">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </TableCell>
+
+                {/* Title */}
+                <TableCell className="font-medium text-sm line-clamp-1 truncate">
+                  {story.title}
+                </TableCell>
+
+                {/* Photo */}
+                <TableCell>
+                  <div className="w-12 h-12 rounded-md overflow-hidden border border-gray-200">
+                    <Image
+                      src={story.photo || "/assets/images/logo.png"}
+                      alt={story.title}
+                      width={50}
+                      height={50}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="flex justify-end gap-2">
+                  {/* Edit */}
+                  <Sheet>
+                    <SheetTrigger>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="hover:bg-purple-100 hover:text-purple-600"
+                      >
+                        <Edit2 size={16} />
+                      </Button>
+                    </SheetTrigger>
+
+                    <SheetContent className="bg-white">
+                      <SheetHeader>
+                        <SheetTitle>Update Success Story</SheetTitle>
+                        <SheetDescription>
+                          Review and update the success story details to keep
+                          records accurate. Make any necessary changes while
+                          following system guidelines for proper record
+                          management.
+                        </SheetDescription>
+                      </SheetHeader>
+                      <div className="py-5">
+                        <SuccessStoriesForm
+                          successStories={story}
+                          successStoriesId={story?._id.toString()}
+                          type="Update"
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Delete */}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setConfirmDeleteId(story._id.toString())}
+                    className="hover:bg-red-100 hover:text-red-600"
+                  >
+                    <Trash size={16} />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="text-center py-10 text-muted-foreground"
+              >
+                No success stories found
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
 

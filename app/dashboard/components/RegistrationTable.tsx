@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -113,11 +113,22 @@ const mergeNormalized = <T extends Partial<RegistrationItem>>(
 });
 
 const STATUS_OPTIONS = ["Pending", "Ongoing", "Completed", "Closed"] as const;
-const STATUS_STYLES: Record<string, string> = {
-  Pending: "text-yellow-600",
-  Ongoing: "text-blue-600",
-  Completed: "text-green-600",
-  Closed: "text-gray-500",
+const STATUS_STYLES: Record<
+  string,
+  { text: string; bg: string; icon?: JSX.Element }
+> = {
+  Pending: {
+    text: "text-yellow-800",
+    bg: "bg-yellow-100",
+    icon: <span>⏳</span>,
+  },
+  Ongoing: { text: "text-blue-800", bg: "bg-blue-100", icon: <span>🔵</span> },
+  Completed: {
+    text: "text-green-800",
+    bg: "bg-green-100",
+    icon: <span>✅</span>,
+  },
+  Closed: { text: "text-gray-700", bg: "bg-gray-200", icon: <span>❌</span> },
 };
 
 export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
@@ -315,71 +326,137 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
+      <Table className="border rounded-xl overflow-hidden">
+        <TableHeader className="bg-gray-50">
           <TableRow>
-            <TableHead onClick={() => handleSort("registrationNumber")}>
+            <TableHead
+              onClick={() => handleSort("registrationNumber")}
+              className="cursor-pointer"
+            >
               Reg. No
             </TableHead>
-            <TableHead onClick={() => handleSort("englishName")}>
+
+            <TableHead
+              onClick={() => handleSort("englishName")}
+              className="cursor-pointer"
+            >
               Name
             </TableHead>
-            <TableHead onClick={() => handleSort("email")}>Email</TableHead>
+
+            <TableHead
+              onClick={() => handleSort("email")}
+              className="cursor-pointer"
+            >
+              Email
+            </TableHead>
+
             <TableHead>Course</TableHead>
-            <TableHead onClick={() => handleSort("status")}>Status</TableHead>
-            <TableHead onClick={() => handleSort("certificateStatus")}>
+
+            <TableHead
+              onClick={() => handleSort("status")}
+              className="cursor-pointer"
+            >
+              Status
+            </TableHead>
+
+            <TableHead
+              onClick={() => handleSort("certificateStatus")}
+              className="cursor-pointer"
+            >
               Certified
             </TableHead>
-            <TableHead>Actions</TableHead>
+
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {filtered.map((r) => (
-            <TableRow key={r._id}>
+            <TableRow key={r._id} className="hover:bg-gray-50 transition">
+              {/* Reg */}
               <TableCell>
                 <Link
                   href={`/dashboard/registrations/${r._id}`}
-                  className="text-primary font-semibold"
+                  className="text-primary font-semibold hover:underline"
                 >
                   {r.registrationNumber ?? "—"}
                 </Link>
               </TableCell>
-              <TableCell>{r.englishName ?? "—"}</TableCell>
-              <TableCell>{r.email ?? "—"}</TableCell>
-              <TableCell>{getCourseTitle(r.course)}</TableCell>
-              <TableCell className={STATUS_STYLES[r.status ?? "Pending"]}>
-                {r.status ?? "Pending"}
+
+              {/* Name with Avatar */}
+              <TableCell className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+                  {r.englishName?.charAt(0).toUpperCase() ?? "U"}
+                </div>
+                <span className="font-medium">{r.englishName ?? "—"}</span>
               </TableCell>
+
+              {/* Email */}
+              <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">
+                {r.email ?? "—"}
+              </TableCell>
+
+              {/* Course */}
+              <TableCell className="text-sm">
+                {getCourseTitle(r.course)}
+              </TableCell>
+
+              {/* Status Badge */}
+              <TableCell>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${STATUS_STYLES[r.status ?? "Pending"].bg} ${STATUS_STYLES[r.status ?? "Pending"].text}`}
+                >
+                  {STATUS_STYLES[r.status ?? "Pending"].icon}
+                  {r.status ?? "Pending"}
+                </span>
+              </TableCell>
+
+              {/* Certificate */}
               <TableCell>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   disabled={loadingMap[`cert-${r._id}`]}
                   onClick={() => setCertConfirmId(r._id)}
+                  className={`rounded-full ${
+                    r.certificateStatus === "Certified"
+                      ? "text-green-600 hover:bg-green-100"
+                      : "text-gray-400 hover:bg-gray-100"
+                  }`}
                 >
-                  {r.certificateStatus === "Certified" ? "✅" : "❌"}
+                  {r.certificateStatus === "Certified" ? "✓" : "—"}
                 </Button>
               </TableCell>
-              <TableCell className="space-x-2">
+
+              {/* Actions */}
+              <TableCell className="flex justify-end gap-2">
+                {/* View */}
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setViewModalData(r)}
+                  className="hover:bg-blue-100 hover:text-blue-600"
                 >
                   <Eye size={16} />
                 </Button>
+
+                {/* Edit */}
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setEditModalData(r)}
+                  className="hover:bg-purple-100 hover:text-purple-600"
                 >
                   <Edit2 size={16} />
                 </Button>
+
+                {/* Delete */}
                 <Button
-                  variant="destructive"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setDeleteConfirmId(r._id)}
                   disabled={loadingMap[`del-${r._id}`]}
+                  className="hover:bg-red-100 hover:text-red-600"
                 >
                   <Trash size={16} />
                 </Button>

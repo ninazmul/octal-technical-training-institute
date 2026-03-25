@@ -29,6 +29,28 @@ export const getAllPhoto = async () => {
   }
 };
 
+export const updatePhoto = async (
+  photoId: string,
+  updateData: Partial<AddPhotoParams>,
+) => {
+  try {
+    await connectToDatabase();
+
+    const updatedGallery = await Gallery.findByIdAndUpdate(photoId, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedGallery) {
+      throw new Error("Gallery not found");
+    }
+
+    return JSON.parse(JSON.stringify(updatedGallery));
+  } catch (error) {
+    handleError(error);
+  }
+};
+
 export const deletePhoto = async (photoId: string) => {
   try {
     await connectToDatabase();

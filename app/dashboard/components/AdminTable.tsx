@@ -22,7 +22,7 @@ const AdminTable = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"name" | "email" | "role" | null>(
-    null
+    null,
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +34,7 @@ const AdminTable = ({
       (admin) =>
         admin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         admin.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.role.toLowerCase().includes(searchQuery.toLowerCase())
+        admin.role.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     if (sortKey) {
@@ -86,76 +86,123 @@ const AdminTable = ({
         onChange={(e) => setSearchQuery(e.target.value)}
         className="mb-4 w-full md:w-1/2 lg:w-1/3"
       />
-      <Table className="border border-gray-200 rounded-md">
-        <TableHeader>
+      <Table className="border rounded-xl overflow-hidden">
+        <TableHeader className="bg-gray-50">
           <TableRow>
-            <TableHead>#</TableHead>
+            <TableHead className="w-10">#</TableHead>
+
             <TableHead>
               <div
                 onClick={() => handleSort("name")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer select-none"
               >
                 Name
                 {sortKey === "name" &&
-                  (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
+                  (sortOrder === "asc" ? (
+                    <SortAsc size={16} />
+                  ) : (
+                    <SortDesc size={16} />
+                  ))}
               </div>
             </TableHead>
+
             <TableHead>
               <div
                 onClick={() => handleSort("email")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer select-none"
               >
                 Email
                 {sortKey === "email" &&
-                  (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
+                  (sortOrder === "asc" ? (
+                    <SortAsc size={16} />
+                  ) : (
+                    <SortDesc size={16} />
+                  ))}
               </div>
             </TableHead>
+
             <TableHead>
               <div
                 onClick={() => handleSort("role")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer select-none"
               >
                 Role
                 {sortKey === "role" &&
-                  (sortOrder === "asc" ? <SortAsc /> : <SortDesc />)}
+                  (sortOrder === "asc" ? (
+                    <SortAsc size={16} />
+                  ) : (
+                    <SortDesc size={16} />
+                  ))}
               </div>
             </TableHead>
-            <TableHead>Actions</TableHead>
+
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {paginatedAdmins.map((admin, index) => (
-            <TableRow key={admin._id} className="hover:bg-gray-100">
-              <TableCell>
-                {(currentPage - 1) * itemsPerPage + index + 1}
-              </TableCell>
-              <TableCell className="whitespace-nowrap">{admin.name}</TableCell>
-              <TableCell>{admin.email}</TableCell>
-              <TableCell>
-                <span
-                  className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    admin.role === "Admin"
-                      ? "bg-green-100 text-green-800"
-                      : admin.role === "Moderator"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {admin.role}
-                </span>
-              </TableCell>
 
-              <TableCell>
-                <Button
-                  onClick={() => setConfirmDeleteId(admin._id)}
-                  variant={"outline"}
-                  className="text-red-500"
-                >
-                  <Trash />
-                </Button>
+        <TableBody>
+          {paginatedAdmins.length > 0 ? (
+            paginatedAdmins.map((admin, index) => (
+              <TableRow
+                key={admin._id}
+                className="hover:bg-gray-50 transition-all"
+              >
+                {/* Index */}
+                <TableCell className="text-muted-foreground text-sm">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </TableCell>
+
+                {/* Name with Avatar */}
+                <TableCell className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
+                    {admin.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="font-medium">{admin.name}</span>
+                </TableCell>
+
+                {/* Email */}
+                <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">
+                  {admin.email}
+                </TableCell>
+
+                {/* Role Badge */}
+                <TableCell>
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      admin.role === "Admin"
+                        ? "bg-green-100 text-green-800"
+                        : admin.role === "Moderator"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {admin.role}
+                  </span>
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="flex justify-end gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setConfirmDeleteId(admin._id)}
+                    className="hover:bg-red-100 hover:text-red-600"
+                  >
+                    <Trash size={16} />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center py-10 text-muted-foreground"
+              >
+                No admins found
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
       <div className="flex justify-between items-center mt-4">

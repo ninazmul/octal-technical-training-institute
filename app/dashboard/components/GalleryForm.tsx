@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useUploadThing } from "@/lib/uploadthing";
-import { addPhoto } from "@/lib/actions/gallery.actions";
+import { addPhoto, updatePhoto } from "@/lib/actions/gallery.actions";
 import { FileUploader } from "@/components/shared/FileUploader";
 
 export const galleryFormSchema = z.object({
@@ -23,48 +23,68 @@ export const galleryFormSchema = z.object({
   image: z.string().optional(),
 });
 
-const GalleryForm = ({ userId, type }: { userId: string; type: "Create" }) => {
+type GalleryFormData = {
+  _id?: string; // keep as string for form & props
+  title?: string;
+  image?: string;
+};
+
+const GalleryForm = ({
+  type,
+  photoId,
+  photos,
+}: {
+  type: "Create" | "Update";
+  photoId?: string;
+  photos?: GalleryFormData;
+}) => {
   const router = useRouter();
   const { startUpload } = useUploadThing("mediaUploader");
 
   const form = useForm<z.infer<typeof galleryFormSchema>>({
     resolver: zodResolver(galleryFormSchema),
     defaultValues: {
-      title: "",
-      image: "",
+      title: photos?.title || "",
+      image: photos?.image || "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof galleryFormSchema>) {
+    const uploadedImageUrl = values.image || "";
+
+    // If user selected files, upload them
+    if (
+      uploadedImageUrl === "" &&
+      values.image === "" &&
+      form.getValues("image") === ""
+    ) {
+      // nothing yet, rely on FileUploader
+    }
+
+    if (uploadedImageUrl) {
+      form.setValue("image", uploadedImageUrl);
+    }
+
     try {
-      const uploadedImageUrl = values.image || "";
+      const galleryData = {
+        ...values,
+        image: uploadedImageUrl || "",
+      };
 
-      // If user selected files, upload them
-      if (
-        uploadedImageUrl === "" &&
-        values.image === "" &&
-        form.getValues("image") === ""
-      ) {
-        // nothing yet, rely on FileUploader
-      }
-
-      if (uploadedImageUrl) {
-        form.setValue("image", uploadedImageUrl);
-      }
-
-      if (type === "Create" && userId) {
-        const newPhoto = await addPhoto({
-          title: values.title,
-          image: uploadedImageUrl,
-        });
-
+      if (type === "Create") {
+        const newPhoto = await addPhoto(galleryData);
         if (newPhoto) {
-          form.reset({ title: "", image: "" });
+          form.reset();
+          router.push("/dashboard/gallery");
+        }
+      } else if (type === "Update" && photoId) {
+        const updatedTrainer = await updatePhoto(photoId, galleryData);
+        if (updatedTrainer) {
           router.push("/dashboard/gallery");
         }
       }
     } catch (error) {
-      console.error("Photo uploading failed", error);
+      console.error("Notice form failed", error);
     }
   }
 

@@ -114,10 +114,11 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
         className="mb-4 w-full md:w-1/2 lg:w-1/3"
       />
 
-      <Table className="border border-gray-200 rounded-md">
-        <TableHeader>
+      <Table className="border rounded-xl overflow-hidden">
+        <TableHeader className="bg-gray-50">
           <TableRow>
-            <TableHead>#</TableHead>
+            <TableHead className="w-10">#</TableHead>
+
             {[
               "title",
               "price",
@@ -129,7 +130,7 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
               <TableHead key={key}>
                 <div
                   onClick={() => handleSort(key as keyof ICourseSafe)}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-2 cursor-pointer select-none"
                 >
                   {key.charAt(0).toUpperCase() + key.slice(1)}
                   {sortKey === key &&
@@ -141,43 +142,58 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
                 </div>
               </TableHead>
             ))}
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {paginatedCourses.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-6">
+              <TableCell
+                colSpan={8}
+                className="text-center py-6 text-muted-foreground"
+              >
                 No courses found.
               </TableCell>
             </TableRow>
           ) : (
             paginatedCourses.map((course, index) => (
-              <TableRow key={index} className="hover:bg-gray-100">
-                <TableCell>
+              <TableRow
+                key={course._id}
+                className="hover:bg-gray-50 transition-all"
+              >
+                {/* Index */}
+                <TableCell className="text-muted-foreground text-sm">
                   {(currentPage - 1) * itemsPerPage + index + 1}
                 </TableCell>
 
-                <TableCell className="flex items-center gap-2 whitespace-nowrap">
+                {/* Title + Thumbnail */}
+                <TableCell className="flex items-center gap-3 whitespace-nowrap">
                   <Image
                     src={course.photo || "/assets/images/placeholder.png"}
                     alt={course.title}
-                    height={40}
                     width={40}
-                    className="w-10 h-10 object-cover rounded"
+                    height={40}
+                    className="w-10 h-10 object-cover rounded-md border border-gray-200"
                   />
-                  <span className="line-clamp-1 truncate">{course.title}</span>
+                  <span className="line-clamp-1 truncate font-medium">
+                    {course.title}
+                  </span>
                 </TableCell>
 
+                {/* Prices */}
                 <TableCell>৳{course.price.toLocaleString()}</TableCell>
                 <TableCell>
                   {course.discountPrice
                     ? `৳${course.discountPrice.toLocaleString()}`
                     : "-"}
                 </TableCell>
+
+                {/* Seats & SKU */}
                 <TableCell>{course.seats}</TableCell>
                 <TableCell>{course.sku}</TableCell>
+
+                {/* Active Toggle */}
                 <TableCell>
                   <Switch
                     checked={course.isActive}
@@ -187,12 +203,13 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
                   />
                 </TableCell>
 
-                <TableCell className="flex items-center space-x-2">
+                {/* Actions */}
+                <TableCell className="flex justify-end gap-2">
                   <Link href={`/dashboard/courses/${course._id}/update`}>
                     <Button
-                      variant="outline"
                       size="icon"
-                      className="text-blue-500"
+                      variant="ghost"
+                      className="hover:bg-blue-100 hover:text-blue-600"
                     >
                       <Edit2 size={16} />
                     </Button>
@@ -200,9 +217,9 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
 
                   <Button
                     onClick={() => setConfirmDeleteId(course._id.toString())}
-                    variant="outline"
                     size="icon"
-                    className="text-red-500 border-red-500 hover:bg-red-50"
+                    variant="ghost"
+                    className="hover:bg-red-100 hover:text-red-600"
                   >
                     <Trash size={16} />
                   </Button>
