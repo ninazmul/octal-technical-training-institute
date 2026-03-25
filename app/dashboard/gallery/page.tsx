@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import {
   Sheet,
   SheetContent,
@@ -13,8 +12,6 @@ import GalleryForm from "../components/GalleryForm";
 import GalleryTable from "../components/GalleryTable";
 
 const Page = async () => {
-  const { sessionClaims } = await auth();
-  const userId = sessionClaims?.userId as string;
 
   const photos = await getAllPhoto();
 
@@ -41,7 +38,7 @@ const Page = async () => {
               </SheetDescription>
             </SheetHeader>
             <div className="py-5">
-              <GalleryForm userId={userId} type="Create" />
+              <GalleryForm type="Create" />
             </div>
           </SheetContent>
         </Sheet>
