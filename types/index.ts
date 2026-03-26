@@ -199,3 +199,12 @@ export type TrainerParams = {
   address: string;
   cv?: string;
 };
+
+// ====== COMPLAIN PARAMS
+export type ComplainParams = {
+  name: string;
+  email: string;
+  phone: string;
+  details: string;
+  proof?: string;
+};

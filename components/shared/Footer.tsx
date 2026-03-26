@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getSetting } from "@/lib/actions";
-import { headerLinks } from "@/constants";
 import { FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import { FaFacebookF, FaUsers } from "react-icons/fa6";
 import Link from "next/link";
@@ -16,6 +15,18 @@ const currentYear = new Date().getFullYear();
 const Footer = () => {
   const [setting, setSetting] = useState<ISettingSafe | null>(null);
   const themeColor = setting?.theme || "#0055CE";
+
+  // Build final nav list
+  const links = [
+    { label: "আমাদের সম্পর্কে", route: "/about" },
+    { label: "কোর্স সমূহ", route: "/courses" },
+    { label: "সাফল্যের গল্প", route: "/successStories" },
+    { label: "গ্যালারি", route: "/gallery" },
+    { label: "নোটিশ", route: "/notices" },
+    { label: "অভিযোগ", route: "/complain" },
+    { label: "যোগাযোগ", route: "/contact" },
+    { label: "নীতিমালা", route: "/policies" },
+  ];
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -136,20 +147,11 @@ const Footer = () => {
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">অন্যান্য</h3>
             <div className="grid grid-cols-1">
-              {headerLinks.map((link, idx) => (
+              {links.map((link, idx) => (
                 <Link href={link.route} key={idx} className="opacity-90">
                   {link.label}
                 </Link>
               ))}
-              <Link href={"/successStories"} className="opacity-90">
-                সাফল্যের গল্প
-              </Link>
-              <Link href={"/gallery"} className="opacity-90">
-                গ্যালারি
-              </Link>
-              <Link href={"/policies"} className="opacity-90">
-                নীতিমালা
-              </Link>
             </div>
           </div>
         </div>
