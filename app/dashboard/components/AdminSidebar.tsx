@@ -22,6 +22,7 @@ import {
   UserPlus,
   ShieldCheck,
   Settings,
+  MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,6 +70,12 @@ const sidebarItems = [
     title: "Trainers Applications",
     url: "/dashboard/trainers",
     icon: UserPlus, // onboarding / application intent
+    roles: ["admin"],
+  },
+  {
+    title: "Complain Applications",
+    url: "/dashboard/complains",
+    icon: MessageCircle, // message icon / application intent
     roles: ["admin"],
   },
   {
