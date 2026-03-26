@@ -31,10 +31,7 @@ const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
     const query = searchQuery.toLowerCase();
 
     let filtered = data.filter((c) =>
-      [c.name, c.email, c.phone]
-        .join(" ")
-        .toLowerCase()
-        .includes(query)
+      [c.name, c.email, c.phone].join(" ").toLowerCase().includes(query),
     );
 
     if (sortKey) {
@@ -113,6 +110,7 @@ const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Proof</TableHead>
+            <TableHead>Details</TableHead> {/* new column */}
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -159,13 +157,15 @@ const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
                   )}
                 </TableCell>
 
+                <TableCell className="text-sm text-muted-foreground max-w-[250px] truncate">
+                  {complain.details || "-"} {/* new cell */}
+                </TableCell>
+
                 <TableCell className="flex justify-end">
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() =>
-                      setConfirmDeleteId(complain._id.toString())
-                    }
+                    onClick={() => setConfirmDeleteId(complain._id.toString())}
                     className="hover:bg-red-100 hover:text-red-600"
                   >
                     <Trash size={16} />
@@ -175,7 +175,7 @@ const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-10">
+              <TableCell colSpan={7} className="text-center py-10">
                 <p className="text-muted-foreground text-sm">
                   No complaints found
                 </p>
@@ -203,8 +203,7 @@ const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
           </Button>
           <Button
             disabled={
-              currentPage ===
-              Math.ceil(filteredComplains.length / itemsPerPage)
+              currentPage === Math.ceil(filteredComplains.length / itemsPerPage)
             }
             onClick={() => setCurrentPage((p) => p + 1)}
             size="sm"
