@@ -3,24 +3,29 @@ import { NextRequest } from "next/server";
 export const POST = async (req: NextRequest) => {
   try {
     const { number, message } = await req.json();
+    console.log("Sending SMS to:", number, "Message:", message);
 
     if (!number || !message) {
       return new Response("Number and message are required", { status: 400 });
     }
 
     const apiKey = process.env.SMS_API_KEY;
-    const senderId = "Octal TTI";
+    if (!apiKey) {
+      console.error("SMS_API_KEY not set");
+      return new Response("SMS API key not configured", { status: 500 });
+    }
 
+    const senderId = "Octal TTI";
     const smsUrl = `http://bulksmsbd.net/api/smsapi?api_key=${apiKey}&type=text&number=${encodeURIComponent(
-      number
+      number,
     )}&senderid=${encodeURIComponent(senderId)}&message=${encodeURIComponent(
-      message
+      message,
     )}`;
 
     const res = await fetch(smsUrl, { method: "GET" });
     const text = await res.text();
+    console.log("BulksmsBD response:", text);
 
-    // Optional: parse response code (e.g., "202" = success)
     if (text.includes("202")) {
       return new Response("SMS sent successfully!", { status: 200 });
     } else {

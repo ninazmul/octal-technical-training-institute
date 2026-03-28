@@ -393,23 +393,25 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
         return;
       }
 
+      // Convert SMS content explicitly to string (just in case)
+      const messageString = String(smsContent);
+
       try {
         await Promise.all(
           numbers.map((num) =>
             fetch("/api/send-sms", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ number: num, message: smsContent }),
+              body: JSON.stringify({ number: num, message: messageString }),
             }),
           ),
         );
 
         toast.success(`SMS sent to ${numbers.length} recipient(s)`);
         setEmailModalOpen(false);
-        setSmsContent("");
+        setSmsContent(""); // reset
         setSelectedRegistrations([]);
-      } catch (err) {
-        console.error(err);
+      } catch {
         toast.error("Failed to send SMS");
       }
     }
@@ -591,22 +593,6 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 >
                   <Eye size={16} />
                 </Button>
-
-                {/* Mode Toggle */}
-                <div className="flex space-x-2 mb-2">
-                  <button
-                    className={`px-2 py-1 rounded ${mode === "email" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
-                    onClick={() => setMode("email")}
-                  >
-                    Email
-                  </button>
-                  <button
-                    className={`px-2 py-1 rounded ${mode === "sms" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
-                    onClick={() => setMode("sms")}
-                  >
-                    SMS
-                  </button>
-                </div>
 
                 {/* Edit */}
                 <Button
