@@ -4,6 +4,7 @@ import { connectToDatabase } from "../database";
 import { handleError } from "../utils";
 import Registration from "../database/models/registration.model";
 import Course from "../database/models/course.model";
+import { sendRegistrationSuccessEmail } from "../mailer/sendRegistrationSuccess";
 
 // -------------------- Serialized types --------------------
 export type SerializedCourse = { _id: string };
@@ -291,6 +292,18 @@ export const confirmRegistrationPayment = async (
     registration.paymentMethod = trxData.paymentMethod ?? "Mobile Payment";
 
     await registration.save();
+
+    // ✅ Send email (safe)
+    try {
+      await sendRegistrationSuccessEmail({
+        name: registration.englishName || "Student",
+        email: registration.email,
+        courseName: course.title,
+        transactionId: trxData.transactionId,
+      });
+    } catch (err) {
+      console.error("Email error:", err);
+    }
 
     return serializeRegistration(registration.toObject());
   } catch (error) {

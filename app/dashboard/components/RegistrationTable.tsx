@@ -9,9 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Eye, Edit2 } from "lucide-react";
+import { Trash, Eye, Edit2, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { FormProvider, useForm } from "react-hook-form";
@@ -23,6 +30,7 @@ import {
 } from "@/lib/actions/registration.actions";
 import { getCourseById } from "@/lib/actions/course.actions";
 import Link from "next/link";
+import { RichTextEditor } from "@/components/shared/RichTextEditor";
 
 export type RegistrationItem = {
   _id: string;
@@ -146,6 +154,14 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [certConfirmId, setCertConfirmId] = useState<string | null>(null);
   const [courseMap, setCourseMap] = useState<Record<string, CourseInfo>>({});
+
+  // Dynamic Email State
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailContent, setEmailContent] = useState({ subject: "", html: "" });
+  const [emailRecipients, setEmailRecipients] = useState<string[]>([]);
+  const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>(
+    [],
+  );
 
   /** ---------- Fetch Course Info ---------- */
   useEffect(() => {
@@ -311,16 +327,77 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
     }
   }, [editModalData, methods]);
 
+  // Open email modal
+  const openEmailModal = (emails: string[]) => {
+    setEmailRecipients(emails);
+    setEmailContent({ subject: "", html: "" });
+    setEmailModalOpen(true);
+  };
+
+  const handleSendEmailWithContent = async () => {
+    if (!emailRecipients.length) {
+      toast.error("No recipients selected");
+      return;
+    }
+
+    if (!emailContent.subject || !emailContent.html) {
+      toast.error("Subject and message required");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipients: emailRecipients.map((email) => ({
+            email,
+            subject: emailContent.subject,
+            html: emailContent.html,
+          })),
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      toast.success(`Sent to ${emailRecipients.length} user(s)`);
+      setEmailModalOpen(false);
+      setSelectedRegistrations([]);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to send emails");
+    }
+  };
+
   /** ---------- Render ---------- */
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <Input
-          placeholder="Search by reg#, name, email or course"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-1/3"
-        />
+        <div className="flex items-center gap-4 w-full md:w-1/3">
+          <Input
+            placeholder="Search by reg#, name, email or course"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className=""
+          />
+          {selectedRegistrations.length > 0 && (
+            <Button
+              className="bg-primary hover:bg-primary-700 text-white"
+              onClick={() => {
+                const emails = list
+                  .filter((r) => selectedRegistrations.includes(r._id))
+                  .map((r) => r.email)
+                  .filter(Boolean) as string[];
+
+                openEmailModal(emails);
+              }}
+            >
+              Send Email to Selected ({selectedRegistrations.length})
+            </Button>
+          )}
+        </div>
         <div className="text-sm text-muted-foreground">
           Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
         </div>
@@ -329,6 +406,19 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       <Table className="border rounded-xl overflow-hidden">
         <TableHeader className="bg-gray-50">
           <TableRow>
+            <TableHead className="text-white cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedRegistrations.length === registrations.length}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedRegistrations(
+                      registrations.map((r) => r._id.toString()),
+                    );
+                  } else setSelectedRegistrations([]);
+                }}
+              />
+            </TableHead>
             <TableHead
               onClick={() => handleSort("registrationNumber")}
               className="cursor-pointer"
@@ -373,6 +463,24 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
         <TableBody>
           {filtered.map((r) => (
             <TableRow key={r._id} className="hover:bg-gray-50 transition">
+              <TableCell className="w-max">
+                <input
+                  type="checkbox"
+                  checked={selectedRegistrations.includes(r._id.toString())}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedRegistrations((prev) => [
+                        ...prev,
+                        r._id.toString(),
+                      ]);
+                    } else {
+                      setSelectedRegistrations((prev) =>
+                        prev.filter((id) => id !== r._id.toString()),
+                      );
+                    }
+                  }}
+                />
+              </TableCell>
               {/* Reg */}
               <TableCell>
                 <Link
@@ -440,6 +548,16 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   <Eye size={16} />
                 </Button>
 
+                {/* Send Email */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-green-100 hover:text-green-600"
+                  onClick={() => openEmailModal([r.email || ""])}
+                >
+                  <Mail size={16} />
+                </Button>
+
                 {/* Edit */}
                 <Button
                   variant="ghost"
@@ -465,6 +583,49 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           ))}
         </TableBody>
       </Table>
+
+      {/* Email Modal */}
+      <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
+          <DialogHeader>
+            <DialogTitle>Send Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              placeholder="Subject"
+              value={emailContent.subject}
+              onChange={(e) =>
+                setEmailContent((prev) => ({
+                  ...prev,
+                  subject: e.target.value,
+                }))
+              }
+            />
+            <RichTextEditor
+              value={emailContent.html}
+              onChange={(html) =>
+                setEmailContent((prev) => ({
+                  ...prev,
+                  html,
+                }))
+              }
+            />
+            <div className="text-xs text-muted-foreground">
+              You can use formatting, links, and images. This will be sent as
+              HTML email.
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Sending to {emailRecipients.length} recipient(s)
+            </p>
+          </div>
+          <DialogFooter className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={() => setEmailModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendEmailWithContent}>Send Email</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Certificate confirmation modal */}
       {certConfirmId && (
