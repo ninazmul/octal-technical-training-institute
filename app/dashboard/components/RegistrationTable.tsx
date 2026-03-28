@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Eye, Edit2, Mail } from "lucide-react";
+import { Trash, Eye, Edit2 } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { FormProvider, useForm } from "react-hook-form";
@@ -162,6 +162,9 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>(
     [],
   );
+
+  const [mode, setMode] = useState<"email" | "sms">("email");
+  const [smsContent, setSmsContent] = useState("");
 
   /** ---------- Fetch Course Info ---------- */
   useEffect(() => {
@@ -371,6 +374,47 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
     }
   };
 
+  const handleSend = async () => {
+    if (!selectedRegistrations.length) {
+      toast.error("No recipients selected");
+      return;
+    }
+
+    if (mode === "email") {
+      handleSendEmailWithContent();
+    } else {
+      const numbers = list
+        .filter((r) => selectedRegistrations.includes(r._id))
+        .map((r) => r.number)
+        .filter(Boolean) as string[];
+
+      if (!smsContent || !numbers.length) {
+        toast.error("Message and numbers are required");
+        return;
+      }
+
+      try {
+        await Promise.all(
+          numbers.map((num) =>
+            fetch("/api/send-sms", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ number: num, message: smsContent }),
+            }),
+          ),
+        );
+
+        toast.success(`SMS sent to ${numbers.length} recipient(s)`);
+        setEmailModalOpen(false);
+        setSmsContent("");
+        setSelectedRegistrations([]);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to send SMS");
+      }
+    }
+  };
+
   /** ---------- Render ---------- */
   return (
     <div className="space-y-4">
@@ -548,15 +592,21 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   <Eye size={16} />
                 </Button>
 
-                {/* Send Email */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-green-100 hover:text-green-600"
-                  onClick={() => openEmailModal([r.email || ""])}
-                >
-                  <Mail size={16} />
-                </Button>
+                {/* Mode Toggle */}
+                <div className="flex space-x-2 mb-2">
+                  <button
+                    className={`px-2 py-1 rounded ${mode === "email" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
+                    onClick={() => setMode("email")}
+                  >
+                    Email
+                  </button>
+                  <button
+                    className={`px-2 py-1 rounded ${mode === "sms" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
+                    onClick={() => setMode("sms")}
+                  >
+                    SMS
+                  </button>
+                </div>
 
                 {/* Edit */}
                 <Button
@@ -584,45 +634,76 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
         </TableBody>
       </Table>
 
-      {/* Email Modal */}
       <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
           <DialogHeader>
-            <DialogTitle>Send Email</DialogTitle>
+            <DialogTitle>Send Message</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            <Input
-              placeholder="Subject"
-              value={emailContent.subject}
-              onChange={(e) =>
-                setEmailContent((prev) => ({
-                  ...prev,
-                  subject: e.target.value,
-                }))
-              }
-            />
-            <RichTextEditor
-              value={emailContent.html}
-              onChange={(html) =>
-                setEmailContent((prev) => ({
-                  ...prev,
-                  html,
-                }))
-              }
-            />
-            <div className="text-xs text-muted-foreground">
-              You can use formatting, links, and images. This will be sent as
-              HTML email.
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Sending to {emailRecipients.length} recipient(s)
-            </p>
+
+          {/* Mode Toggle */}
+          <div className="flex space-x-2 mb-4">
+            <button
+              className={`px-2 py-1 rounded ${mode === "email" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
+              onClick={() => setMode("email")}
+            >
+              Email
+            </button>
+            <button
+              className={`px-2 py-1 rounded ${mode === "sms" ? "bg-indigo-500 text-white" : "bg-gray-200"}`}
+              onClick={() => setMode("sms")}
+            >
+              SMS
+            </button>
           </div>
+
+          {mode === "email" ? (
+            <>
+              <Input
+                placeholder="Subject"
+                value={emailContent.subject}
+                onChange={(e) =>
+                  setEmailContent((prev) => ({
+                    ...prev,
+                    subject: e.target.value,
+                  }))
+                }
+              />
+              <RichTextEditor
+                value={emailContent.html}
+                onChange={(html) =>
+                  setEmailContent((prev) => ({ ...prev, html }))
+                }
+              />
+              <div className="text-xs text-muted-foreground">
+                You can use formatting, links, and images. This will be sent as
+                HTML email.
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <textarea
+                placeholder="SMS message"
+                value={smsContent}
+                onChange={(e) => setSmsContent(e.target.value)}
+                className="w-full border rounded p-2 h-32"
+              />
+              <div className="text-xs text-muted-foreground">
+                SMS will be sent as plain text to all selected registrations.
+              </div>
+            </div>
+          )}
+
+          <p className="text-sm text-muted-foreground mt-2">
+            Sending to {selectedRegistrations.length} recipient(s)
+          </p>
+
           <DialogFooter className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setEmailModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSendEmailWithContent}>Send Email</Button>
+            <Button onClick={handleSend}>
+              {mode === "email" ? "Send Email" : "Send SMS"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
