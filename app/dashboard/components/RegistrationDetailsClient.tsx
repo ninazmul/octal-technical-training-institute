@@ -140,7 +140,13 @@ export default function RegistrationDetailsClient({
                 >
                   <Printer className="w-4 h-4" /> Print
                 </button>
-                <CertificateDownloader registration={registration} course={course} settings={settings} />
+                {registration.certificateStatus === "Certified" && (
+                  <CertificateDownloader
+                    registration={registration}
+                    course={course}
+                    settings={settings}
+                  />
+                )}
               </div>
             </div>
           </motion.header>

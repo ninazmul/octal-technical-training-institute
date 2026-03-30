@@ -131,13 +131,15 @@ export default function CertificateDownloader({
 
           {/* Download */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-            <button
-              onClick={handleDownload}
-              disabled={loading}
-              className="px-5 py-2.5 bg-primary text-white rounded-md shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download /> {loading ? "Generating..." : "Download"}
-            </button>
+            {registration.certificateStatus === "Certified" && (
+              <button
+                onClick={handleDownload}
+                disabled={loading}
+                className="px-5 py-2.5 bg-primary text-white rounded-md shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download /> {loading ? "Generating..." : "Download"}
+              </button>
+            )}
           </div>
         </div>
       )}
