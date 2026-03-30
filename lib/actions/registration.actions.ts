@@ -5,6 +5,7 @@ import { handleError } from "../utils";
 import Registration from "../database/models/registration.model";
 import Course from "../database/models/course.model";
 import { sendRegistrationSuccessEmail } from "../mailer/sendRegistrationSuccess";
+import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 
 // -------------------- Serialized types --------------------
 export type SerializedCourse = { _id: string };
@@ -303,6 +304,16 @@ export const confirmRegistrationPayment = async (
       });
     } catch (err) {
       console.error("Email error:", err);
+    }
+
+    // After email send
+    try {
+      if (registration.number) {
+        const smsMessage = `Your registration for '${course.title}', Batch-${course.batch} has been completed. Thank you!`;
+        await sendRegistrationSMS(registration.number, smsMessage);
+      }
+    } catch (err) {
+      console.error("SMS error:", err);
     }
 
     return serializeRegistration(registration.toObject());
