@@ -122,7 +122,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:justify-items-center w-full px-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:justify-items-center w-full px-12">
           {/* Contact Info */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">যোগাযোগ</h3>
@@ -141,6 +141,22 @@ const Footer = () => {
                 <MapPin size={16} /> <span>{setting.address}</span>
               </div>
             )}
+          </div>
+
+          {/* Links */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold">গুরুত্বপূর্ণ লিংকসমূহ</h3>
+            <div className="grid grid-cols-1">
+              {setting?.links?.map((link, idx) => (
+                <Link
+                  href={link.url || "#"}
+                  key={idx}
+                  className="opacity-90 hover:text-white transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* Others */}
