@@ -372,7 +372,10 @@ export const getRegistrationByNumber = async (
       .populate("course", "title category batch price discountPrice")
       .lean<Record<string, unknown>>();
 
-    if (!raw) throw new Error("Registration not found");
+    // ✅ Return null instead of throwing
+    if (!raw) {
+      return null;
+    }
 
     return serializeRegistration(raw);
   } catch (error) {

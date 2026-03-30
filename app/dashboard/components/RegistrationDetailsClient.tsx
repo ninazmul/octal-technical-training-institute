@@ -20,6 +20,7 @@ import { SerializedRegistration } from "@/lib/actions/registration.actions";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import { ISettingSafe } from "@/lib/database/models/setting.model";
 import { FaCertificate } from "react-icons/fa";
+import CertificateDownloader from "@/components/shared/CertificateDownloader";
 
 export default function RegistrationDetailsClient({
   registration,
@@ -121,7 +122,7 @@ export default function RegistrationDetailsClient({
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
               {registration.englishName || "Unnamed Student"}
             </h1>
-            <div className="mt-3 flex items-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <span className="text-sm text-gray-500">
                 Registration #:{" "}
                 <span className="font-medium text-gray-800 dark:text-gray-100">
@@ -130,7 +131,7 @@ export default function RegistrationDetailsClient({
               </span>
 
               {/* Action Buttons */}
-              <div className="ml-auto">
+              <div className="md:ml-auto flex flex-wrap gap-2 items-center">
                 <button
                   onClick={() => {
                     handlePrint();
@@ -139,6 +140,7 @@ export default function RegistrationDetailsClient({
                 >
                   <Printer className="w-4 h-4" /> Print
                 </button>
+                <CertificateDownloader registration={registration} course={course} settings={settings} />
               </div>
             </div>
           </motion.header>
