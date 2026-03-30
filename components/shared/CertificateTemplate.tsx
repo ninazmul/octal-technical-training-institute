@@ -53,7 +53,7 @@ export default function CertificateTemplate({
 
       {/* Student Name */}
       <div className="absolute top-[58mm] left-[73mm] w-[120mm] border-b border-gray-700">
-        <span className="text-[32px] truncate block pb-[2mm] w-[120mm]">
+        <span className="text-[32px] truncate block pb-[4mm] w-[120mm]">
           {registration.englishName}
         </span>
       </div>
