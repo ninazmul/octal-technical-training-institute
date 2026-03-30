@@ -55,6 +55,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   privacyPolicy: "",
   hero: { title: "", description: "", image: "" },
   popup: { image: "" },
+  certificate: "",
   features: { badge: "", title: "", description: "", items: [] },
   testimonials: {
     badge: "",
@@ -73,6 +74,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
     logos: [],
   },
   faqs: { badge: "", title: "", description: "", items: [] },
+  links: [],
   createdAt: new Date(),
   updatedAt: new Date(),
 };

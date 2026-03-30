@@ -31,7 +31,7 @@ export default function CertificateTemplate({
     >
       {/* Background */}
       <Image
-        src="/assets/images/certificate.png"
+        src={settings?.certificate || "/assets/images/certificate.png"}
         alt="Certificate Background"
         fill
         className="object-cover"

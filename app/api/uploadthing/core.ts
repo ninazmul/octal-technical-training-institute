@@ -4,8 +4,8 @@ const f = createUploadthing();
 
 export const ourFileRouter = {
   mediaUploader: f({
-    image: { maxFileSize: "4MB" },
-    "application/pdf": { maxFileSize: "4MB" },
+    image: { maxFileSize: "32MB" },
+    "application/pdf": { maxFileSize: "32MB" },
   }).onUploadComplete(async ({ file }) => {
     console.log("Upload complete:", file.ufsUrl);
     return { uploadedAt: new Date().toISOString() };

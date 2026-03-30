@@ -153,6 +153,8 @@ export interface SettingParams {
   // ===== Popup Section =====
   popup?: Popup;
 
+  certificate?: string;
+
   // ===== Features =====
   features?: IFeatures; // single object
 
@@ -167,6 +169,11 @@ export interface SettingParams {
 
   // ===== FAQs =====
   faqs?: Faq; // single object with items array
+
+  links?: {
+    name?: string;
+    url?: string;
+  }[];
 
   createdAt?: Date;
   updatedAt?: Date;

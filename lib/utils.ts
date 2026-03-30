@@ -196,6 +196,7 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
           offerEndDate: setting.popup.offerEndDate ?? "",
         }
       : undefined,
+    certificate: setting.certificate ?? "",
     features: setting.features
       ? {
           badge: setting.features.badge ?? "",
@@ -265,6 +266,12 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
           })),
         }
       : undefined,
+
+    links: (setting.links ?? []).map((link) => ({
+      name: link.name ?? "",
+      url: link.url ?? "",
+    })),
+    
     createdAt: setting.createdAt ? setting.createdAt.toISOString() : "",
     updatedAt: setting.updatedAt ? setting.updatedAt.toISOString() : "",
   };

@@ -85,6 +85,8 @@ export const settingSchema = z.object({
     })
     .optional(),
 
+  certificate: optionalString,
+
   features: z
     .object({
       badge: optionalString,
@@ -209,6 +211,19 @@ export const settingSchema = z.object({
       description: "",
       items: [],
     }),
+
+  links: z
+    .array(
+      z
+        .object({
+          name: optionalString,
+          url: optionalUrl,
+        })
+        .refine((data) => data.name || data.url, {
+          message: "Link must have at least a name or url",
+        }),
+    )
+    .default([]),
 });
 
 export type SettingFormValues = z.infer<typeof settingSchema>;
@@ -276,6 +291,16 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   } = useFieldArray({
     control: form.control,
     name: "faqs.items",
+  });
+
+  // Links array
+  const {
+    fields: linkFields,
+    append: appendLink,
+    remove: removeLink,
+  } = useFieldArray({
+    control: form.control,
+    name: "links",
   });
 
   const saveField = async () => {
@@ -512,6 +537,35 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           }}
                         />
                       </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Certificate BG */}
+              <FormField
+                control={form.control}
+                name="certificate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Certificate Template *</FormLabel>
+                    <FormControl>
+                      <FileUploader
+                        imageUrl={field.value || ""}
+                        onFieldChange={async (_blobUrl, files) => {
+                          if (files?.length) {
+                            const uploaded = await startUpload(files);
+                            if (uploaded?.[0]) {
+                              form.setValue("certificate", uploaded[0].url, {
+                                shouldValidate: true,
+                              });
+                              saveField();
+                            }
+                          }
+                        }}
+                        setFiles={() => {}}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1560,6 +1614,56 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     Add Item
                   </button>
                 </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ===== Links ===== */}
+          <AccordionItem value="links">
+            <AccordionTrigger>Links</AccordionTrigger>
+            <AccordionContent className="">
+              {/* Links Items */}
+              <div className="space-y-2 p-2">
+                {linkFields.map((link, iIndex) => (
+                  <div key={link.id} className="flex gap-2 items-center">
+                    <FormField
+                      control={form.control}
+                      name={`links.${iIndex}.name`}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          placeholder="Name"
+                          onBlur={saveField}
+                        />
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`links.${iIndex}.url`}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          placeholder="Url"
+                          onBlur={saveField}
+                        />
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeLink(iIndex)}
+                      className="btn btn-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => appendLink({ name: "", url: "" })}
+                  className="btn btn-sm"
+                >
+                  Add URL
+                </button>
               </div>
             </AccordionContent>
           </AccordionItem>

@@ -48,6 +48,11 @@ export interface IFaq {
   items?: IFaqItem[];
 }
 
+export interface ILink {
+  name?: string;
+  url?: string;
+}
+
 export interface IFeatureItem {
   title?: string;
   description?: string;
@@ -115,6 +120,8 @@ export interface ISetting extends Document {
     offerEndDate?: string;
   };
 
+  certificate?: string;
+
   // Features (single object with arrays inside)
   features?: IFeatures;
 
@@ -129,6 +136,9 @@ export interface ISetting extends Document {
 
   // FAQs (single object with items array)
   faqs?: IFaq;
+
+  // LINKS (single object with items array)
+  links?: ILink[];
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -175,6 +185,8 @@ export interface ISettingSafe {
     offerStartDate?: string;
     offerEndDate?: string;
   };
+
+  certificate?: string;
 
   // Features
   features?: {
@@ -244,6 +256,11 @@ export interface ISettingSafe {
     }[];
   };
 
+  links?: {
+    name?: string;
+    url?: string;
+  }[];
+
   createdAt: string;
   updatedAt: string;
 }
@@ -292,6 +309,8 @@ const SettingSchema = new Schema<ISetting>(
       offerStartDate: { type: String, default: "" },
       offerEndDate: { type: String, default: "" },
     },
+
+    certificate: { type: String },
 
     features: {
       badge: { type: String, default: "" },
@@ -362,6 +381,16 @@ const SettingSchema = new Schema<ISetting>(
           answer: { type: String, default: "" },
         },
       ],
+    },
+
+    links: {
+      type: [
+        {
+          name: { type: String, default: "" },
+          url: { type: String, default: "" },
+        },
+      ],
+      default: [],
     },
   },
   { timestamps: true },
