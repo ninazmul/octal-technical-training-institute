@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Settings,
   MessageCircle,
+  ClipboardCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,6 +47,12 @@ const sidebarItems = [
     title: "Registrations",
     url: "/dashboard/registrations",
     icon: ClipboardList, // better for tracking entries
+    roles: ["admin", "moderator"],
+  },
+  {
+    title: "Quick Registration", // updated to reflect quick course registration
+    url: "/dashboard/applies",
+    icon: ClipboardCheck, // indicates user/application intent
     roles: ["admin", "moderator"],
   },
   {

@@ -215,3 +215,11 @@ export type ComplainParams = {
   details: string;
   proof?: string;
 };
+
+// ====== APPLY PARAMS
+export type ApplyParams = {
+  name: string;
+  email: string;
+  phone: string;
+  course: string;
+};
