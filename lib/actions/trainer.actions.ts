@@ -4,6 +4,12 @@ import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
 import Trainer from "../database/models/trainer.model";
 import { TrainerParams } from "@/types";
+import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+
+const BRAND_NAME = "Octal Technical Training Institute";
+
+const buildTrainerSMS = (name: string) =>
+  `Hi ${name}, your trainer application has been received. Our team will review it and contact you shortly with next steps. - ${BRAND_NAME}`;
 
 export const createTrainer = async (params: TrainerParams) => {
   try {
@@ -11,9 +17,23 @@ export const createTrainer = async (params: TrainerParams) => {
 
     const newTrainer = await Trainer.create(params);
 
-    return JSON.parse(JSON.stringify(newTrainer));
+    if (newTrainer.phone) {
+      const smsMessage = buildTrainerSMS(newTrainer.name);
+
+      setImmediate(() => {
+        sendRegistrationSMS(newTrainer.phone, smsMessage).catch((err) => {
+          console.error("SMS error:", {
+            phone: newTrainer.phone,
+            error: err.message,
+          });
+        });
+      });
+    }
+
+    return newTrainer.toObject();
   } catch (error) {
     handleError(error);
+    throw error;
   }
 };
 
@@ -36,10 +56,14 @@ export const updateTrainer = async (
   try {
     await connectToDatabase();
 
-    const updatedTrainer = await Trainer.findByIdAndUpdate(trainerId, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedTrainer = await Trainer.findByIdAndUpdate(
+      trainerId,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
     if (!updatedTrainer) {
       throw new Error("Trainer not found");

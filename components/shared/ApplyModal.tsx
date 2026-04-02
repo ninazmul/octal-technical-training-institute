@@ -39,13 +39,14 @@ const ApplyModal = ({ courses }: ApplyModalProps) => {
           overflow-x-hidden
           bg-white dark:bg-gray-800
           p-4 sm:p-6
+          font-bengali
         "
       >
         <DialogHeader>
           <DialogTitle>কোর্স রেজিস্ট্রেশন</DialogTitle>
         </DialogHeader>
 
-        <p className="mb-4 text-sm text-muted-foreground">
+        <p className="mb-4 text-sm text-muted-foreground font-bengali">
           আপনার পছন্দের কোর্সে আবেদন করুন এবং সিট নিশ্চিত করুন। সীমিত সিট, তাই
           এখনই আবেদন করুন!
         </p>

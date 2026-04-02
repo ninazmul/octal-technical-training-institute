@@ -4,13 +4,32 @@ import { connectToDatabase } from "../database";
 import Complain from "../database/models/complain.model";
 import { ComplainParams } from "@/types";
 import { handleError } from "../utils";
+import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 
 // 🔹 Create
+const BRAND_NAME = "Octal Technical Training Institute";
+
+const buildComplainSMS = (name: string) =>
+  `Hi ${name}, we have received your complaint. Our team is reviewing it and will contact you shortly. - ${BRAND_NAME}`;
+
 export const createComplain = async (params: ComplainParams) => {
   try {
     await connectToDatabase();
 
     const complain = await Complain.create(params);
+
+    if (complain.phone) {
+      const smsMessage = buildComplainSMS(complain.name);
+
+      setImmediate(() => {
+        sendRegistrationSMS(complain.phone, smsMessage).catch((err) => {
+          console.error("SMS error:", {
+            phone: complain.phone,
+            error: err.message,
+          });
+        });
+      });
+    }
 
     return complain.toObject();
   } catch (error) {

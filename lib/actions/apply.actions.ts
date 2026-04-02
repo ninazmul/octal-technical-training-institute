@@ -4,13 +4,26 @@ import { connectToDatabase } from "../database";
 import { ApplyParams } from "@/types";
 import { handleError } from "../utils";
 import Apply from "../database/models/apply.model";
+import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 
 // 🔹 Create
 export const applyRegistration = async (params: ApplyParams) => {
   try {
     await connectToDatabase();
 
+    // 2. Create Registration
     const apply = await Apply.create(params);
+
+    // 3. Async SMS (non-blocking)
+    if (apply.phone) {
+      const smsMessage = `Hi ${apply.name}, your registration is confirmed. We’ll contact you soon with course details and next steps. - Octal Technical Training Institute`;
+
+      setImmediate(() => {
+        sendRegistrationSMS(apply.phone, smsMessage).catch((err) => {
+          console.error("SMS error:", err);
+        });
+      });
+    }
 
     return apply.toObject();
   } catch (error) {
