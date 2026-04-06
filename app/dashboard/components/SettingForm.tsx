@@ -243,6 +243,10 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
     defaultValues: settingSchema.parse(initialData ?? {}),
   });
 
+  const {
+    formState: { isDirty, isSubmitting },
+  } = form;
+
   // Features.items array
   const {
     fields: featureFields,
@@ -303,22 +307,21 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
     name: "links",
   });
 
-  const saveField = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
-    try {
-      await onSubmit(form.getValues());
-      toast.success("Settings saved!");
-      router.refresh();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to save settings.");
-    }
-  };
-
   return (
     <Form {...form}>
-      <form className="space-y-6 max-w-5xl mx-auto p-6 bg-white rounded shadow">
+      <form
+        onSubmit={form.handleSubmit(async (data) => {
+          try {
+            await onSubmit(data);
+            toast.success("Settings saved!");
+            router.refresh();
+          } catch (error) {
+            console.error(error);
+            toast.error("Failed to save settings.");
+          }
+        })}
+        className="space-y-6 max-w-5xl mx-auto p-6 bg-white rounded shadow"
+      >
         <Accordion type="single" collapsible defaultValue="branding">
           {/* ===== Branding & Contact ===== */}
           <AccordionItem value="branding">
@@ -342,7 +345,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 form.setValue("logo", uploaded[0].url, {
                                   shouldValidate: true,
                                 });
-                                saveField();
                               }
                             }
                           }}
@@ -371,7 +373,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 form.setValue("favicon", uploaded[0].url, {
                                   shouldValidate: true,
                                 });
-                                saveField();
                               }
                             }
                           }}
@@ -393,11 +394,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     <FormItem>
                       <FormLabel>Site Name *</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Site name"
-                          {...field}
-                          onBlur={saveField}
-                        />
+                        <Input placeholder="Site name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -411,11 +408,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     <FormItem>
                       <FormLabel>Tagline</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Tagline"
-                          {...field}
-                          onBlur={saveField}
-                        />
+                        <Input placeholder="Tagline" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -435,7 +428,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         value={field.value || ""}
                         onChange={(val) => {
                           field.onChange(val);
-                          saveField();
                         }}
                       />
                     </FormControl>
@@ -453,12 +445,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     <FormItem>
                       <FormLabel>Email *</FormLabel>
                       <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          {...field}
-                          onBlur={saveField}
-                        />
+                        <Input type="email" placeholder="Email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -472,11 +459,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                     <FormItem>
                       <FormLabel>Phone Number *</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Phone number"
-                          {...field}
-                          onBlur={saveField}
-                        />
+                        <Input placeholder="Phone number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -491,7 +474,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   <FormItem>
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Textarea {...field} rows={3} onBlur={saveField} />
+                      <Textarea {...field} rows={3} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -512,7 +495,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           color={field.value || "#000000"}
                           onChange={(color) => {
                             field.onChange(color);
-                            saveField();
                           }}
                         />
 
@@ -532,7 +514,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             // Optional: basic hex validation
                             if (/^#([0-9A-Fa-f]{0,6})$/.test(val)) {
                               field.onChange(val);
-                              saveField();
                             }
                           }}
                         />
@@ -560,7 +541,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                               form.setValue("certificate", uploaded[0].url, {
                                 shouldValidate: true,
                               });
-                              saveField();
                             }
                           }
                         }}
@@ -601,7 +581,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             typeof field.value === "string" ? field.value : ""
                           }
                           type="url"
-                          onBlur={saveField}
                         />
                       </FormControl>
                       <FormMessage />
@@ -631,7 +610,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           value={field.value || ""}
                           onChange={(val) => {
                             field.onChange(val);
-                            saveField();
                           }}
                         />
                       </FormControl>
@@ -661,7 +639,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             value={field.value || ""}
                             onChange={(val) => {
                               field.onChange(val);
-                              saveField();
                             }}
                           />
                         ) : key === "image" ? (
@@ -678,14 +655,13 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                       shouldValidate: true,
                                     },
                                   );
-                                  saveField();
                                 }
                               }
                             }}
                             setFiles={() => {}}
                           />
                         ) : (
-                          <Input {...field} onBlur={saveField} />
+                          <Input {...field} />
                         )}
                       </FormControl>
                       <FormMessage />
@@ -714,7 +690,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             type="date"
                             value={dateValue}
                             onChange={(e) => field.onChange(e.target.value)} // Keep string
-                            onBlur={saveField}
                           />
                         </FormControl>
                         <FormMessage />
@@ -748,7 +723,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 form.setValue(`popup.${key}`, uploaded[0].url, {
                                   shouldValidate: true,
                                 });
-                                saveField();
                               }
                             }
                           }}
@@ -781,7 +755,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             type="date"
                             value={dateValue}
                             onChange={(e) => field.onChange(e.target.value)} // Keep string
-                            onBlur={saveField}
                           />
                         </FormControl>
                         <FormMessage />
@@ -814,11 +787,10 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             value={field.value || ""}
                             onChange={(val) => {
                               field.onChange(val);
-                              saveField();
                             }}
                           />
                         ) : (
-                          <Input {...field} onBlur={saveField} />
+                          <Input {...field} />
                         )}
                       </FormControl>
 
@@ -850,7 +822,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 {...field}
                                 placeholder="Feature Title"
                                 value={field.value ?? ""}
-                                onBlur={saveField}
                               />
                             </FormControl>
                           </FormItem>
@@ -869,7 +840,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 {...field}
                                 placeholder="Feature Description"
                                 value={field.value ?? ""}
-                                onBlur={saveField}
                               />
                             </FormControl>
                           </FormItem>
@@ -888,7 +858,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 {...field}
                                 placeholder="Icon name (lucide)"
                                 value={field.value ?? ""}
-                                onBlur={saveField}
                               />
                             </FormControl>
                           </FormItem>
@@ -899,7 +868,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         type="button"
                         onClick={async () => {
                           removeFeature(index);
-                          await saveField();
                         }}
                         className="btn btn-sm text-red-500"
                       >
@@ -917,7 +885,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                       description: "",
                       icon: "",
                     });
-                    await saveField();
                   }}
                   className="btn btn-sm text-green-600"
                 >
@@ -951,7 +918,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                               }
                               onChange={(val) => {
                                 field.onChange(val);
-                                saveField();
                               }}
                             />
                           ) : (
@@ -962,7 +928,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                   ? field.value
                                   : ""
                               }
-                              onBlur={saveField}
                             />
                           )}
                         </FormControl>
@@ -987,7 +952,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
                             }
-                            onBlur={saveField}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1008,7 +972,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
                             }
-                            onBlur={saveField}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1029,7 +992,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                             onChange={(e) =>
                               field.onChange(e.target.valueAsNumber)
                             }
-                            onBlur={saveField}
                           />
                         </FormControl>
                         <FormMessage />
@@ -1067,7 +1029,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                           uploaded[0].url,
                                           { shouldValidate: true },
                                         );
-                                        await saveField();
                                       }
                                     }
                                   }}
@@ -1091,7 +1052,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                     {...field}
                                     placeholder="Customer Name"
                                     value={field.value ?? ""}
-                                    onBlur={saveField}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -1117,7 +1077,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                           : Number(e.target.value),
                                       )
                                     }
-                                    onBlur={saveField}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -1136,7 +1095,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                     {...field}
                                     placeholder="Customer feedback"
                                     value={field.value ?? ""}
-                                    onBlur={saveField}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -1148,7 +1106,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           type="button"
                           onClick={async () => {
                             removeFeedback(fIndex);
-                            await saveField();
                           }}
                           className="btn btn-sm text-red-500"
                         >
@@ -1167,7 +1124,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         rating: 0,
                         comment: "",
                       });
-                      await saveField();
                     }}
                     className="btn btn-sm text-green-600"
                   >
@@ -1208,7 +1164,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                 }
                                 onChange={(val) => {
                                   field.onChange(val);
-                                  saveField();
                                 }}
                               />
                             ) : (
@@ -1220,7 +1175,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                     : ""
                                 }
                                 onChange={(e) => field.onChange(e.target.value)}
-                                onBlur={saveField}
                               />
                             )}
                           </FormControl>
@@ -1261,7 +1215,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                           uploaded[0].url,
                                           { shouldValidate: true },
                                         );
-                                        await saveField();
                                       }
                                     }
                                   }}
@@ -1294,7 +1247,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                   onChange={(e) =>
                                     field.onChange(e.target.value)
                                   }
-                                  onBlur={saveField}
                                 />
                               </FormControl>
                             </FormItem>
@@ -1323,7 +1275,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                   onChange={(e) =>
                                     field.onChange(e.target.value)
                                   }
-                                  onBlur={saveField}
                                 />
                               </FormControl>
                             </FormItem>
@@ -1359,7 +1310,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                         onChange={(e) =>
                                           field.onChange(e.target.value)
                                         }
-                                        onBlur={saveField}
                                       />
                                     </FormControl>
                                   </FormItem>
@@ -1374,7 +1324,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           type="button"
                           onClick={async () => {
                             removeMentor(mIndex);
-                            await saveField();
                           }}
                           className="btn btn-sm text-red-500"
                         >
@@ -1433,7 +1382,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                               }
                               onChange={(val) => {
                                 field.onChange(val);
-                                saveField();
                               }}
                             />
                           ) : (
@@ -1444,7 +1392,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                   ? field.value
                                   : ""
                               }
-                              onBlur={saveField}
                             />
                           )}
                         </FormControl>
@@ -1483,7 +1430,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                           uploaded[0].url,
                                           { shouldValidate: true },
                                         );
-                                        await saveField();
                                       }
                                     }
                                   }}
@@ -1507,7 +1453,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                                     {...field}
                                     placeholder="Company Name"
                                     value={field.value ?? ""}
-                                    onBlur={saveField}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -1519,7 +1464,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                           type="button"
                           onClick={async () => {
                             removeLogo(fIndex);
-                            await saveField();
                           }}
                           className="btn btn-sm text-red-500"
                         >
@@ -1536,7 +1480,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         name: "",
                         photo: "",
                       });
-                      await saveField();
                     }}
                     className="btn btn-sm text-green-600"
                   >
@@ -1562,7 +1505,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                       <FormItem>
                         <FormLabel>{key}</FormLabel>
                         <FormControl>
-                          <Input {...field} onBlur={saveField} />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1579,22 +1522,14 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                         control={form.control}
                         name={`faqs.items.${iIndex}.question`}
                         render={({ field }) => (
-                          <Input
-                            {...field}
-                            placeholder="Question"
-                            onBlur={saveField}
-                          />
+                          <Input {...field} placeholder="Question" />
                         )}
                       />
                       <FormField
                         control={form.control}
                         name={`faqs.items.${iIndex}.answer`}
                         render={({ field }) => (
-                          <Input
-                            {...field}
-                            placeholder="Answer"
-                            onBlur={saveField}
-                          />
+                          <Input {...field} placeholder="Answer" />
                         )}
                       />
                       <button
@@ -1630,22 +1565,14 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                       control={form.control}
                       name={`links.${iIndex}.name`}
                       render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="Name"
-                          onBlur={saveField}
-                        />
+                        <Input {...field} placeholder="Name" />
                       )}
                     />
                     <FormField
                       control={form.control}
                       name={`links.${iIndex}.url`}
                       render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="Url"
-                          onBlur={saveField}
-                        />
+                        <Input {...field} placeholder="Url" />
                       )}
                     />
                     <button
@@ -1668,6 +1595,21 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+        <div className="pt-4">
+          <div>
+            {isDirty && (
+              <span className="text-sm text-orange-500">Unsaved changes</span>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!isDirty || isSubmitting}
+            className="bg-primary text-white px-6 py-2 rounded disabled:opacity-50 w-full"
+          >
+            {isSubmitting ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
       </form>
     </Form>
   );
