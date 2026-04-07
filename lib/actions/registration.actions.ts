@@ -415,6 +415,30 @@ export const getRegistrationByEmail = async (
   }
 };
 
+export const getRegistrationsByEmail = async (
+  email: string,
+): Promise<SerializedRegistration[]> => {
+  try {
+    await connectToDatabase();
+
+    const registrations = await Registration.find({ email }).lean();
+
+    const courseIds = registrations.map((reg) => reg.course).filter(Boolean);
+    const courses = await Course.find({ _id: { $in: courseIds } }).lean();
+    const courseMap = new Map(courses.map((c) => [String(c._id), c]));
+
+    return registrations.map((reg) =>
+      serializeRegistration({
+        ...reg,
+        course: courseMap.get(String(reg.course)) || null,
+      }),
+    );
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+};
+
 // -------------------- Update Registration --------------------
 export const updateRegistration = async (
   registrationId: string,

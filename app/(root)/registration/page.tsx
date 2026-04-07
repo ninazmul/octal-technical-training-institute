@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import {
-  getRegistrationByEmail,
+  getRegistrationsByEmail,
   SerializedRegistration,
 } from "@/lib/actions/registration.actions";
 import { getCourseById } from "@/lib/actions/course.actions";
@@ -23,7 +23,7 @@ function normalizeRegistration(r: SerializedRegistration) {
     status: mapStr(r.status),
     paymentStatus: mapStr(r.paymentStatus),
     paymentAmount: mapNum(r.paymentAmount),
-    registrationNumber: mapStr(r.registrationNumber), // ✅ added
+    registrationNumber: mapStr(r.registrationNumber),
     createdAt: r.createdAt ?? undefined,
   };
 }
@@ -44,15 +44,13 @@ const Page = async () => {
     redirect("/sign-in");
   }
 
-  const registrationRaw = await getRegistrationByEmail(email);
+  const registrationRaw = await getRegistrationsByEmail(email);
 
   if (!registrationRaw) {
     redirect("/courses?message=no-registration");
   }
 
-  const registrations = registrationRaw
-    ? [normalizeRegistration(registrationRaw)]
-    : [];
+  const registrations = registrationRaw.map((r) => normalizeRegistration(r));
 
   const coursesMap: Record<string, ICourse | null> = {};
 
