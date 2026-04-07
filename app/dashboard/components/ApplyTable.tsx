@@ -39,13 +39,13 @@ type CourseInfo = {
 };
 
 type Props = {
-  applies: applyItem[];
+  applies: applyItem[] | undefined;
 };
 
 type SortKey = keyof Pick<applyItem, "name" | "email" | "phone" | "createdAt">;
 
 export const ApplyTable: React.FC<Props> = ({ applies }) => {
-  const [list, setList] = useState<applyItem[]>(applies);
+  const [list, setList] = useState<applyItem[]>(applies || []);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -63,7 +63,7 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
   useEffect(() => {
     const fetchCourses = async () => {
       const uniqueIds = [
-        ...new Set(applies.map((r) => r.course).filter(Boolean)),
+        ...new Set(applies?.map((r) => r.course).filter(Boolean)),
       ];
 
       const results = await Promise.all(
