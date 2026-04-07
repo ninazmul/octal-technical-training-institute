@@ -1,11 +1,24 @@
+function normalizePhoneNumber(raw: string): string {
+  let cleaned = raw.trim().replace(/\s+/g, "");
+  if (/^0\d{9,}$/.test(cleaned)) {
+    cleaned = "+880" + cleaned.slice(1);
+  }
+  if (!cleaned.startsWith("+")) {
+    cleaned = "+" + cleaned;
+  }
+  return cleaned;
+}
+
 export async function sendRegistrationSMS(number: string, message: string) {
   try {
+    const normalizedNumber = normalizePhoneNumber(number);
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/send-sms`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ number, message }),
+        body: JSON.stringify({ number: normalizedNumber, message }),
       },
     );
 
