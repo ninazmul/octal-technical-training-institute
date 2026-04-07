@@ -21,14 +21,7 @@ export const createComplain = async (params: ComplainParams) => {
     if (complain.phone) {
       const smsMessage = buildComplainSMS(complain.name);
 
-      setImmediate(() => {
-        sendRegistrationSMS(complain.phone, smsMessage).catch((err) => {
-          console.error("SMS error:", {
-            phone: complain.phone,
-            error: err.message,
-          });
-        });
-      });
+      await sendRegistrationSMS(complain.phone, smsMessage);
     }
 
     return complain.toObject();

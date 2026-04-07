@@ -18,11 +18,7 @@ export const applyRegistration = async (params: ApplyParams) => {
     if (apply.phone) {
       const smsMessage = `Hi ${apply.name}, your registration is confirmed. We’ll contact you soon with course details and next steps. - Octal Technical Training Institute`;
 
-      setImmediate(() => {
-        sendRegistrationSMS(apply.phone, smsMessage).catch((err) => {
-          console.error("SMS error:", err);
-        });
-      });
+      await sendRegistrationSMS(apply.phone, smsMessage);
     }
 
     return apply.toObject();

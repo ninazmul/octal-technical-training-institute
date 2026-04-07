@@ -20,14 +20,7 @@ export const createTrainer = async (params: TrainerParams) => {
     if (newTrainer.phone) {
       const smsMessage = buildTrainerSMS(newTrainer.name);
 
-      setImmediate(() => {
-        sendRegistrationSMS(newTrainer.phone, smsMessage).catch((err) => {
-          console.error("SMS error:", {
-            phone: newTrainer.phone,
-            error: err.message,
-          });
-        });
-      });
+      await sendRegistrationSMS(newTrainer.phone, smsMessage);
     }
 
     return newTrainer.toObject();
