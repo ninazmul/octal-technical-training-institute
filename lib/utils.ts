@@ -6,6 +6,7 @@ import qs from "query-string";
 import { UrlQueryParams, RemoveUrlQueryParams } from "@/types";
 import { ICourse, ICourseSafe } from "./database/models/course.model";
 import { ISetting, ISettingSafe } from "./database/models/setting.model";
+import { IApply } from "./database/models/apply.model";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -275,4 +276,20 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
     createdAt: setting.createdAt ? setting.createdAt.toISOString() : "",
     updatedAt: setting.updatedAt ? setting.updatedAt.toISOString() : "",
   };
+}
+
+export function sanitizeApply(apply: IApply) {
+  return {
+    _id: apply._id.toString(),
+    name: apply.name,
+    email: apply.email,
+    phone: apply.phone,
+    course: apply.course,
+    createdAt: apply.createdAt?.toISOString() ?? "",
+    updatedAt: apply.updatedAt?.toISOString() ?? "",
+  };
+}
+
+export function sanitizeApplies(applies: IApply[]) {
+  return applies.map(sanitizeApply);
 }

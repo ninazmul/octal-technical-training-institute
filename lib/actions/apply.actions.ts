@@ -2,7 +2,7 @@
 
 import { connectToDatabase } from "../database";
 import { ApplyParams } from "@/types";
-import { handleError } from "../utils";
+import { handleError, sanitizeApplies, sanitizeApply } from "../utils";
 import Apply from "../database/models/apply.model";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 
@@ -21,7 +21,7 @@ export const applyRegistration = async (params: ApplyParams) => {
       await sendRegistrationSMS(apply.phone, smsMessage);
     }
 
-    return apply.toObject();
+    return sanitizeApply(apply);
   } catch (error) {
     handleError(error);
     throw error;
@@ -32,10 +32,8 @@ export const applyRegistration = async (params: ApplyParams) => {
 export const getAllApplies = async () => {
   try {
     await connectToDatabase();
-
-    const apply = await Apply.find().lean();
-
-    return JSON.parse(JSON.stringify(apply));
+    const applies = await Apply.find();
+    return sanitizeApplies(applies);
   } catch (error) {
     handleError(error);
   }
@@ -48,17 +46,12 @@ export const updateApply = async (
 ) => {
   try {
     await connectToDatabase();
-
     const apply = await Apply.findByIdAndUpdate(applyId, updateData, {
       new: true,
       runValidators: true,
-    }).lean();
-
-    if (!apply) {
-      throw new Error("Apply not found");
-    }
-
-    return apply;
+    });
+    if (!apply) throw new Error("Apply not found");
+    return sanitizeApply(apply);
   } catch (error) {
     handleError(error);
     throw error;
@@ -69,13 +62,8 @@ export const updateApply = async (
 export const deleteApply = async (applyId: string) => {
   try {
     await connectToDatabase();
-
-    const apply = await Apply.findByIdAndDelete(applyId).lean();
-
-    if (!apply) {
-      throw new Error("Apply not found");
-    }
-
+    const apply = await Apply.findByIdAndDelete(applyId);
+    if (!apply) throw new Error("Apply not found");
     return { success: true };
   } catch (error) {
     handleError(error);

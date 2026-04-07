@@ -14,7 +14,7 @@ export async function sendRegistrationSMS(number: string, message: string) {
     const normalizedNumber = normalizePhoneNumber(number);
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/send-sms`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/send-sms`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
