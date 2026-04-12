@@ -21,6 +21,7 @@ const Footer = () => {
     { label: "আমাদের সম্পর্কে", route: "/about" },
     { label: "কোর্স সমূহ", route: "/courses" },
     { label: "সাফল্যের গল্প", route: "/successStories" },
+    { label: "সার্টিফিকেট যাচাই", route: "/verify" },
     { label: "গ্যালারি", route: "/gallery" },
     { label: "নোটিশ", route: "/notices" },
     { label: "অভিযোগ", route: "/complain" },
