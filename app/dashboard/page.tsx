@@ -18,7 +18,9 @@ type DashboardPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+export default async function DashboardPage({
+  searchParams,
+}: DashboardPageProps) {
   try {
     const parsedSearchParams = (await searchParams) ?? {};
     const presetValue = parsedSearchParams.preset;
@@ -27,7 +29,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
     const dateFilter = resolveDashboardDateFilter({
       preset: Array.isArray(presetValue) ? presetValue[0] : presetValue,
-      startDate: Array.isArray(startDateValue) ? startDateValue[0] : startDateValue,
+      startDate: Array.isArray(startDateValue)
+        ? startDateValue[0]
+        : startDateValue,
       endDate: Array.isArray(endDateValue) ? endDateValue[0] : endDateValue,
     });
 
