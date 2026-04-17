@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FaCertificate } from "react-icons/fa";
+import CourseHero from "./CourseHero";
 
 export default function CourseDetailsClient({
   course,
@@ -28,33 +28,32 @@ export default function CourseDetailsClient({
         <div>
           {/* Header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-snug text-gray-900 dark:text-gray-100 mb-4">
-              {course.title}
-            </h1>
-            <div
-              className="prose prose-base max-w-none dark:prose-invert text-justify"
-              dangerouslySetInnerHTML={{ __html: course.description }}
-            />
-          </motion.div>
-
-          {/* Course Image */}
-          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
             className="relative w-full mb-10 rounded-2xl overflow-hidden shadow-xl group"
           >
-            <Image
-              src={course.photo || "/assets/images/placeholder.png"}
-              alt={course.title}
-              width={1200}
-              height={0}
-              className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
+            {" "}
+            {/* Hero Section */}
+            <CourseHero
+              image={course.photo}
+              title={course.title}
+              certification={course.certification}
+              category={course.category}
+            />
+          </motion.div>
+
+          {/* Course Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8"
+          >
+            <h2 className="text-2xl font-semibold mb-6">Introduction</h2>
+            <div
+              className="prose prose-base max-w-none dark:prose-invert text-justify"
+              dangerouslySetInnerHTML={{ __html: course.description }}
             />
           </motion.div>
 
