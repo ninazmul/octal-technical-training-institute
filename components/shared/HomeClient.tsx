@@ -26,7 +26,7 @@ export default function Home({
     <main>
       <Popup setting={setting} />
       <Hero setting={setting} courses={courses} />
-      <NoticeHeading setting={setting} notices={notices} />
+      <NoticeHeading notices={notices} />
       <section id="courses">
         <CoursesContent setting={setting} courses={courses} />
       </section>

@@ -1,31 +1,22 @@
 "use client";
 
 import { INotice } from "@/lib/database/models/notice.model";
-import { ISettingSafe } from "@/lib/database/models/setting.model";
 import Marquee from "react-fast-marquee";
 import Link from "next/link";
 
 function NoticeHeading({
-  setting,
   notices,
 }: {
-  setting: ISettingSafe | null;
   notices: INotice[] | undefined;
 }) {
-  const themeColor = setting?.theme || "#0055CE"; // LMS blue default
 
   return (
-    <div className="w-full bg-white py-4">
+    <div className="w-full bg-white py-4 ">
       {notices && (
         <div className="max-w-7xl mx-auto flex items-center gap-4 px-6">
           {/* Left-side style badge */}
           <div
-            className="border rounded-full px-4 py-1 text-sm shadow-md font-semibold flex-shrink-0"
-            style={{
-              backgroundColor: `${themeColor}20`,
-              borderColor: themeColor,
-              color: "#000000",
-            }}
+            className="bg-primary text-white rounded-full px-4 py-1 text-sm shadow-md font-semibold flex-shrink-0"
           >
             নোটিশঃ
           </div>
