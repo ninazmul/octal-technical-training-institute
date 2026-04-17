@@ -6,6 +6,7 @@ import Image from "next/image";
 import { CourseLink } from "@/components/shared/CourseLink";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import { getCourses } from "@/lib/actions/course.actions";
+import CountdownTimer from "@/components/shared/CountdownTimer";
 
 type TabKey = "all" | "upcoming" | "ongoing" | "old";
 
@@ -121,11 +122,18 @@ export default function CoursesPage() {
             >
               <div className="relative w-full h-48">
                 <Image
-                  src={course.photo || "/assets/images/placeholder.png"}
+                  src={course.photo}
                   alt={course.title}
                   fill
                   className="object-cover"
                 />
+
+                {/* Timer badge */}
+                {course.registrationDeadline && (
+                  <div className="absolute top-2 left-0">
+                    <CountdownTimer deadline={course.registrationDeadline} />
+                  </div>
+                )}
               </div>
               <div className="p-5 flex flex-col flex-1 text-left">
                 <CourseLink id={course._id.toString()}>

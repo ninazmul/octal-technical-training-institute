@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { CourseLink } from "./CourseLink";
+import CountdownTimer from "./CountdownTimer";
 
 function Courses({
   setting,
@@ -80,6 +81,13 @@ function Courses({
                   fill
                   className="object-cover"
                 />
+
+                {/* Timer badge */}
+                {course.registrationDeadline && (
+                  <div className="absolute top-2 left-0">
+                    <CountdownTimer deadline={course.registrationDeadline} />
+                  </div>
+                )}
               </div>
 
               {/* Course Info */}
