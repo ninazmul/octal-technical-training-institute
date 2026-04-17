@@ -5,6 +5,7 @@ import { ApplyParams } from "@/types";
 import { handleError, sanitizeApplies, sanitizeApply } from "../utils";
 import Apply from "../database/models/apply.model";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 
 // 🔹 Create
 export const applyRegistration = async (params: ApplyParams) => {
@@ -20,6 +21,12 @@ export const applyRegistration = async (params: ApplyParams) => {
 
       await sendRegistrationSMS(apply.phone, smsMessage);
     }
+
+    const emailMessage = `New registration received:\n\nName: ${apply.name}\nEmail: ${apply.email}\nMessage: ${apply.message || "No message provided"}`;
+    await sendSystemNotificationEmail({
+      subject: "New Registration",
+      message: emailMessage,
+    });
 
     return sanitizeApply(apply);
   } catch (error) {

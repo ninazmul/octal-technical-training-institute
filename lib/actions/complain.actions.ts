@@ -5,6 +5,7 @@ import Complain from "../database/models/complain.model";
 import { ComplainParams } from "@/types";
 import { handleError } from "../utils";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 
 // 🔹 Create
 const BRAND_NAME = "Octal Technical Training Institute";
@@ -23,6 +24,13 @@ export const createComplain = async (params: ComplainParams) => {
 
       await sendRegistrationSMS(complain.phone, smsMessage);
     }
+
+    // 🔹 Send notification email to CONTACT_RECEIVER
+    const emailMessage = `New complaint received:\n\nName: ${complain.name}\nEmail: ${complain.email}\nMessage: ${complain.message || "No message provided"}`;
+    await sendSystemNotificationEmail({
+      subject: "New Complaint",
+      message: emailMessage,
+    });
 
     return complain.toObject();
   } catch (error) {

@@ -5,6 +5,7 @@ import { connectToDatabase } from "../database";
 import Trainer from "../database/models/trainer.model";
 import { TrainerParams } from "@/types";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 
 const BRAND_NAME = "Octal Technical Training Institute";
 
@@ -22,6 +23,12 @@ export const createTrainer = async (params: TrainerParams) => {
 
       await sendRegistrationSMS(newTrainer.phone, smsMessage);
     }
+
+    const emailMessage = `New trainer application received:\n\nName: ${newTrainer.name}\nEmail: ${newTrainer.email}\nMessage: ${newTrainer.message || "No message provided"}`;
+    await sendSystemNotificationEmail({
+      subject: "New Trainer Application",
+      message: emailMessage,
+    });
 
     return newTrainer.toObject();
   } catch (error) {

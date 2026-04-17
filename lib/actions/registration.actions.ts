@@ -6,6 +6,7 @@ import Registration from "../database/models/registration.model";
 import Course from "../database/models/course.model";
 import { sendRegistrationSuccessEmail } from "../mailer/sendRegistrationSuccess";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 
 // -------------------- Serialized types --------------------
 export type SerializedCourse = { _id: string };
@@ -314,6 +315,16 @@ export const confirmRegistrationPayment = async (
       }
     } catch (err) {
       console.error("SMS error:", err);
+    }
+
+    try {
+      const notifyMessage = `Payment confirmed:\n\nName: ${registration.englishName}\nEmail: ${registration.email}\nCourse: ${course.title}\nTransaction ID: ${trxData.transactionId}\nMethod: ${registration.paymentMethod}`;
+      await sendSystemNotificationEmail({
+        subject: "Registration Payment Confirmed",
+        message: notifyMessage,
+      });
+    } catch (err) {
+      console.error("Notification email error:", err);
     }
 
     return serializeRegistration(registration.toObject());
