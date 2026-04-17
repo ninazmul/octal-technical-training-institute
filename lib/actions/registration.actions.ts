@@ -7,6 +7,7 @@ import Course from "../database/models/course.model";
 import { sendRegistrationSuccessEmail } from "../mailer/sendRegistrationSuccess";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
+import { DashboardDateFilterResolved } from "../dashboard-date-filter";
 
 // -------------------- Serialized types --------------------
 export type SerializedCourse = { _id: string };
@@ -65,6 +66,10 @@ export type RegistrationParams = {
     | "Bank Transfer"
     | "Mobile Payment"
     | "Other";
+};
+
+export type RegistrationListFilter = {
+  dateFilter?: Pick<DashboardDateFilterResolved, "startDate" | "endDate">;
 };
 
 // -------------------- Helpers --------------------
@@ -334,11 +339,27 @@ export const confirmRegistrationPayment = async (
 };
 
 // -------------------- Get All Registrations --------------------
-export const getRegistrations = async (): Promise<SerializedRegistration[]> => {
+export const getRegistrations = async (
+  filter?: RegistrationListFilter,
+): Promise<SerializedRegistration[]> => {
   try {
     await connectToDatabase();
-    const raw = await Registration.find()
+    const dateQuery: Record<string, Date> = {};
+    if (filter?.dateFilter?.startDate) {
+      dateQuery.$gte = filter.dateFilter.startDate;
+    }
+    if (filter?.dateFilter?.endDate) {
+      dateQuery.$lte = filter.dateFilter.endDate;
+    }
+
+    const query: Record<string, unknown> = {};
+    if (Object.keys(dateQuery).length > 0) {
+      query.createdAt = dateQuery;
+    }
+
+    const raw = await Registration.find(query)
       .populate("course", "title category batch price discountPrice")
+      .sort({ createdAt: -1 })
       .lean<Record<string, unknown>[]>();
 
     return raw.map((r) => serializeRegistration(r));

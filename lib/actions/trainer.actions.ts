@@ -6,11 +6,40 @@ import Trainer from "../database/models/trainer.model";
 import { TrainerParams } from "@/types";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
+import { DashboardDateFilterResolved } from "../dashboard-date-filter";
 
 const BRAND_NAME = "Octal Technical Training Institute";
 
 const buildTrainerSMS = (name: string) =>
   `Hi ${name}, your trainer application has been received. Our team will review it and contact you shortly with next steps. - ${BRAND_NAME}`;
+
+export type SerializedTrainer = {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  cv: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+type TrainerListFilter = {
+  dateFilter?: Pick<DashboardDateFilterResolved, "startDate" | "endDate">;
+};
+
+function serializeTrainer(raw: Record<string, unknown>): SerializedTrainer {
+  return {
+    _id: String(raw._id ?? ""),
+    name: String(raw.name ?? ""),
+    email: String(raw.email ?? ""),
+    phone: String(raw.phone ?? ""),
+    address: String(raw.address ?? ""),
+    cv: raw.cv ? String(raw.cv) : null,
+    createdAt: raw.createdAt ? new Date(String(raw.createdAt)).toISOString() : null,
+    updatedAt: raw.updatedAt ? new Date(String(raw.updatedAt)).toISOString() : null,
+  };
+}
 
 export const createTrainer = async (params: TrainerParams) => {
   try {
@@ -37,15 +66,33 @@ export const createTrainer = async (params: TrainerParams) => {
   }
 };
 
-export const getAllTrainers = async () => {
+export const getAllTrainers = async (
+  filter?: TrainerListFilter,
+): Promise<SerializedTrainer[]> => {
   try {
     await connectToDatabase();
 
-    const trainers = await Trainer.find().lean();
+    const dateQuery: Record<string, Date> = {};
+    if (filter?.dateFilter?.startDate) {
+      dateQuery.$gte = filter.dateFilter.startDate;
+    }
+    if (filter?.dateFilter?.endDate) {
+      dateQuery.$lte = filter.dateFilter.endDate;
+    }
 
-    return JSON.parse(JSON.stringify(trainers));
+    const query: Record<string, unknown> = {};
+    if (Object.keys(dateQuery).length > 0) {
+      query.createdAt = dateQuery;
+    }
+
+    const trainers = await Trainer.find(query)
+      .sort({ createdAt: -1 })
+      .lean<Record<string, unknown>[]>();
+
+    return trainers.map(serializeTrainer);
   } catch (error) {
     handleError(error);
+    return [];
   }
 };
 
