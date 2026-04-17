@@ -21,11 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { ITrainer } from "@/lib/database/models/trainer.model";
-import { deleteTrainer } from "@/lib/actions/trainer.actions";
+import { deleteTrainer, SerializedTrainer } from "@/lib/actions/trainer.actions";
 import TrainerForm from "./TrainerForm";
 
-const TrainerTable = ({ trainers }: { trainers: ITrainer[] }) => {
+const TrainerTable = ({ trainers }: { trainers: SerializedTrainer[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"name" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");

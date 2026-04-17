@@ -13,11 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash, SortAsc, SortDesc, X } from "lucide-react";
 import toast from "react-hot-toast";
-import { IComplain } from "@/lib/database/models/complain.model";
-import { deleteComplain } from "@/lib/actions/complain.actions";
+import { deleteComplain, SerializedComplain } from "@/lib/actions/complain.actions";
 import Image from "next/image";
 
-const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
+const ComplainTable = ({ complains }: { complains: SerializedComplain[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"name" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -25,7 +24,7 @@ const ComplainTable = ({ complains }: { complains: IComplain[] }) => {
   const [itemsPerPage] = useState(10);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [imageModalSrc, setImageModalSrc] = useState<string | null>(null);
-  const [data, setData] = useState<IComplain[]>(complains);
+  const [data, setData] = useState<SerializedComplain[]>(complains);
 
   const filteredComplains = useMemo(() => {
     const query = searchQuery.toLowerCase();

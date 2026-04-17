@@ -13,12 +13,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import * as z from "zod";
-import { createTrainer, updateTrainer } from "@/lib/actions/trainer.actions"; // <-- new action
+import { createTrainer, SerializedTrainer, updateTrainer } from "@/lib/actions/trainer.actions"; // <-- new action
 import { useState } from "react";
 import { useUploadThing } from "@/lib/uploadthing";
 import { PdfUploader } from "@/components/shared/PdfUploader";
 import toast from "react-hot-toast";
-import { ITrainer } from "@/lib/database/models/trainer.model";
 
 // Zod Schema for Trainer
 export const TrainerFormSchema = z.object({
@@ -37,7 +36,7 @@ const TrainerForm = ({
 }: {
   type: "Create" | "Update";
   trainerId?: string;
-  trainers?: ITrainer;
+  trainers?: SerializedTrainer;
   onSuccess?: () => void;
 }) => {
   const [file, setFile] = useState<File[]>([]);
