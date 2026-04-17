@@ -23,7 +23,7 @@ function Hero({
 
   return (
     <section className="relative w-full bg-gradient-to-r from-blue-50 to-indigo-100 overflow-hidden">
-      <div className="container mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
           {/* Left Content */}
           <motion.div

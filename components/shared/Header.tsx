@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
-import { LogIn, Mail, Phone, Shield } from "lucide-react";
+import { LogIn, Mail, Shield } from "lucide-react";
 import { getUserByClerkId, getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
 
@@ -14,7 +14,13 @@ import { FaFacebookF, FaMagnifyingGlass } from "react-icons/fa6";
 import NavItems from "./NavItems";
 import MobileNav from "./MobileNav";
 import Link from "next/link";
-import { FaInstagram, FaTwitter, FaUsers, FaYoutube } from "react-icons/fa";
+import {
+  FaInstagram,
+  FaTwitter,
+  FaUsers,
+  FaWhatsapp,
+  FaYoutube,
+} from "react-icons/fa";
 
 interface HeaderProps {
   openSearch: () => void;
@@ -69,15 +75,28 @@ export default function Header({ openSearch }: HeaderProps) {
       <div style={{ backgroundColor: themeColor }}>
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between py-2 px-4">
           {/* Contact Info */}
-          <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm font-semibold text-white">
+          <div className="flex flex-wrap items-center gap-4 font-semibold text-white">
             {settings?.phoneNumber && (
               <p className="flex items-center gap-1">
-                <Phone size={14} /> {settings.phoneNumber}
+                <a
+                  href={`https://wa.me/${settings.phoneNumber}?text=Hello%2C%20I%20am%20reaching%20out%20via%20your%20official%20website%20and%20would%20like%20to%20learn%20more%20about%20your%20services.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:border-b transition-colors"
+                >
+                  <FaWhatsapp size={16} />{" "}
+                  {settings.phoneNumber}
+                </a>
               </p>
             )}
             {settings?.email && (
               <p className="hidden md:flex items-center gap-1">
-                <Mail size={14} /> {settings.email}
+                <a
+                  href={`mailto:${settings.email}`}
+                  className="flex items-center gap-1 hover:border-b transition-colors"
+                >
+                  <Mail size={16} /> {settings.email}
+                </a>
               </p>
             )}
           </div>
@@ -90,53 +109,49 @@ export default function Header({ openSearch }: HeaderProps) {
                   href={settings.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-110"
                 >
-                  <FaFacebookF size={20} />
+                  <FaFacebookF size={18} />
                 </a>
               )}
-
               {settings?.instagram && (
                 <a
                   href={settings.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-110"
                 >
-                  <FaInstagram size={20} />
+                  <FaInstagram size={18} />
                 </a>
               )}
-
               {settings?.twitter && (
                 <a
                   href={settings.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-110"
                 >
-                  <FaTwitter size={20} />
+                  <FaTwitter size={18} />
                 </a>
               )}
-
               {settings?.facebookGroup && (
                 <a
                   href={settings.facebookGroup}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-110"
                 >
-                  <FaUsers size={20} />
+                  <FaUsers size={18} />
                 </a>
               )}
-
               {settings?.youtube && (
                 <a
                   href={settings.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-125"
+                  className="bg-white text-primary rounded-full p-1 flex items-center justify-center transition-transform transform hover:scale-110"
                 >
-                  <FaYoutube size={20} />
+                  <FaYoutube size={18} />
                 </a>
               )}
             </div>
