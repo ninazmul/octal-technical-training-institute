@@ -195,17 +195,6 @@ const Footer = () => {
             . All rights reserved.
           </p>
           <p className="">E-Trade License No: 252601303247</p>
-          <p className="flex items-center gap-2">
-            ⚙️ Developed by{" "}
-            <a
-              href="https://www.artistycode.studio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white"
-            >
-              ArtistyCode Studio
-            </a>
-          </p>
         </div>
       </motion.div>
     </footer>
