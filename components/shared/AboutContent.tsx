@@ -117,6 +117,7 @@ export default function AboutContent({
                   // Choose icon based on section id
                   let IconComponent;
                   if (item.id === "about-section") IconComponent = Info;
+                  if (item.id === "ceo-section") IconComponent = Users;
                   if (item.id === "contact-section") IconComponent = Contact;
                   if (item.id === "social-section") IconComponent = Globe;
 
