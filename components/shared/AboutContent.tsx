@@ -37,7 +37,7 @@ export default function AboutContent({
 
     if (settings?.description)
       items.push({ label: "About", id: "about-section" });
-    if (settings?.ceo?.name || settings?.ceo?.about || settings?.ceo?.photo)
+    if (settings?.ceo)
       items.push({ label: "Leadership", id: "ceo-section" });
     if (settings?.email || settings?.phoneNumber || settings?.address)
       items.push({ label: "Contact", id: "contact-section" });
