@@ -23,9 +23,9 @@ export const POST = async (req: NextRequest) => {
     await Promise.all(
       recipients.map((r) =>
         transporter.sendMail({
-          from: `"Octal Technical Training Institute" <${process.env.EMAIL_USER}>`,
+          from: `"Octal TTI" <${process.env.EMAIL_USER}>`,
           to: r.email,
-          subject: r.subject || "Message from Octal Technical Training Institute",
+          subject: r.subject || "Message from Octal TTI",
           html:
             r.html ||
             `<p>Hi ${r.name || "there"},</p><p>This is a message.</p>`,

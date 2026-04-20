@@ -9,7 +9,7 @@ import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEma
 import { DashboardDateFilterResolved } from "../dashboard-date-filter";
 
 // 🔹 Create
-const BRAND_NAME = "Octal Technical Training Institute";
+const BRAND_NAME = "Octal TTI";
 
 const buildComplainSMS = (name: string) =>
   `Hi ${name}, we have received your complaint. Our team is reviewing it and will contact you shortly. - ${BRAND_NAME}`;

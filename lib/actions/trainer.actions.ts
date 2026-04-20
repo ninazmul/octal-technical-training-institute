@@ -8,7 +8,7 @@ import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 import { DashboardDateFilterResolved } from "../dashboard-date-filter";
 
-const BRAND_NAME = "Octal Technical Training Institute";
+const BRAND_NAME = "Octal TTI";
 
 const buildTrainerSMS = (name: string) =>
   `Hi ${name}, your trainer application has been received. Our team will review it and contact you shortly with next steps. - ${BRAND_NAME}`;

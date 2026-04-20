@@ -17,7 +17,7 @@ export const applyRegistration = async (params: ApplyParams) => {
 
     // 3. Async SMS (non-blocking)
     if (apply.phone) {
-      const smsMessage = `Hi ${apply.name}, your registration is confirmed. We’ll contact you soon with course details and next steps. - Octal Technical Training Institute`;
+      const smsMessage = `Hi ${apply.name}, your registration is confirmed. We’ll contact you soon with course details and next steps. - Octal TTI`;
 
       await sendRegistrationSMS(apply.phone, smsMessage);
     }

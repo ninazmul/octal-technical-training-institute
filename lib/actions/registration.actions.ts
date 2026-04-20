@@ -315,7 +315,7 @@ export const confirmRegistrationPayment = async (
     // After email send
     try {
       if (registration.number) {
-        const smsMessage = `Your registration for '${course.title}', Batch-${course.batch} has been completed. Thank you!`;
+        const smsMessage = `Your registration for '${course.title}', Batch-${course.batch} has been completed. Thank you! - Octal TTI`;
         await sendRegistrationSMS(registration.number, smsMessage);
       }
     } catch (err) {
