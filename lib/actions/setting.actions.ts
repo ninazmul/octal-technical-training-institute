@@ -75,7 +75,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   },
   faqs: { badge: "", title: "", description: "", items: [] },
   links: [],
-  isDevelopment: false,
+  maintenanceMode: false,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

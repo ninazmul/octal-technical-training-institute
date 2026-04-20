@@ -273,8 +273,8 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
       url: link.url ?? "",
     })),
 
-    isDevelopment: setting.isDevelopment ?? false,
-    
+    maintenanceMode: setting.maintenanceMode ?? false,
+
     createdAt: setting.createdAt ? setting.createdAt.toISOString() : "",
     updatedAt: setting.updatedAt ? setting.updatedAt.toISOString() : "",
   };

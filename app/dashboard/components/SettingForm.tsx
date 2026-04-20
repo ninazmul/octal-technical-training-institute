@@ -226,7 +226,7 @@ export const settingSchema = z.object({
     )
     .default([]),
 
-  isDevelopment: z.boolean().default(false),
+  maintenanceMode: z.boolean().default(false),
 });
 
 export type SettingFormValues = z.infer<typeof settingSchema>;
@@ -562,13 +562,13 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
                 <FormField
                   control={form.control}
-                  name="isDevelopment"
+                  name="maintenanceMode"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
                       <div>
-                        <FormLabel>Development Mode</FormLabel>
+                        <FormLabel>Maintenance Mode</FormLabel>
                         <p className="text-sm text-muted-foreground">
-                          Enable development/testing features
+                          Temporarily disable public access to the site
                         </p>
                       </div>
                       <FormControl>
