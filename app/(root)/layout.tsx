@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollHeaderWrapper from "@/components/shared/ScrollHeaderWrapper";
 import Header from "@/components/shared/Header";
@@ -9,7 +8,6 @@ import Footer from "@/components/shared/Footer";
 import SearchDrawer from "@/components/shared/SearchDrawer";
 import BengaliFontDetector from "@/components/shared/BengaliFontDetector";
 import Script from "next/script";
-import MaintenancePage from "@/components/shared/MaintenancePage"; // 👈 your animated component
 
 export default function RootLayout({
   children,
@@ -18,38 +16,6 @@ export default function RootLayout({
 }) {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [maintenanceMode, setMaintenanceMode] = useState<boolean | null>(null);
-
-  // Memoized fetch function
-  const fetchSettings = useMemo(
-    () => async () => {
-      try {
-        const res = await axios.get("/api/settings", {
-          headers: { "Cache-Control": "no-store" },
-        });
-        setMaintenanceMode(Boolean(res.data?.maintenanceMode));
-      } catch {
-        setMaintenanceMode(false); // fail-safe
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
-
-  // Detect localhost:3000
-  const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1") &&
-    window.location.port === "3000";
-
-  // Show MaintenancePage if active and not localhost
-  if (maintenanceMode && !isLocalhost) {
-    return <MaintenancePage />;
-  }
 
   return (
     <div className="flex h-screen flex-col">
