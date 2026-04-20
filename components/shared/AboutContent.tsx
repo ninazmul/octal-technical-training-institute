@@ -37,6 +37,8 @@ export default function AboutContent({
 
     if (settings?.description)
       items.push({ label: "About", id: "about-section" });
+    if (settings?.ceo?.name || settings?.ceo?.about || settings?.ceo?.photo)
+      items.push({ label: "Leadership", id: "ceo-section" });
     if (settings?.email || settings?.phoneNumber || settings?.address)
       items.push({ label: "Contact", id: "contact-section" });
 
@@ -187,6 +189,75 @@ export default function AboutContent({
                       __html: settings?.description,
                     }}
                   />{" "}
+                </div>
+              </motion.section>
+            )}
+
+            {/* CEO Section */}
+            {(settings?.ceo?.name ||
+              settings?.ceo?.about ||
+              settings?.ceo?.photo) && (
+              <motion.section
+                id="ceo-section"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm"
+              >
+                <div
+                  className="flex items-center gap-2 p-4 text-white rounded-t-2xl"
+                  style={{ backgroundColor: themeColor }}
+                >
+                  <div>
+                    <Users size={32} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-semibold">নেতৃত্ব</h2>
+                    <h3>Our Leadership</h3>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6 items-start">
+                    {/* Photo */}
+                    {settings?.ceo?.photo && (
+                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden border shadow-sm shrink-0">
+                        <img
+                          src={settings.ceo.photo}
+                          alt={settings.ceo?.name || "CEO"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {/* Content */}
+                    <div className="flex-1 space-y-3">
+                      {/* Name */}
+                      {settings?.ceo?.name && (
+                        <h3
+                          className="text-xl md:text-2xl font-bold"
+                          style={{ color: themeColor }}
+                        >
+                          {settings.ceo.name}
+                        </h3>
+                      )}
+
+                      {/* Role */}
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Chief Executive Officer
+                      </p>
+
+                      {/* About */}
+                      {settings?.ceo?.about && (
+                        <div
+                          className={proseClasses}
+                          dangerouslySetInnerHTML={{
+                            __html: settings.ceo.about,
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
               </motion.section>
             )}
