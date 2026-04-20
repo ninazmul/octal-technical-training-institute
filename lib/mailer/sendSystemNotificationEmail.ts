@@ -66,7 +66,7 @@ export async function sendSystemNotificationEmail({
     `;
 
     await transporter.sendMail({
-      from: `"System Notifications" <${SMTP_USER}>`,
+      from: `"System Notifications"`,
       to: CONTACT_RECEIVER,
       subject: `System Notification: ${subject}`,
       html,

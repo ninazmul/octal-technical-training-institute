@@ -74,7 +74,7 @@ export async function sendRegistrationSuccessEmail({
     `;
 
     await transporter.sendMail({
-      from: `"Octal Training" <${SMTP_USER}>`,
+      from: `"Octal TTI"`,
       to: email,
       subject: "Registration Successful 🎉",
       html,
