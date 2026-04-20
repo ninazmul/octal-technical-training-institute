@@ -601,7 +601,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                 {/* Name */}
                 <FormField
                   control={form.control}
-                  name={"ceo.name" as const}
+                  name={`ceo.name` as const}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>CEO Name</FormLabel>
@@ -616,7 +616,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                 {/* Photo */}
                 <FormField
                   control={form.control}
-                  name={"ceo.photo" as const}
+                  name={`ceo.photo` as const}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>CEO Photo</FormLabel>
@@ -645,7 +645,7 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
               {/* About */}
               <FormField
                 control={form.control}
-                name={"ceo.about" as const}
+                name={`ceo.about` as const}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>About CEO</FormLabel>
