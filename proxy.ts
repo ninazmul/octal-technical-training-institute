@@ -8,20 +8,21 @@ const isProtectedRoute = createRouteMatcher([
   "/registration(.*)",
 ]);
 
-const allowedDuringMaintenance = ["/maintenance", "/api", "/_next"];
+// Public routes that should remain accessible even in maintenance mode
+const allowedDuringMaintenance = [
+  "/maintenance",
+  "/api",
+  "/_next",
+];
 
-// ------------------------------
-// Edge-safe in-memory cache
-// ------------------------------
 let cachedMaintenanceMode: boolean | null = null;
 let lastFetchTime = 0;
-
 const CACHE_TTL = 30 * 1000; // 30s
 
 async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
   const now = Date.now();
 
-  // Serve from cache if valid
+  // Fast cache hit
   if (cachedMaintenanceMode !== null && now - lastFetchTime < CACHE_TTL) {
     return cachedMaintenanceMode;
   }
@@ -32,7 +33,6 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
     });
 
     if (!res.ok) {
-      // Fail-safe: reset cache and assume live
       cachedMaintenanceMode = null;
       return false;
     }
@@ -43,7 +43,6 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
 
     return cachedMaintenanceMode;
   } catch {
-    // Fail-safe: reset cache and assume live
     cachedMaintenanceMode = null;
     return false;
   }
@@ -51,13 +50,10 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
 
 function isAllowedPath(pathname: string) {
   return allowedDuringMaintenance.some((p) =>
-    p === "/maintenance" ? pathname === p : pathname.startsWith(p),
+    p === "/maintenance" ? pathname === p : pathname.startsWith(p)
   );
 }
 
-// ------------------------------
-// Middleware pipeline
-// ------------------------------
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
@@ -66,15 +62,22 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // 1. Fast bypass (no async work if possible)
   if (isLocalhost || isAllowedPath(pathname)) {
-    if (isProtectedRoute(req)) await auth.protect();
+    // Only enforce auth if system is live
+    if (!cachedMaintenanceMode && isProtectedRoute(req)) {
+      await auth.protect();
+    }
     return NextResponse.next();
   }
 
   // 2. Maintenance gate (cached, avoids per-request fetch)
   const maintenanceMode = await getMaintenanceMode(req);
 
-  if (maintenanceMode && pathname !== "/maintenance") {
-    return NextResponse.rewrite(new URL("/maintenance", req.url));
+  if (maintenanceMode) {
+    // Allow whitelisted paths (like /events) without login
+    if (!isAllowedPath(pathname) && pathname !== "/maintenance") {
+      return NextResponse.rewrite(new URL("/maintenance", req.url));
+    }
+    return NextResponse.next();
   }
 
   // 3. Auth layer (only if system is live)
