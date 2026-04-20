@@ -46,7 +46,7 @@ function Hero({
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl md:text-5xl font-bold leading-tight text-gray-900 space-y-2">
+            <h1 className="text-2xl md:text-4xl font-bold leading-tight text-gray-900 space-y-2">
               {titleParts.map((part, index) => (
                 <motion.span
                   key={index}
