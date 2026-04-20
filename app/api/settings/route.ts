@@ -6,15 +6,14 @@ export async function GET() {
     const setting = await getSetting();
 
     return NextResponse.json({
-      maintenanceMode: setting?.maintenanceMode ?? false,
+      maintenanceMode: Boolean(setting?.maintenanceMode),
     });
   } catch (error) {
     console.error("Settings API error:", error);
 
-    // Fail-safe: always return JSON, never crash
-    return NextResponse.json(
-      { maintenanceMode: false, error: "settings_unavailable" },
-      { status: 200 },
-    );
+    return NextResponse.json({
+      maintenanceMode: false,
+      error: "settings_unavailable",
+    });
   }
 }

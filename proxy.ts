@@ -8,12 +8,7 @@ const isProtectedRoute = createRouteMatcher([
   "/registration(.*)",
 ]);
 
-// Public routes that should remain accessible even in maintenance mode
-const allowedDuringMaintenance = [
-  "/maintenance",
-  "/api",
-  "/_next",
-];
+const allowedDuringMaintenance = ["/maintenance", "/api", "/_next"];
 
 let cachedMaintenanceMode: boolean | null = null;
 let lastFetchTime = 0;
@@ -22,7 +17,6 @@ const CACHE_TTL = 30 * 1000; // 30s
 async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
   const now = Date.now();
 
-  // Fast cache hit
   if (cachedMaintenanceMode !== null && now - lastFetchTime < CACHE_TTL) {
     return cachedMaintenanceMode;
   }
@@ -32,18 +26,12 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
       cache: "no-store",
     });
 
-    if (!res.ok) {
-      cachedMaintenanceMode = null;
-      return false;
-    }
-
     const data = await res.json();
     cachedMaintenanceMode = Boolean(data?.maintenanceMode);
     lastFetchTime = now;
-
     return cachedMaintenanceMode;
   } catch {
-    cachedMaintenanceMode = null;
+    cachedMaintenanceMode = false; // fail-safe: assume live
     return false;
   }
 }
@@ -56,25 +44,21 @@ function isAllowedPath(pathname: string) {
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
-
   const host = req.headers.get("host") || "";
   const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
 
-  // 1. Fast bypass (no async work if possible)
-  if (isLocalhost || isAllowedPath(pathname)) {
-    // Only enforce auth if system is live
-    if (!cachedMaintenanceMode && isProtectedRoute(req)) {
-      await auth.protect();
-    }
+  // 1. Localhost bypass
+  if (isLocalhost) {
+    if (isProtectedRoute(req)) await auth.protect();
     return NextResponse.next();
   }
 
-  // 2. Maintenance gate (cached, avoids per-request fetch)
+  // 2. Maintenance gate
   const maintenanceMode = await getMaintenanceMode(req);
 
   if (maintenanceMode) {
-    // Allow whitelisted paths (like /events) without login
-    if (!isAllowedPath(pathname) && pathname !== "/maintenance") {
+    if (!isAllowedPath(pathname)) {
+      // Force rewrite to /maintenance page
       return NextResponse.rewrite(new URL("/maintenance", req.url));
     }
     return NextResponse.next();
