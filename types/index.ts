@@ -135,6 +135,13 @@ export interface SettingParams {
   address?: string;
   theme?: string;
 
+  // ===== Ceo Info =====
+  ceo?: {
+    name?: string;
+    photo?: string;
+    about?: string;
+  };
+
   // ===== Social Media =====
   facebook?: string;
   instagram?: string;

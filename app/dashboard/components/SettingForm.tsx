@@ -68,6 +68,14 @@ export const settingSchema = z.object({
   termsOfService: optionalString,
   privacyPolicy: optionalString,
 
+  ceo: z
+    .object({
+      name: optionalString,
+      photo: optionalString,
+      about: optionalString,
+    })
+    .optional(),
+
   hero: z
     .object({
       title: optionalString,
@@ -581,6 +589,76 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   )}
                 />
               </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ===== CEO Section ===== */}
+          <AccordionItem value="ceo">
+            <AccordionTrigger>CEO Section</AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              {/* CEO Name + Photo */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Name */}
+                <FormField
+                  control={form.control}
+                  name={"ceo.name" as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CEO Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter CEO name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Photo */}
+                <FormField
+                  control={form.control}
+                  name={"ceo.photo" as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CEO Photo</FormLabel>
+                      <FormControl>
+                        <FileUploader
+                          imageUrl={field.value || ""}
+                          onFieldChange={async (_blobUrl, files) => {
+                            if (files?.length) {
+                              const uploaded = await startUpload(files);
+                              if (uploaded?.[0]) {
+                                form.setValue("ceo.photo", uploaded[0].url, {
+                                  shouldValidate: true,
+                                });
+                              }
+                            }
+                          }}
+                          setFiles={() => {}}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* About */}
+              <FormField
+                control={form.control}
+                name={"ceo.about" as const}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>About CEO</FormLabel>
+                    <FormControl>
+                      <RichTextEditor
+                        value={field.value || ""}
+                        onChange={(val) => field.onChange(val)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </AccordionContent>
           </AccordionItem>
 

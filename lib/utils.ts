@@ -181,6 +181,13 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
     returnPolicy: setting.returnPolicy ?? "",
     termsOfService: setting.termsOfService ?? "",
     privacyPolicy: setting.privacyPolicy ?? "",
+    ceo: setting.ceo
+      ? {
+          name: setting.ceo.name ?? "",
+          photo: setting.ceo.photo ?? "",
+          about: setting.ceo.about ?? "",
+        }
+      : undefined,
     hero: setting.hero
       ? {
           title: setting.hero.title ?? "",

@@ -92,6 +92,13 @@ export interface ISetting extends Document {
   address?: string;
   theme?: string;
 
+  // About Our CEO and Founder
+  ceo?: {
+    name?: string;
+    photo?: string;
+    about?: string;
+  };
+
   // Social Media
   facebook?: string;
   instagram?: string;
@@ -159,6 +166,13 @@ export interface ISettingSafe {
   phoneNumber?: string;
   address?: string;
   theme?: string;
+
+  // About Our CEO and Founder
+  ceo?: {
+    name?: string;
+    photo?: string;
+    about?: string;
+  };
 
   // Social Media
   facebook?: string;
@@ -289,6 +303,12 @@ const SettingSchema = new Schema<ISetting>(
     phoneNumber: { type: String },
     address: { type: String },
     theme: { type: String },
+
+    ceo: {
+      name: { type: String },
+      photo: { type: String },
+      about: { type: String },
+    },
 
     facebook: { type: String },
     instagram: { type: String },
