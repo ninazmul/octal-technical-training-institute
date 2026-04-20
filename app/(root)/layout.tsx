@@ -1,3 +1,5 @@
+"use client";
+
 import { useLayoutEffect, useRef, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import ScrollHeaderWrapper from "@/components/shared/ScrollHeaderWrapper";
