@@ -596,69 +596,50 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
           <AccordionItem value="ceo">
             <AccordionTrigger>CEO Section</AccordionTrigger>
             <AccordionContent className="space-y-4">
-              {/* CEO Name + Photo */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Name */}
+              {(["name", "about", "photo"] as const).map((key) => (
                 <FormField
+                  key={key}
                   control={form.control}
-                  name={`ceo.name` as const}
+                  name={`ceo.${key}`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CEO Name</FormLabel>
+                      <FormLabel>{key}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter CEO name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Photo */}
-                <FormField
-                  control={form.control}
-                  name={`ceo.photo` as const}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CEO Photo</FormLabel>
-                      <FormControl>
-                        <FileUploader
-                          imageUrl={field.value || ""}
-                          onFieldChange={async (_blobUrl, files) => {
-                            if (files?.length) {
-                              const uploaded = await startUpload(files);
-                              if (uploaded?.[0]) {
-                                form.setValue("ceo.photo", uploaded[0].url, {
-                                  shouldValidate: true,
-                                });
+                        {key === "about" ? (
+                          <RichTextEditor
+                            value={field.value || ""}
+                            onChange={(val) => {
+                              field.onChange(val);
+                            }}
+                          />
+                        ) : key === "photo" ? (
+                          <FileUploader
+                            imageUrl={field.value || ""}
+                            onFieldChange={async (_blobUrl, files) => {
+                              if (files?.length) {
+                                const uploaded = await startUpload(files);
+                                if (uploaded?.[0]) {
+                                  form.setValue(
+                                    `ceo.${key}`,
+                                    uploaded[0].url,
+                                    {
+                                      shouldValidate: true,
+                                    },
+                                  );
+                                }
                               }
-                            }
-                          }}
-                          setFiles={() => {}}
-                        />
+                            }}
+                            setFiles={() => {}}
+                          />
+                        ) : (
+                          <Input {...field} />
+                        )}
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-
-              {/* About */}
-              <FormField
-                control={form.control}
-                name={`ceo.about` as const}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>About CEO</FormLabel>
-                    <FormControl>
-                      <RichTextEditor
-                        value={field.value || ""}
-                        onChange={(val) => field.onChange(val)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              ))}
             </AccordionContent>
           </AccordionItem>
 
