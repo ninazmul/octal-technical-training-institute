@@ -175,6 +175,8 @@ export interface SettingParams {
     url?: string;
   }[];
 
+  isDevelopment?: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -140,6 +140,8 @@ export interface ISetting extends Document {
   // LINKS (single object with items array)
   links?: ILink[];
 
+  isDevelopment?: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -260,6 +262,8 @@ export interface ISettingSafe {
     name?: string;
     url?: string;
   }[];
+
+  isDevelopment?: boolean;
 
   createdAt: string;
   updatedAt: string;
@@ -392,6 +396,8 @@ const SettingSchema = new Schema<ISetting>(
       ],
       default: [],
     },
+
+    isDevelopment: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

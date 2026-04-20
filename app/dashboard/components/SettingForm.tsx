@@ -26,6 +26,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { HexColorPicker } from "react-colorful";
+import { Switch } from "@/components/ui/switch";
 
 /* ---------- helpers ---------- */
 
@@ -224,6 +225,8 @@ export const settingSchema = z.object({
         }),
     )
     .default([]),
+
+  isDevelopment: z.boolean().default(false),
 });
 
 export type SettingFormValues = z.infer<typeof settingSchema>;
@@ -551,6 +554,33 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   </FormItem>
                 )}
               />
+
+              <div className="pt-4 border-t">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
+                  System
+                </p>
+
+                <FormField
+                  control={form.control}
+                  name="isDevelopment"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div>
+                        <FormLabel>Development Mode</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Enable development/testing features
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </AccordionContent>
           </AccordionItem>
 
