@@ -21,6 +21,7 @@ const CACHE_TTL = 30 * 1000; // 30s
 async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
   const now = Date.now();
 
+  // Serve from cache if valid
   if (cachedMaintenanceMode !== null && now - lastFetchTime < CACHE_TTL) {
     return cachedMaintenanceMode;
   }
@@ -29,14 +30,20 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
     const res = await fetch(`${req.nextUrl.origin}/api/settings`, {
       cache: "no-store",
     });
-    const data = await res.json();
 
+    if (!res.ok) {
+      // Fail-safe: reset cache and assume live
+      cachedMaintenanceMode = null;
+      return false;
+    }
+
+    const data = await res.json();
     cachedMaintenanceMode = Boolean(data?.maintenanceMode);
     lastFetchTime = now;
 
     return cachedMaintenanceMode;
   } catch {
-    // Fail-safe: reset cache and assume system is live
+    // Fail-safe: reset cache and assume live
     cachedMaintenanceMode = null;
     return false;
   }
@@ -44,7 +51,7 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
 
 function isAllowedPath(pathname: string) {
   return allowedDuringMaintenance.some((p) =>
-    p === "/maintenance" ? pathname === p : pathname.startsWith(p)
+    p === "/maintenance" ? pathname === p : pathname.startsWith(p),
   );
 }
 
@@ -55,23 +62,22 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
   const host = req.headers.get("host") || "";
-  const isLocalhost =
-    host.includes("localhost") || host.includes("127.0.0.1");
+  const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
 
-  // 1. Fast bypass
+  // 1. Fast bypass (no async work if possible)
   if (isLocalhost || isAllowedPath(pathname)) {
     if (isProtectedRoute(req)) await auth.protect();
     return NextResponse.next();
   }
 
-  // 2. Maintenance gate
+  // 2. Maintenance gate (cached, avoids per-request fetch)
   const maintenanceMode = await getMaintenanceMode(req);
 
   if (maintenanceMode && pathname !== "/maintenance") {
     return NextResponse.rewrite(new URL("/maintenance", req.url));
   }
 
-  // 3. Auth layer
+  // 3. Auth layer (only if system is live)
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
