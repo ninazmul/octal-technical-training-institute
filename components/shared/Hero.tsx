@@ -1,7 +1,7 @@
 "use client";
 
 import { ISettingSafe } from "@/lib/database/models/setting.model";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { GraduationCap } from "lucide-react";
