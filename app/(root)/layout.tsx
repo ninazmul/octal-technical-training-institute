@@ -9,7 +9,7 @@ import Footer from "@/components/shared/Footer";
 import SearchDrawer from "@/components/shared/SearchDrawer";
 import BengaliFontDetector from "@/components/shared/BengaliFontDetector";
 import Script from "next/script";
-import MaintenancePage from "@/components/shared/MaintenancePage";
+import MaintenancePage from "@/components/shared/MaintenancePage"; // 👈 your animated component
 
 export default function RootLayout({
   children,
@@ -20,6 +20,7 @@ export default function RootLayout({
   const [searchOpen, setSearchOpen] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState<boolean | null>(null);
 
+  // Memoized fetch function
   const fetchSettings = useMemo(
     () => async () => {
       try {
@@ -28,7 +29,7 @@ export default function RootLayout({
         });
         setMaintenanceMode(Boolean(res.data?.maintenanceMode));
       } catch {
-        setMaintenanceMode(false);
+        setMaintenanceMode(false); // fail-safe
       }
     },
     [],
@@ -38,14 +39,14 @@ export default function RootLayout({
     fetchSettings();
   }, [fetchSettings]);
 
-  // Detect current host
+  // Detect localhost:3000
   const isLocalhost =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1") &&
     window.location.port === "3000";
 
-  // Show maintenance page if active and not localhost:3000
+  // Show MaintenancePage if active and not localhost
   if (maintenanceMode && !isLocalhost) {
     return <MaintenancePage />;
   }
