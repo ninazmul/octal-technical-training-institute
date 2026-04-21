@@ -233,8 +233,6 @@ export const settingSchema = z.object({
         }),
     )
     .default([]),
-
-  maintenanceMode: z.boolean().default(false),
 });
 
 export type SettingFormValues = z.infer<typeof settingSchema>;
@@ -562,33 +560,6 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                   </FormItem>
                 )}
               />
-
-              <div className="pt-4 border-t">
-                <p className="text-sm font-medium text-muted-foreground mb-2">
-                  System
-                </p>
-
-                <FormField
-                  control={form.control}
-                  name="maintenanceMode"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
-                        <FormLabel>Maintenance Mode</FormLabel>
-                        <p className="text-sm text-muted-foreground">
-                          Temporarily disable public access to the site
-                        </p>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
             </AccordionContent>
           </AccordionItem>
 
@@ -619,13 +590,9 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
                               if (files?.length) {
                                 const uploaded = await startUpload(files);
                                 if (uploaded?.[0]) {
-                                  form.setValue(
-                                    `ceo.${key}`,
-                                    uploaded[0].url,
-                                    {
-                                      shouldValidate: true,
-                                    },
-                                  );
+                                  form.setValue(`ceo.${key}`, uploaded[0].url, {
+                                    shouldValidate: true,
+                                  });
                                 }
                               }
                             }}
