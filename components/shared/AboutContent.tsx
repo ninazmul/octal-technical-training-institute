@@ -245,7 +245,7 @@ export default function AboutContent({
 
                       {/* Role */}
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Chief Executive Officer
+                        প্রতিষ্ঠাতা ও সিইও
                       </p>
 
                       {/* About */}
