@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
+// Protected routes
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/checkout(.*)",
@@ -14,46 +15,48 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const host = req.headers.get("host") || "";
   const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
 
-  // ✅ Read from ENV (edge-safe)
   const maintenanceMode = process.env.MAINTENANCE_MODE === "true";
 
-  // 1. Localhost bypass
-  if (isLocalhost) {
-    if (isProtectedRoute(req)) await auth.protect();
+  // ---------------------------------------------------
+  // 0. HARD SAFETY: NEVER BLOCK MAINTENANCE ROUTE
+  // ---------------------------------------------------
+  if (pathname.startsWith("/maintenance")) {
     return NextResponse.next();
   }
 
-  // 2. Maintenance logic
-  if (maintenanceMode) {
-    const isAllowed =
-      pathname === "/maintenance" ||
-      pathname.startsWith("/api") ||
-      pathname.startsWith("/_next") ||
-      pathname.startsWith("/static") ||
-      pathname.startsWith("/public");
-
-    // Force homepage → maintenance
-    if (pathname === "/") {
-      return NextResponse.rewrite(new URL("/maintenance", req.url));
-    }
-
-    // Block everything else
-    if (!isAllowed) {
-      return NextResponse.rewrite(new URL("/maintenance", req.url));
-    }
-
-    // Still protect dashboard
-    if (
-      (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) &&
-      isProtectedRoute(req)
-    ) {
+  // ---------------------------------------------------
+  // 1. LOCAL DEV BYPASS
+  // ---------------------------------------------------
+  if (isLocalhost) {
+    if (isProtectedRoute(req)) {
       await auth.protect();
     }
+    return NextResponse.next();
+  }
+
+  // ---------------------------------------------------
+  // 2. MAINTENANCE MODE (SAFE REDIRECT ONLY)
+  // ---------------------------------------------------
+  if (maintenanceMode) {
+    const isPublicInternalRoute =
+      pathname.startsWith("/api") || pathname.startsWith("/_next");
+
+    // Redirect homepage → maintenance
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/maintenance", req.url));
+    }
+
+    // Block everything except internal assets
+    if (!isPublicInternalRoute) {
+      return NextResponse.redirect(new URL("/maintenance", req.url));
+    }
 
     return NextResponse.next();
   }
 
-  // 3. Normal auth
+  // ---------------------------------------------------
+  // 3. AUTH PROTECTION (NORMAL MODE)
+  // ---------------------------------------------------
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
@@ -63,7 +66,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|png|gif|svg|woff2?|ico)).*)",
+    // Skip Next internals + static assets + maintenance page
+    "/((?!_next|maintenance|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:css|js|jpg|jpeg|png|gif|svg|woff2?|ico)).*)",
     "/(api|trpc)(.*)",
   ],
 };
