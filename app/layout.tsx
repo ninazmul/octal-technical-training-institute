@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     "Certification",
     "Octal Technical Training Institute",
   ],
+  metadataBase: new URL("https://octal.edu.bd"),
   icons: {
     icon: "./favicon.ico",
     shortcut: "./favicon.ico",
