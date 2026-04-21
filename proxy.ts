@@ -9,7 +9,14 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 // Only allow these paths during maintenance
-const allowedDuringMaintenance = ["/maintenance", "/dashboard"];
+const allowedDuringMaintenance = [
+  "/maintenance",
+  "/dashboard",
+  "/api",
+  "/_next", // ✅ allows Next.js chunks
+  "/static", // ✅ if you serve from /static
+  "/public", // ✅ if you serve from /public
+];
 
 let cachedMaintenanceMode: boolean | null = null;
 let lastFetchTime = 0;
