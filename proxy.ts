@@ -8,7 +8,8 @@ const isProtectedRoute = createRouteMatcher([
   "/registration(.*)",
 ]);
 
-const allowedDuringMaintenance = ["/maintenance", "/api", "/_next"];
+// Only allow these paths during maintenance
+const allowedDuringMaintenance = ["/maintenance", "/dashboard"];
 
 let cachedMaintenanceMode: boolean | null = null;
 let lastFetchTime = 0;
@@ -37,9 +38,7 @@ async function getMaintenanceMode(req: NextRequest): Promise<boolean> {
 }
 
 function isAllowedPath(pathname: string) {
-  return allowedDuringMaintenance.some((p) =>
-    p === "/maintenance" ? pathname === p : pathname.startsWith(p),
-  );
+  return allowedDuringMaintenance.some((p) => pathname.startsWith(p));
 }
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
@@ -57,10 +56,16 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const maintenanceMode = await getMaintenanceMode(req);
 
   if (maintenanceMode) {
+    // Only allow /maintenance and /dashboard*
     if (!isAllowedPath(pathname)) {
-      // Force rewrite to /maintenance page
       return NextResponse.rewrite(new URL("/maintenance", req.url));
     }
+
+    // If accessing /dashboard*, still enforce auth
+    if (pathname.startsWith("/dashboard") && isProtectedRoute(req)) {
+      await auth.protect();
+    }
+
     return NextResponse.next();
   }
 
