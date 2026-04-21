@@ -13,9 +13,9 @@ const allowedDuringMaintenance = [
   "/maintenance",
   "/dashboard",
   "/api",
-  "/_next", // ✅ allows Next.js chunks
-  "/static", // ✅ if you serve from /static
-  "/public", // ✅ if you serve from /public
+  "/_next", // Next.js chunks
+  "/static", // static files
+  "/public", // public assets
 ];
 
 let cachedMaintenanceMode: boolean | null = null;
@@ -63,12 +63,17 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const maintenanceMode = await getMaintenanceMode(req);
 
   if (maintenanceMode) {
-    // Only allow /maintenance and /dashboard*
+    // Always force homepage "/" to /maintenance
+    if (pathname === "/") {
+      return NextResponse.rewrite(new URL("/maintenance", req.url));
+    }
+
+    // Allow only whitelisted paths
     if (!isAllowedPath(pathname)) {
       return NextResponse.rewrite(new URL("/maintenance", req.url));
     }
 
-    // If accessing /dashboard*, still enforce auth
+    // If accessing /dashboard*, enforce auth
     if (pathname.startsWith("/dashboard") && isProtectedRoute(req)) {
       await auth.protect();
     }
