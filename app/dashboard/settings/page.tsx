@@ -1,26 +1,15 @@
-import React from "react";
-import { getSetting, upsertSetting } from "@/lib/actions/setting.actions";
-import SettingForm, { SettingFormValues } from "../components/SettingForm";
-import { useRouter } from "next/navigation";
+import { getSetting } from "@/lib/actions/setting.actions";
+import { SettingFormValues } from "../components/SettingForm";
+import ClientWrapper from "../components/ClientWrapper";
 
 export default async function SettingsPage() {
-  const router = useRouter();
   const setting = await getSetting();
-
-  async function onSubmit(data: SettingFormValues) {
-    "use server";
-    await upsertSetting(data);
-    router.refresh();
-  }
 
   return (
     <main className="p-4 min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">General Settings</h1>
-        <SettingForm
-          initialData={setting as Partial<SettingFormValues>}
-          onSubmit={onSubmit}
-        />
+        <ClientWrapper initialData={setting as Partial<SettingFormValues>} />
       </div>
     </main>
   );
