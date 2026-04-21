@@ -28,7 +28,10 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
       pathname.startsWith("/api") ||
       pathname.startsWith("/_next") ||
       pathname.startsWith("/static") ||
-      pathname.startsWith("/public");
+      pathname.startsWith("/public") ||
+      pathname === "/favicon.ico" ||
+      pathname === "/robots.txt" ||
+      pathname === "/sitemap.xml";
 
     // Redirect homepage → maintenance
     if (pathname === "/") {
@@ -58,7 +61,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|png|gif|svg|woff2?|ico)).*)",
+    "/((?!_next|static|public|favicon.ico|robots.txt|sitemap.xml|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|png|gif|svg|woff2?|ico)).*)",
     "/(api|trpc)(.*)",
   ],
 };
