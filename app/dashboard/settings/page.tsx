@@ -1,13 +1,16 @@
 import React from "react";
 import { getSetting, upsertSetting } from "@/lib/actions/setting.actions";
 import SettingForm, { SettingFormValues } from "../components/SettingForm";
+import { useRouter } from "next/navigation";
 
 export default async function SettingsPage() {
+  const router = useRouter();
   const setting = await getSetting();
 
   async function onSubmit(data: SettingFormValues) {
     "use server";
     await upsertSetting(data);
+    router.refresh();
   }
 
   return (
