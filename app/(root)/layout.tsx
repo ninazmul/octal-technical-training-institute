@@ -1,7 +1,6 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import ScrollHeaderWrapper from "@/components/shared/ScrollHeaderWrapper";
 import Header from "@/components/shared/Header";
@@ -15,17 +14,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-
-  const isMaintenance = pathname.startsWith("/maintenance");
-
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
 
   useLayoutEffect(() => {
-    if (isMaintenance) return; // 🚀 skip unnecessary observer
-
     if (headerRef.current) {
       const resizeObserver = new ResizeObserver(() => {
         setHeaderHeight(headerRef.current!.offsetHeight);
@@ -36,61 +29,47 @@ export default function RootLayout({
 
       return () => resizeObserver.disconnect();
     }
-  }, [isMaintenance]);
+  }, []);
 
   return (
     <div className="flex h-screen flex-col">
       <Toaster />
+      <ScrollHeaderWrapper>
+        <div ref={headerRef}>
+          <Header openSearch={() => setSearchOpen(true)} />
+        </div>
+      </ScrollHeaderWrapper>
 
-      {/* ✅ Hide header during maintenance */}
-      {!isMaintenance && (
-        <ScrollHeaderWrapper>
-          <div ref={headerRef}>
-            <Header openSearch={() => setSearchOpen(true)} />
-          </div>
-        </ScrollHeaderWrapper>
-      )}
-
-      <main
-        style={{ paddingTop: isMaintenance ? 0 : headerHeight }}
-        className="flex-1"
-      >
+      <main style={{ paddingTop: headerHeight }} className="flex-1">
         <BengaliFontDetector />
         {children}
       </main>
 
-      {/* ✅ Hide search + footer during maintenance */}
-      {!isMaintenance && (
-        <>
-          <SearchDrawer
-            open={searchOpen}
-            onOpenChange={setSearchOpen}
-            headerHeight={headerHeight}
-          />
-          <Footer />
-        </>
-      )}
+      <SearchDrawer
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        headerHeight={headerHeight}
+      />
 
-      {/* ⚠️ Optional: also disable chat in maintenance */}
-      {!isMaintenance && (
-        <Script
-          id="tawk-to"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-              (function(){
-                var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-                s1.async=true;
-                s1.src='https://embed.tawk.to/69c230d629e9681c3d64df82/1jkf8tirp';
-                s1.charset='UTF-8';
-                s1.setAttribute('crossorigin','*');
-                s0.parentNode.insertBefore(s1,s0);
-              })();
-            `,
-          }}
-        />
-      )}
+      <Footer />
+
+      <Script
+        id="tawk-to"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+      var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+      (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/69c230d629e9681c3d64df82/1jkf8tirp';
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+      })();
+    `,
+        }}
+      />
     </div>
   );
 }
