@@ -11,49 +11,31 @@ const isProtectedRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
+  // 🔥 HARD STOP (prevents infinite loop)
+  if (pathname === "/maintenance") {
+    return NextResponse.next();
+  }
+
   const host = req.headers.get("host") || "";
   const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
 
-  // ✅ Read from ENV (edge-safe)
   const maintenanceMode = process.env.MAINTENANCE_MODE === "true";
 
-  // 1. Localhost bypass
+  // Local bypass
   if (isLocalhost) {
     if (isProtectedRoute(req)) await auth.protect();
     return NextResponse.next();
   }
 
-  // 2. Maintenance logic
   if (maintenanceMode) {
     const isAllowed =
-      pathname === "/maintenance" ||
-      pathname.startsWith("/api") ||
-      pathname.startsWith("/_next") ||
-      pathname.startsWith("/static") ||
-      pathname.startsWith("/public");
+      pathname.startsWith("/_next") || pathname.startsWith("/api/public");
 
-    // Force homepage → maintenance
-    if (pathname === "/") {
-      return NextResponse.rewrite(new URL("/maintenance", req.url));
-    }
-
-    // Block everything else
     if (!isAllowed) {
       return NextResponse.rewrite(new URL("/maintenance", req.url));
     }
-
-    // Still protect dashboard
-    if (
-      (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) &&
-      isProtectedRoute(req)
-    ) {
-      await auth.protect();
-    }
-
-    return NextResponse.next();
   }
 
-  // 3. Normal auth
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
@@ -62,8 +44,5 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|png|gif|svg|woff2?|ico)).*)",
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/((?!_next|.*\\..*).*)"],
 };
