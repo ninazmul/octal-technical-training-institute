@@ -77,15 +77,14 @@ export default function Header({ openSearch }: HeaderProps) {
           {/* Contact Info */}
           <div className="flex flex-wrap items-center gap-4 font-semibold text-white">
             {settings?.phoneNumber && (
-              <p className="flex items-center gap-1">
+              <p className="hidden md:flex items-center gap-1">
                 <a
                   href={`https://wa.me/${settings.phoneNumber}?text=Hello%2C%20I%20am%20reaching%20out%20via%20your%20official%20website%20and%20would%20like%20to%20learn%20more%20about%20your%20services.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 hover:border-b transition-colors"
                 >
-                  <FaWhatsapp size={16} />{" "}
-                  {settings.phoneNumber}
+                  <FaWhatsapp size={16} /> {settings.phoneNumber}
                 </a>
               </p>
             )}
@@ -99,6 +98,9 @@ export default function Header({ openSearch }: HeaderProps) {
                 </a>
               </p>
             )}
+            <p className="flex items-center gap-1 hover:border-b transition-colors">
+              EIIN: 136118
+            </p>
           </div>
 
           {/* Social + Auth */}
