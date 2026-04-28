@@ -40,7 +40,7 @@ export default function RootLayout({
         </div>
       </ScrollHeaderWrapper>
 
-      <main style={{ paddingTop: headerHeight }} className="flex-1">
+      <main style={{ paddingTop: headerHeight }} className="flex-1 flex justify-center items-center my-10">
         <BengaliFontDetector />
         {children}
       </main>
