@@ -3,14 +3,14 @@ import { Document, Schema, Types, model, models } from "mongoose";
 export interface INotice extends Document {
   _id: Types.ObjectId;
   title: string;
-  file: string;
+  file?: string;
   createdAt: Date; // make required, not optional
 }
 
 const NoticeSchema = new Schema<INotice>(
   {
     title: { type: String, required: true },
-    file: { type: String, required: true },
+    file: { type: String },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }, // ensures createdAt and updatedAt are always present

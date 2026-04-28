@@ -191,7 +191,7 @@ export interface SettingParams {
 // ====== Notice PARAMS
 export type NoticeParams = {
   title: string;
-  file: string;
+  file?: string;
 };
 
 // ====== SuccessStories PARAMS
