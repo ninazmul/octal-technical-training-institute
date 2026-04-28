@@ -1,6 +1,6 @@
 import ClientLayout from "@/components/shared/ClientLayout";
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 export default function RootLayout({
   children,
