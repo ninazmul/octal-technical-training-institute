@@ -11,8 +11,9 @@ import CountdownTimer from "@/components/shared/CountdownTimer";
 type TabKey = "all" | "upcoming" | "ongoing" | "old";
 
 export default function CoursesPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>("ongoing");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>("All Categories");
   const [courses, setCourses] = useState<ICourseSafe[]>([]);
   const [themeColor, setThemeColor] = useState("#0055CE");
 
