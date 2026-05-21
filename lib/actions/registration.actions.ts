@@ -31,6 +31,7 @@ export type SerializedRegistration = {
   registrationNumber: string | null;
   status: string | null;
   certificateStatus: string | null;
+  certificateIssuedAt: string | null;
   paymentAmount: number | null;
   paymentStatus: string | null;
   transactionId: string | null;
@@ -57,6 +58,7 @@ export type RegistrationParams = {
   // New management fields
   status?: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus?: "Not Certified" | "Certified";
+  certificateIssuedAt?: Date;
   paymentAmount?: number;
   paymentStatus?: "Pending" | "Paid" | "Failed";
   transactionId?: string;
@@ -131,6 +133,7 @@ function serializeRegistration(
     registrationNumber: toStringOrNull(raw["registrationNumber"]),
     status: toStringOrNull(raw["status"]),
     certificateStatus: toStringOrNull(raw["certificateStatus"]),
+    certificateIssuedAt: toISODateOrNull(raw["certificateIssuedAt"]),
     paymentAmount: parseNumberOrNull(raw["paymentAmount"]),
     paymentStatus: toStringOrNull(raw["paymentStatus"]),
     transactionId: toStringOrNull(raw["transactionId"]),
@@ -246,6 +249,7 @@ export const createPendingRegistration = async (
       course: course._id,
       status: data.status ?? "Pending",
       certificateStatus: data.certificateStatus ?? "Not Certified",
+      certificateIssuedAt: data.certificateIssuedAt ?? undefined,
       paymentAmount: data.paymentAmount ?? 0,
       paymentStatus: data.paymentStatus ?? "Pending",
       transactionId: data.transactionId ?? undefined,

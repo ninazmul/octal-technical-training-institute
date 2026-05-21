@@ -49,6 +49,7 @@ export type RegistrationItem = {
   registrationNumber?: string;
   status?: string;
   certificateStatus?: string;
+  certificateIssuedAt?: string | Date;
   paymentAmount?: number;
   paymentStatus?: string;
   transactionId?: string;
@@ -86,6 +87,7 @@ function normalizeRegistration(
     registrationNumber: updated.registrationNumber ?? undefined,
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
+    certificateIssuedAt: updated.certificateIssuedAt ?? undefined,
     paymentAmount: updated.paymentAmount ?? undefined,
     paymentStatus: updated.paymentStatus ?? undefined,
     transactionId: updated.transactionId ?? undefined,
@@ -108,6 +110,7 @@ type SortKey = keyof Pick<
   | "paymentStatus"
   | "status"
   | "certificateStatus"
+  | "certificateIssuedAt"
   | "createdAt"
 >;
 
@@ -282,11 +285,14 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           : "Certified";
       const updated = await updateRegistration(id, {
         certificateStatus: nextStatus,
+        certificateIssuedAt:
+          nextStatus === "Certified" ? new Date() : undefined,
       });
       if (!updated) throw new Error("Update failed");
 
       syncNormalized(id, {
         certificateStatus: updated.certificateStatus ?? undefined,
+        certificateIssuedAt: updated.certificateIssuedAt ?? undefined,
         updatedAt: updated.updatedAt ?? undefined,
       });
       toast.success(
@@ -883,6 +889,9 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                     const payload: Partial<RegistrationParams> = {
                       ...data,
                       paymentAmount: Number(data.paymentAmount),
+                      certificateIssuedAt: data.certificateIssuedAt
+                        ? new Date(data.certificateIssuedAt)
+                        : undefined,
 
                       // Status
                       status: STATUS_OPTIONS.includes(data.status as StatusType)

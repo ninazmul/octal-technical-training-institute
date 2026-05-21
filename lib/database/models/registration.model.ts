@@ -27,6 +27,7 @@ export interface IRegistration extends Document {
   // Status & Management
   status: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus: "Not Certified" | "Certified";
+  certificateIssuedAt?: Date;
   paymentAmount: number;
   paymentStatus: "Pending" | "Paid" | "Failed";
 
@@ -74,6 +75,7 @@ const RegistrationSchema = new Schema<IRegistration>(
       enum: ["Not Certified", "Certified"],
       default: "Not Certified",
     },
+    certificateIssuedAt: { type: Date },
     paymentAmount: { type: Number, default: 0 },
     paymentStatus: {
       type: String,

@@ -52,85 +52,26 @@ export default function CertificateTemplate({
       </div>
 
       {/* Student Name */}
-      <div className="absolute top-[58mm] left-[73mm] w-[120mm] border-b border-gray-700">
-        <span className="text-[32px] truncate block pb-[4mm] w-[120mm]">
+      <div className="absolute top-[100mm] text-center w-full px-[20mm]">
+        <span className="text-[36px] truncate block pb-[4mm] w-[120mm] font-bold mx-auto">
           {registration.englishName}
         </span>
       </div>
 
-      {/* Course Title */}
-      <div className="absolute top-[78mm] left-[73mm] w-[200mm]">
-        <p className="uppercase text-[18px] font-sans">
-          Completion of instructor-led training on
-        </p>
-        <h3
-          className="text-[40px] font-bold uppercase truncate pb-[2mm]"
-          style={{ color: themeColor }}
-        >
-          {course?.title || "N/A"}
-        </h3>
-      </div>
-
       {/* Info Grid */}
-      <div className="absolute top-[105mm] left-[73mm] w-[200mm] grid grid-cols-2 gap-x-6 gap-y-3 text-[16px] font-sans uppercase">
-        {[
-          { label: "Student ID", value: registration.registrationNumber },
-          {
-            label: "Certification",
-            value: course?.certification || "OTTI Certificate",
-          },
-          {
-            label: "Issue Date",
-            value: registration.createdAt
-              ? new Date(registration.createdAt).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })
-              : "-",
-          },
-          { label: "Duration", value: course?.duration || "3 Months" },
-        ].map((item, idx) => (
-          <div key={idx} className="grid grid-cols-[150px_1fr] items-center">
-            <span>{item.label}:</span>
-            <div className="border-b border-gray-600 w-[180px] px-2 pb-[1.5mm]">
-              <span className="truncate block pb-[1mm]">{item.value}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Topics */}
-      <div className="absolute top-[128mm] left-[73mm] w-[200mm] pb-[2mm]">
-        <p className="text-[18px] font-bold font-sans mb-2">Topics Covered</p>
-        <div className="grid grid-cols-2 gap-x-6">
-          {/* First column: show first 4 topics */}
-          <ul className="text-[16px] leading-tight font-light font-sans space-y-1">
-            {modules.slice(0, 4).map((item, idx) => (
-              <li key={idx} className="truncate pb-[1mm]">
-                - {item.title}
-              </li>
-            ))}
-          </ul>
-
-          {/* Second column: show next 4 topics, then "+X more topics" if extras exist */}
-          <ul className="text-[16px] leading-tight font-light font-sans space-y-1">
-            {modules.slice(4, 8).map((item, idx) => (
-              <li key={idx} className="truncate pb-[1mm]">
-                - {item.title}
-              </li>
-            ))}
-            {modules.length > 8 && (
-              <li className="italic text-gray-600">
-                +{modules.length - 8} more topics
-              </li>
-            )}
-          </ul>
-        </div>
+      <div className="absolute top-[124mm] left-[73mm] w-[200mm] text-[16px] font-sans">
+        Successfully completed the course{" "}
+        <span className="text-primary font-semibold">{course?.title}</span> with
+        registration number{" "}
+        <span className="text-primary font-semibold">
+          {registration.registrationNumber}
+        </span>
+        . Issued on{" "}
+        {new Date(registration.certificateIssuedAt || "").toLocaleDateString()}.
       </div>
 
       {/* QR Code */}
-      <div className="absolute top-[152mm] left-[30mm]">
+      <div className="absolute top-[156mm] left-[28mm]">
         <QRCode
           url={`${process.env.NEXT_PUBLIC_SERVER_URL}/verify/${registration.registrationNumber}`}
         />

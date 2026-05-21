@@ -58,9 +58,9 @@ const Page = async () => {
   const email = await getUserEmailById(userId);
   const adminStatus = await isAdmin(email);
 
-  if (!adminStatus) {
-    redirect("/dashboard");
-  }
+  // if (!adminStatus) {
+  //   redirect("/dashboard");
+  // }
 
   const registrationsRaw: SerializedRegistration[] = await getRegistrations();
 
