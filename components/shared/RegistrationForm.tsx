@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 // import { useRouter } from "next/navigation";
@@ -35,8 +36,16 @@ const registrationFormSchema = z.object({
   institution: z.string().min(1, "Institution is required"),
   address: z.string().min(1, "Address is required"),
   photo: z.string().min(1, "Photo is required"),
+  couponCode: z.string().optional(),
   paymentAmount: z.number(), // new field
 });
+
+type CouponPreview = {
+  code: string;
+  originalAmount: number;
+  discountAmount: number;
+  finalAmount: number;
+};
 
 type RegistrationFormProps = {
   course: ICourseSafe;
@@ -49,6 +58,11 @@ export default function RegistrationForm({
 }: RegistrationFormProps) {
   // const router = useRouter();
   const { startUpload } = useUploadThing("mediaUploader");
+  const baseAmount = course.discountPrice ?? course.price;
+  const [couponPreview, setCouponPreview] = useState<CouponPreview | null>(
+    null,
+  );
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const form = useForm<z.infer<typeof registrationFormSchema>>({
     resolver: zodResolver(registrationFormSchema),
@@ -64,9 +78,60 @@ export default function RegistrationForm({
       institution: "",
       address: "",
       photo: "",
-      paymentAmount: course.discountPrice ?? course.price, // auto-fill
+      couponCode: "",
+      paymentAmount: baseAmount, // auto-fill
     },
   });
+
+  async function applyCoupon() {
+    const couponCode = form.getValues("couponCode")?.trim();
+
+    if (!couponCode) {
+      setCouponPreview(null);
+      form.setValue("paymentAmount", baseAmount);
+      toast.error("Enter a coupon code");
+      return;
+    }
+
+    try {
+      setCouponLoading(true);
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: couponCode,
+          courseId: course._id,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.valid) {
+        setCouponPreview(null);
+        form.setValue("paymentAmount", baseAmount);
+        toast.error(data.message || "Invalid coupon");
+        return;
+      }
+
+      const preview: CouponPreview = {
+        code: data.code,
+        originalAmount: data.originalAmount,
+        discountAmount: data.discountAmount,
+        finalAmount: data.finalAmount,
+      };
+
+      setCouponPreview(preview);
+      form.setValue("couponCode", preview.code);
+      form.setValue("paymentAmount", preview.finalAmount);
+      toast.success("Coupon applied");
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to apply coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
 
   async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
     try {
@@ -83,7 +148,13 @@ export default function RegistrationForm({
       });
 
       const data = await res.json();
-      if (!data.success) throw new Error();
+      if (!data.success) throw new Error(data.message);
+
+      if (!data.paymentRequired) {
+        toast.success("Registration completed");
+        window.location.href = "/registration";
+        return;
+      }
 
       // 2. Initiate payment
       const paymentRes = await fetch("/api/paystation/initiate-payment", {
@@ -103,8 +174,10 @@ export default function RegistrationForm({
       }
 
       window.location.href = paymentData.payment_url;
-    } catch {
-      toast.error("Something went wrong");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     }
   }
 
@@ -138,6 +211,26 @@ export default function RegistrationForm({
         className="flex flex-col gap-6"
       >
         <h2 className="text-2xl font-bold">Register for {course.title}</h2>
+
+        <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+          <div className="flex justify-between text-sm">
+            <span>Course fee</span>
+            <span>৳{baseAmount.toLocaleString()}</span>
+          </div>
+          {couponPreview && (
+            <div className="flex justify-between text-sm text-green-700">
+              <span>Coupon ({couponPreview.code})</span>
+              <span>-৳{couponPreview.discountAmount.toLocaleString()}</span>
+            </div>
+          )}
+          <div className="flex justify-between font-semibold">
+            <span>Payable amount</span>
+            <span>
+              ৳
+              {(couponPreview?.finalAmount ?? baseAmount).toLocaleString()}
+            </span>
+          </div>
+        </div>
 
         {/* English Name */}
         <FormField
@@ -322,6 +415,39 @@ export default function RegistrationForm({
                   }}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Coupon */}
+        <FormField
+          control={form.control}
+          name="couponCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Coupon Code</FormLabel>
+              <div className="flex gap-2">
+                <FormControl>
+                  <Input
+                    placeholder="Enter coupon code"
+                    {...field}
+                    onChange={(event) => {
+                      field.onChange(event.target.value.toUpperCase());
+                      setCouponPreview(null);
+                      form.setValue("paymentAmount", baseAmount);
+                    }}
+                  />
+                </FormControl>
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={couponLoading}
+                  className="px-4 py-2 rounded-md bg-primary text-white font-semibold disabled:opacity-60"
+                >
+                  Apply
+                </button>
+              </div>
               <FormMessage />
             </FormItem>
           )}

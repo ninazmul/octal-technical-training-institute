@@ -28,6 +28,9 @@ export interface IRegistration extends Document {
   status: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus: "Not Certified" | "Certified";
   certificateIssuedAt?: Date;
+  originalPaymentAmount?: number;
+  couponCode?: string;
+  couponDiscount?: number;
   paymentAmount: number;
   paymentStatus: "Pending" | "Paid" | "Failed";
 
@@ -76,6 +79,9 @@ const RegistrationSchema = new Schema<IRegistration>(
       default: "Not Certified",
     },
     certificateIssuedAt: { type: Date },
+    originalPaymentAmount: { type: Number, default: 0 },
+    couponCode: { type: String, trim: true, uppercase: true },
+    couponDiscount: { type: Number, default: 0 },
     paymentAmount: { type: Number, default: 0 },
     paymentStatus: {
       type: String,

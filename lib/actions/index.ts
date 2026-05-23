@@ -9,6 +9,9 @@ export * from "./setting.actions";
 // Complains
 export * from "./complain.actions";
 
+// Coupons
+export * from "./coupon.actions";
+
 // Apply / Registrations
 export * from "./apply.actions";
 

@@ -24,6 +24,7 @@ import {
   Settings,
   MessageCircle,
   ClipboardCheck,
+  TicketPercent,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -48,6 +49,12 @@ const sidebarItems = [
     url: "/dashboard/registrations",
     icon: ClipboardList, // better for tracking entries
     roles: ["admin", "moderator"],
+  },
+  {
+    title: "Coupons",
+    url: "/dashboard/coupons",
+    icon: TicketPercent,
+    roles: ["admin"],
   },
   {
     title: "Quick Registration", // updated to reflect quick course registration

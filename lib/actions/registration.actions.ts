@@ -32,6 +32,9 @@ export type SerializedRegistration = {
   status: string | null;
   certificateStatus: string | null;
   certificateIssuedAt: string | null;
+  originalPaymentAmount: number | null;
+  couponCode: string | null;
+  couponDiscount: number | null;
   paymentAmount: number | null;
   paymentStatus: string | null;
   transactionId: string | null;
@@ -59,6 +62,9 @@ export type RegistrationParams = {
   status?: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus?: "Not Certified" | "Certified";
   certificateIssuedAt?: Date | null;
+  originalPaymentAmount?: number;
+  couponCode?: string;
+  couponDiscount?: number;
   paymentAmount?: number;
   paymentStatus?: "Pending" | "Paid" | "Failed";
   transactionId?: string;
@@ -134,6 +140,9 @@ function serializeRegistration(
     status: toStringOrNull(raw["status"]),
     certificateStatus: toStringOrNull(raw["certificateStatus"]),
     certificateIssuedAt: toISODateOrNull(raw["certificateIssuedAt"]),
+    originalPaymentAmount: parseNumberOrNull(raw["originalPaymentAmount"]),
+    couponCode: toStringOrNull(raw["couponCode"]),
+    couponDiscount: parseNumberOrNull(raw["couponDiscount"]),
     paymentAmount: parseNumberOrNull(raw["paymentAmount"]),
     paymentStatus: toStringOrNull(raw["paymentStatus"]),
     transactionId: toStringOrNull(raw["transactionId"]),
@@ -196,6 +205,20 @@ function buildValidatedUpdate(
   if (data.paymentAmount !== undefined) {
     const n = Number(data.paymentAmount);
     if (Number.isFinite(n) && n >= 0) out.paymentAmount = n;
+  }
+
+  if (data.originalPaymentAmount !== undefined) {
+    const n = Number(data.originalPaymentAmount);
+    if (Number.isFinite(n) && n >= 0) out.originalPaymentAmount = n;
+  }
+
+  if (data.couponDiscount !== undefined) {
+    const n = Number(data.couponDiscount);
+    if (Number.isFinite(n) && n >= 0) out.couponDiscount = n;
+  }
+
+  if (data.couponCode !== undefined) {
+    out.couponCode = data.couponCode.trim().toUpperCase();
   }
 
   if (data.transactionId !== undefined) out.transactionId = data.transactionId;
@@ -261,6 +284,9 @@ export const createPendingRegistration = async (
       status: data.status ?? "Pending",
       certificateStatus: data.certificateStatus ?? "Not Certified",
       certificateIssuedAt: data.certificateIssuedAt ?? undefined,
+      originalPaymentAmount: data.originalPaymentAmount ?? data.paymentAmount ?? 0,
+      couponCode: data.couponCode?.trim().toUpperCase() || undefined,
+      couponDiscount: data.couponDiscount ?? 0,
       paymentAmount: data.paymentAmount ?? 0,
       paymentStatus: data.paymentStatus ?? "Pending",
       transactionId: data.transactionId ?? undefined,

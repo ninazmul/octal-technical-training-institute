@@ -50,6 +50,9 @@ export type RegistrationItem = {
   status?: string;
   certificateStatus?: string;
   certificateIssuedAt?: string | Date;
+  originalPaymentAmount?: number;
+  couponCode?: string;
+  couponDiscount?: number;
   paymentAmount?: number;
   paymentStatus?: string;
   transactionId?: string;
@@ -88,6 +91,9 @@ function normalizeRegistration(
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
     certificateIssuedAt: updated.certificateIssuedAt ?? undefined,
+    originalPaymentAmount: updated.originalPaymentAmount ?? undefined,
+    couponCode: updated.couponCode ?? undefined,
+    couponDiscount: updated.couponDiscount ?? undefined,
     paymentAmount: updated.paymentAmount ?? undefined,
     paymentStatus: updated.paymentStatus ?? undefined,
     transactionId: updated.transactionId ?? undefined,
@@ -834,6 +840,17 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 </p>
                 <p>
                   <strong>Amount:</strong> {viewModalData.paymentAmount ?? 0}
+                </p>
+                <p>
+                  <strong>Original Amount:</strong>{" "}
+                  {viewModalData.originalPaymentAmount ?? 0}
+                </p>
+                <p>
+                  <strong>Coupon:</strong> {viewModalData.couponCode ?? "—"}
+                </p>
+                <p>
+                  <strong>Coupon Discount:</strong>{" "}
+                  {viewModalData.couponDiscount ?? 0}
                 </p>
                 <p>
                   <strong>Method:</strong> {viewModalData.paymentMethod ?? "—"}
