@@ -223,6 +223,9 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
             <TableHead onClick={() => handleSort("email")}>Email</TableHead>
             <TableHead onClick={() => handleSort("phone")}>Phone</TableHead>
             <TableHead>Course</TableHead>
+            <TableHead onClick={() => handleSort("createdAt")}>
+              Applied At
+            </TableHead>
             <TableHead>Actions</TableHead>
             <TableHead />
           </TableRow>
@@ -248,8 +251,10 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
               <TableCell>{r.name}</TableCell>
               <TableCell>{r.email}</TableCell>
               <TableCell>{r.phone}</TableCell>
-
               <TableCell>{getCourseTitle(r.course)}</TableCell>
+              <TableCell>
+                {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
+              </TableCell>
 
               <TableCell className="flex gap-2">
                 <Button
