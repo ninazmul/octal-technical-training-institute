@@ -30,11 +30,16 @@ export default function VerifyCertificateView({ registration, course }: Props) {
           <h2 className="text-2xl font-bold">{registration.englishName}</h2>
           <div className="flex flex-wrap gap-4 mt-2 text-sm">
             <span>
-              <strong>Certificate No:</strong> {registration.registrationNumber}
-            </span>
-            <span>
               <strong>Registration No:</strong>
               {registration.registrationNumber}
+            </span>
+            <span>
+              <strong>Issue Date:</strong>
+              {registration.certificateIssuedAt
+                ? new Date(
+                    registration.certificateIssuedAt,
+                  ).toLocaleDateString()
+                : "N/A"}
             </span>
           </div>
         </div>
