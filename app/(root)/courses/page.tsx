@@ -122,14 +122,12 @@ export default function CoursesPage() {
               className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white hover:scale-[1.02] transition"
             >
               <div className="relative w-full h-48">
-                <CourseLink id={course._id.toString()}>
-                  <Image
-                    src={course.photo}
-                    alt={course.title}
-                    fill
-                    className="object-cover"
-                  />
-                </CourseLink>
+                <Image
+                  src={course.photo}
+                  alt={course.title}
+                  fill
+                  className="object-cover"
+                />
 
                 {/* Timer badge */}
                 {course.registrationDeadline && (
