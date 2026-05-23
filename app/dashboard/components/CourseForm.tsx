@@ -27,7 +27,9 @@ const courseFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
   mode: z.enum(["Online", "Offline"], { required_error: "Mode is required" }),
-  certification: z.enum(["NSDA", "BITM", "Institution"], { required_error: "Certification is required" }),
+  certification: z.enum(["NSDA", "BITM", "Institution"], {
+    required_error: "Certification is required",
+  }),
   photo: z.string().min(1, "Course photo is required"),
   description: z.string().min(1, "Description is required"),
   prerequisites: z.array(z.string()).optional(),
@@ -78,7 +80,8 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
       course?.mode === "Online" || course?.mode === "Offline"
         ? course.mode
         : "Online",
-    certification: course?.certification === "NSDA" || course?.certification === "BITM"
+    certification:
+      course?.certification === "NSDA" || course?.certification === "BITM"
         ? course.certification
         : "Institution",
     photo: course?.photo || "",
@@ -226,7 +229,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
             )}
           />
 
-           <FormField
+          <FormField
             control={form.control}
             name="certification"
             render={({ field }) => (
@@ -236,7 +239,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                   <select
                     {...field}
                     className="w-full border rounded px-3 py-2"
-                    defaultValue={field.value || "Online"}
+                    value={field.value || "Institution"}
                   >
                     <option value="NSDA">NSDA</option>
                     <option value="BITM">BITM</option>
