@@ -142,7 +142,11 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
   const handleDelete = async (id: string) => {
     try {
       await deleteApply(id);
+
       setList((prev) => prev.filter((r) => r._id !== id));
+
+      setDeleteConfirmId(null);
+
       toast.success("Deleted");
     } catch {
       toast.error("Delete failed");
