@@ -1,6 +1,6 @@
 import ClientLayout from "@/components/shared/ClientLayout";
 
-export const revalidate = 120;
+export const dynamic = "force-dynamic";
 
 export default function RootLayout({
   children,

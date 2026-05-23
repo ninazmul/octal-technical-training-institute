@@ -25,7 +25,12 @@ export const connectToDatabase = async () => {
     mongoose.connect(MONGODB_URI, {
       dbName: "landing-page",
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000, // wait max 10s for primary
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 20000,
+      maxPoolSize: 5,
+      minPoolSize: 0,
+      maxIdleTimeMS: 10000,
     } as ConnectOptions); // explicitly cast as ConnectOptions
 
   try {
