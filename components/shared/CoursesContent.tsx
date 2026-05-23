@@ -75,12 +75,14 @@ function Courses({
             >
               {/* Course Image */}
               <div className="relative w-full h-48">
-                <Image
-                  src={course.photo}
-                  alt={course.title}
-                  fill
-                  className="object-cover"
-                />
+                <CourseLink id={course._id.toString()}>
+                  <Image
+                    src={course.photo}
+                    alt={course.title}
+                    fill
+                    className="object-cover"
+                  />
+                </CourseLink>
 
                 {/* Timer badge */}
                 {course.registrationDeadline && (
