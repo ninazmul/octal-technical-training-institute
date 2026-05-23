@@ -43,6 +43,7 @@ function normalizeRegistration(r: SerializedRegistration): RegistrationItem {
     registrationNumber: mapStr(r.registrationNumber),
     status: mapStr(r.status),
     certificateStatus: mapStr(r.certificateStatus),
+    certificateIssuedAt: r.certificateIssuedAt ?? undefined,
     paymentAmount: mapNum(r.paymentAmount),
     paymentStatus: mapStr(r.paymentStatus),
     transactionId: mapStr(r.transactionId),

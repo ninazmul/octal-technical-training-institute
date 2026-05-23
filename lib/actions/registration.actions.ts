@@ -58,7 +58,7 @@ export type RegistrationParams = {
   // New management fields
   status?: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus?: "Not Certified" | "Certified";
-  certificateIssuedAt?: Date;
+  certificateIssuedAt?: Date | null;
   paymentAmount?: number;
   paymentStatus?: "Pending" | "Paid" | "Failed";
   transactionId?: string;
@@ -169,6 +169,17 @@ function buildValidatedUpdate(
     CERT_VALUES.includes(data.certificateStatus)
   )
     out.certificateStatus = data.certificateStatus;
+
+  if (data.certificateIssuedAt !== undefined) {
+    if (data.certificateIssuedAt === null) {
+      out.certificateIssuedAt = null;
+    } else {
+      const issuedAt = new Date(data.certificateIssuedAt);
+      if (!Number.isNaN(issuedAt.getTime())) {
+        out.certificateIssuedAt = issuedAt;
+      }
+    }
+  }
 
   if (
     data.paymentStatus !== undefined &&

@@ -142,6 +142,20 @@ const STATUS_STYLES: Record<
   Closed: { text: "text-gray-700", bg: "bg-gray-200", icon: <span>❌</span> },
 };
 
+const formatDate = (value?: string | Date) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString();
+};
+
+const formatDateInputValue = (value?: string | Date) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+};
+
 export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   const [list, setList] = useState<RegistrationItem[]>(registrations);
   const [searchQuery, setSearchQuery] = useState("");
@@ -239,7 +253,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       const va = a[sortKey];
       const vb = b[sortKey];
 
-      if (sortKey === "createdAt") {
+      if (sortKey === "createdAt" || sortKey === "certificateIssuedAt") {
         const da = va ? new Date(va).getTime() : 0;
         const db = vb ? new Date(vb).getTime() : 0;
         return sortOrder === "asc" ? da - db : db - da;
@@ -286,7 +300,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       const updated = await updateRegistration(id, {
         certificateStatus: nextStatus,
         certificateIssuedAt:
-          nextStatus === "Certified" ? new Date() : undefined,
+          nextStatus === "Certified" ? new Date() : null,
       });
       if (!updated) throw new Error("Update failed");
 
@@ -332,7 +346,12 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
 
   useEffect(() => {
     if (editModalData) {
-      methods.reset(editModalData);
+      methods.reset({
+        ...editModalData,
+        certificateIssuedAt: formatDateInputValue(
+          editModalData.certificateIssuedAt,
+        ),
+      });
     }
   }, [editModalData, methods]);
 
@@ -508,6 +527,13 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
               Certified
             </TableHead>
 
+            <TableHead
+              onClick={() => handleSort("certificateIssuedAt")}
+              className="cursor-pointer"
+            >
+              Issued At
+            </TableHead>
+
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -586,6 +612,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 >
                   {r.certificateStatus === "Certified" ? "✓" : "—"}
                 </Button>
+              </TableCell>
+
+              <TableCell className="text-sm">
+                {formatDate(r.certificateIssuedAt)}
               </TableCell>
 
               {/* Actions */}
@@ -787,6 +817,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   <strong>Certificate:</strong>{" "}
                   {viewModalData.certificateStatus ?? "Not Certified"}
                 </p>
+                <p>
+                  <strong>Issued At:</strong>{" "}
+                  {formatDate(viewModalData.certificateIssuedAt)}
+                </p>
               </div>
             </div>
 
@@ -889,9 +923,12 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                     const payload: Partial<RegistrationParams> = {
                       ...data,
                       paymentAmount: Number(data.paymentAmount),
-                      certificateIssuedAt: data.certificateIssuedAt
-                        ? new Date(data.certificateIssuedAt)
-                        : undefined,
+                      certificateIssuedAt:
+                        data.certificateStatus === "Certified"
+                          ? data.certificateIssuedAt
+                            ? new Date(data.certificateIssuedAt)
+                            : new Date()
+                          : null,
 
                       // Status
                       status: STATUS_OPTIONS.includes(data.status as StatusType)
@@ -936,10 +973,6 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                       toast.success("Updated successfully");
                     }
                     if (!updated) throw new Error("Update failed");
-
-                    syncNormalized(editModalData._id, payload);
-                    toast.success("Updated successfully");
-                    setEditModalData(null);
                   } catch (err) {
                     console.error(err);
                     toast.error("Update failed");
@@ -1029,6 +1062,18 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                       <option value="Not Certified">Not Certified</option>
                       <option value="Certified">Certified</option>
                     </select>
+                  </div>
+
+                  {/* Certificate Issued At */}
+                  <div>
+                    <label className="block text-sm font-medium">
+                      Certificate Issued At
+                    </label>
+                    <input
+                      {...methods.register("certificateIssuedAt")}
+                      type="date"
+                      className="border rounded px-2 py-1 w-full"
+                    />
                   </div>
 
                   {/* Payment Status */}
