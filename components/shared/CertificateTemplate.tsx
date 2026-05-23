@@ -59,7 +59,7 @@ export default function CertificateTemplate({
       </div>
 
       {/* Info Grid */}
-      <div className="absolute top-[124mm] left-[73mm] w-[200mm] text-[16px] font-sans">
+      <div className="absolute top-[124mm] left-[73mm] w-[200mm] text-[16px] font-sans text-center">
         Successfully completed the course{" "}
         <span className="text-primary font-semibold">{course?.title}</span> with
         registration number{" "}
