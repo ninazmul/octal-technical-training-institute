@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { getSetting } from "@/lib/actions";
 import Image from "next/image";
-import { CourseLink } from "@/components/shared/CourseLink";
 import { ICourseSafe } from "@/lib/database/models/course.model";
 import { getCourses } from "@/lib/actions/course.actions";
 import CountdownTimer from "@/components/shared/CountdownTimer";
+import Link from "next/link";
 
 type TabKey = "all" | "upcoming" | "ongoing" | "old";
 
@@ -122,14 +122,14 @@ export default function CoursesPage() {
               className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white hover:scale-[1.02] transition"
             >
               <div className="relative w-full h-48">
-                <CourseLink id={course._id.toString()}>
+                <Link href={course._id.toString()}>
                   <Image
                     src={course.photo}
                     alt={course.title}
                     fill
                     className="object-cover"
                   />
-                </CourseLink>
+                </Link>
 
                 {/* Timer badge */}
                 {course.registrationDeadline && (
@@ -139,11 +139,11 @@ export default function CoursesPage() {
                 )}
               </div>
               <div className="p-5 flex flex-col flex-1 text-left">
-                <CourseLink id={course._id.toString()}>
+                <Link href={course._id.toString()}>
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
                   </h3>
-                </CourseLink>
+                </Link>
 
                 <div className="mt-auto flex justify-between items-center">
                   {course.discountPrice ? (
