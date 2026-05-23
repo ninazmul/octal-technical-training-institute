@@ -123,6 +123,7 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
               "title",
               "price",
               "discountPrice",
+              "rtlPrice",
               "seats",
               "SKU",
               "isActive",
@@ -150,7 +151,7 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
           {paginatedCourses.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={8}
+                colSpan={9}
                 className="text-center py-6 text-muted-foreground"
               >
                 No courses found.
@@ -187,6 +188,9 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
                   {course.discountPrice
                     ? `৳${course.discountPrice.toLocaleString()}`
                     : "-"}
+                </TableCell>
+                <TableCell>
+                  {course.rtlPrice ? `৳${course.rtlPrice.toLocaleString()}` : "-"}
                 </TableCell>
 
                 {/* Seats & SKU */}

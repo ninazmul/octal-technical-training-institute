@@ -36,6 +36,7 @@ const registrationFormSchema = z.object({
   institution: z.string().min(1, "Institution is required"),
   address: z.string().min(1, "Address is required"),
   photo: z.string().min(1, "Photo is required"),
+  coursePriceType: z.enum(["rto", "rtl"]),
   couponCode: z.string().optional(),
   paymentAmount: z.number(), // new field
 });
@@ -58,7 +59,13 @@ export default function RegistrationForm({
 }: RegistrationFormProps) {
   // const router = useRouter();
   const { startUpload } = useUploadThing("mediaUploader");
-  const baseAmount = course.discountPrice ?? course.price;
+  const hasRtlPrice = typeof course.rtlPrice === "number" && course.rtlPrice > 0;
+  const getBaseAmount = (type: "rto" | "rtl") =>
+    type === "rtl" && hasRtlPrice
+      ? course.rtlPrice ?? 0
+      : course.discountPrice ?? course.price;
+  const [coursePriceType, setCoursePriceType] = useState<"rto" | "rtl">("rto");
+  const baseAmount = getBaseAmount(coursePriceType);
   const [couponPreview, setCouponPreview] = useState<CouponPreview | null>(
     null,
   );
@@ -78,10 +85,23 @@ export default function RegistrationForm({
       institution: "",
       address: "",
       photo: "",
+      coursePriceType: "rto",
       couponCode: "",
       paymentAmount: baseAmount, // auto-fill
     },
   });
+
+  function resetCouponForAmount(amount: number) {
+    setCouponPreview(null);
+    form.setValue("couponCode", "");
+    form.setValue("paymentAmount", amount);
+  }
+
+  function handleCoursePriceTypeChange(nextType: "rto" | "rtl") {
+    setCoursePriceType(nextType);
+    form.setValue("coursePriceType", nextType);
+    resetCouponForAmount(getBaseAmount(nextType));
+  }
 
   async function applyCoupon() {
     const couponCode = form.getValues("couponCode")?.trim();
@@ -103,6 +123,7 @@ export default function RegistrationForm({
         body: JSON.stringify({
           code: couponCode,
           courseId: course._id,
+          coursePriceType,
         }),
       });
 
@@ -144,6 +165,7 @@ export default function RegistrationForm({
         body: JSON.stringify({
           ...values,
           courseId: course._id,
+          coursePriceType,
         }),
       });
 
@@ -213,8 +235,43 @@ export default function RegistrationForm({
         <h2 className="text-2xl font-bold">Register for {course.title}</h2>
 
         <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+          <FormField
+            control={form.control}
+            name="coursePriceType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Registration Type</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    value={coursePriceType}
+                    onChange={(event) =>
+                      handleCoursePriceTypeChange(
+                        event.target.value as "rto" | "rtl",
+                      )
+                    }
+                    className="w-full border rounded px-3 py-2 bg-white"
+                  >
+                    <option value="rto">
+                      RTO Price (Long course) - ৳
+                      {(course.discountPrice ?? course.price).toLocaleString()}
+                    </option>
+                    <option value="rtl" disabled={!hasRtlPrice}>
+                      RTL Price (Quick examination)
+                      {hasRtlPrice
+                        ? ` - ৳${course.rtlPrice?.toLocaleString()}`
+                        : " - Not available"}
+                    </option>
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div className="flex justify-between text-sm">
-            <span>Course fee</span>
+            <span>
+              {coursePriceType === "rtl" ? "RTL price" : "RTO price"}
+            </span>
             <span>৳{baseAmount.toLocaleString()}</span>
           </div>
           {couponPreview && (

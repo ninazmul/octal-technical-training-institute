@@ -40,6 +40,7 @@ const courseFormSchema = z.object({
     .min(1, "At least one module is required"),
   price: z.coerce.number().min(0, "Price is required"),
   discountPrice: z.coerce.number().optional(),
+  rtlPrice: z.coerce.number().optional(),
   seats: z.coerce.number().min(0, "Seats are required"),
   certification: z.string().min(1, "Certification is required"),
   isActive: z.boolean().default(true),
@@ -83,6 +84,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     modules: course?.modules || [{ title: "", content: "" }],
     price: course?.price || 0,
     discountPrice: course?.discountPrice,
+    rtlPrice: course?.rtlPrice,
     seats: course?.seats || 0,
     certification: course?.certification || "",
     isActive: course?.isActive ?? true,
@@ -359,7 +361,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
         </div>
 
         {/* Pricing */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="price"
@@ -379,6 +381,19 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Discount Price</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="rtlPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>RTL Price</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>

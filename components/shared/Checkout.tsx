@@ -31,7 +31,7 @@ export default function Checkout({ course, email }: CheckoutProps) {
         >
           <h1 className="text-3xl font-bold mb-6">{course.title}</h1>
 
-          <InfoItem icon={<DollarSign size={18} />} label="Price">
+          <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
             {course.discountPrice ? (
               <div className="flex items-center gap-2">
                 <span className="text-red-500 line-through text-sm">
@@ -45,6 +45,15 @@ export default function Checkout({ course, email }: CheckoutProps) {
               <span className="font-bold text-gray-900">
                 টাকা {course.price}
               </span>
+            )}
+          </InfoItem>
+          <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
+            {course.rtlPrice ? (
+              <span className="font-bold text-gray-900">
+                টাকা {course.rtlPrice}
+              </span>
+            ) : (
+              "Not available"
             )}
           </InfoItem>
 

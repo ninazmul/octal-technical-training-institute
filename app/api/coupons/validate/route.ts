@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     const course = await Course.findById(body.courseId).lean<{
       price?: number;
       discountPrice?: number;
+      rtlPrice?: number;
     }>();
 
     if (!course) {
@@ -23,7 +24,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const amount = course.discountPrice ?? course.price ?? 0;
+    const priceType = body.coursePriceType === "rtl" ? "rtl" : "rto";
+    const amount =
+      priceType === "rtl" && course.rtlPrice
+        ? course.rtlPrice
+        : course.discountPrice ?? course.price ?? 0;
     const result = await validateCoupon(String(body.code ?? ""), amount);
 
     return NextResponse.json(result);

@@ -32,6 +32,7 @@ export type SerializedRegistration = {
   status: string | null;
   certificateStatus: string | null;
   certificateIssuedAt: string | null;
+  coursePriceType: "rto" | "rtl" | null;
   originalPaymentAmount: number | null;
   couponCode: string | null;
   couponDiscount: number | null;
@@ -62,6 +63,7 @@ export type RegistrationParams = {
   status?: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus?: "Not Certified" | "Certified";
   certificateIssuedAt?: Date | null;
+  coursePriceType?: "rto" | "rtl";
   originalPaymentAmount?: number;
   couponCode?: string;
   couponDiscount?: number;
@@ -140,6 +142,10 @@ function serializeRegistration(
     status: toStringOrNull(raw["status"]),
     certificateStatus: toStringOrNull(raw["certificateStatus"]),
     certificateIssuedAt: toISODateOrNull(raw["certificateIssuedAt"]),
+    coursePriceType:
+      raw["coursePriceType"] === "rtl" || raw["coursePriceType"] === "rto"
+        ? raw["coursePriceType"]
+        : null,
     originalPaymentAmount: parseNumberOrNull(raw["originalPaymentAmount"]),
     couponCode: toStringOrNull(raw["couponCode"]),
     couponDiscount: parseNumberOrNull(raw["couponDiscount"]),
@@ -210,6 +216,13 @@ function buildValidatedUpdate(
   if (data.originalPaymentAmount !== undefined) {
     const n = Number(data.originalPaymentAmount);
     if (Number.isFinite(n) && n >= 0) out.originalPaymentAmount = n;
+  }
+
+  if (
+    data.coursePriceType !== undefined &&
+    ["rto", "rtl"].includes(data.coursePriceType)
+  ) {
+    out.coursePriceType = data.coursePriceType;
   }
 
   if (data.couponDiscount !== undefined) {
@@ -284,6 +297,7 @@ export const createPendingRegistration = async (
       status: data.status ?? "Pending",
       certificateStatus: data.certificateStatus ?? "Not Certified",
       certificateIssuedAt: data.certificateIssuedAt ?? undefined,
+      coursePriceType: data.coursePriceType ?? "rto",
       originalPaymentAmount: data.originalPaymentAmount ?? data.paymentAmount ?? 0,
       couponCode: data.couponCode?.trim().toUpperCase() || undefined,
       couponDiscount: data.couponDiscount ?? 0,
@@ -399,7 +413,7 @@ export const getRegistrations = async (
     }
 
     const raw = await Registration.find(query)
-      .populate("course", "title category batch price discountPrice")
+      .populate("course", "title category batch price discountPrice rtlPrice")
       .sort({ createdAt: -1 })
       .lean<Record<string, unknown>[]>();
 
@@ -417,7 +431,7 @@ export const getRegistrationById = async (
   try {
     await connectToDatabase();
     const raw = await Registration.findById(registrationId)
-      .populate("course", "title category batch price discountPrice")
+      .populate("course", "title category batch price discountPrice rtlPrice")
       .lean<Record<string, unknown>>();
 
     if (!raw) return null;
@@ -453,7 +467,7 @@ export const getRegistrationByNumber = async (
     await connectToDatabase();
 
     const raw = await Registration.findOne({ registrationNumber })
-      .populate("course", "title category batch price discountPrice")
+      .populate("course", "title category batch price discountPrice rtlPrice")
       .lean<Record<string, unknown>>();
 
     // ✅ Return null instead of throwing
@@ -476,7 +490,7 @@ export const getRegistrationByEmail = async (
     await connectToDatabase();
 
     const raw = await Registration.findOne({ email })
-      .populate("course", "title category batch price discountPrice")
+      .populate("course", "title category batch price discountPrice rtlPrice")
       .lean<Record<string, unknown>>();
 
     if (!raw) return null;

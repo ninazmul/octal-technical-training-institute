@@ -44,6 +44,7 @@ function normalizeRegistration(r: SerializedRegistration): RegistrationItem {
     status: mapStr(r.status),
     certificateStatus: mapStr(r.certificateStatus),
     certificateIssuedAt: r.certificateIssuedAt ?? undefined,
+    coursePriceType: r.coursePriceType ?? undefined,
     originalPaymentAmount: mapNum(r.originalPaymentAmount),
     couponCode: mapStr(r.couponCode),
     couponDiscount: mapNum(r.couponDiscount),

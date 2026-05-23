@@ -14,7 +14,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false });
     }
 
-    const originalAmount = course.discountPrice ?? course.price;
+    const coursePriceType = body.coursePriceType === "rtl" ? "rtl" : "rto";
+    const originalAmount =
+      coursePriceType === "rtl" && course.rtlPrice
+        ? course.rtlPrice
+        : course.discountPrice ?? course.price;
     const couponCode =
       typeof body.couponCode === "string" ? body.couponCode.trim() : "";
     const couponResult = couponCode
@@ -38,6 +42,7 @@ export async function POST(req: NextRequest) {
     const registration = await Registration.create({
       ...body,
       course: body.courseId, // 🔥 FIX HERE
+      coursePriceType,
       originalPaymentAmount: originalAmount,
       couponCode: couponResult?.valid ? couponResult.code : undefined,
       couponDiscount,

@@ -50,6 +50,7 @@ export type RegistrationItem = {
   status?: string;
   certificateStatus?: string;
   certificateIssuedAt?: string | Date;
+  coursePriceType?: "rto" | "rtl";
   originalPaymentAmount?: number;
   couponCode?: string;
   couponDiscount?: number;
@@ -91,6 +92,7 @@ function normalizeRegistration(
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
     certificateIssuedAt: updated.certificateIssuedAt ?? undefined,
+    coursePriceType: updated.coursePriceType ?? undefined,
     originalPaymentAmount: updated.originalPaymentAmount ?? undefined,
     couponCode: updated.couponCode ?? undefined,
     couponDiscount: updated.couponDiscount ?? undefined,
@@ -840,6 +842,12 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 </p>
                 <p>
                   <strong>Amount:</strong> {viewModalData.paymentAmount ?? 0}
+                </p>
+                <p>
+                  <strong>Price Type:</strong>{" "}
+                  {viewModalData.coursePriceType === "rtl"
+                    ? "RTL"
+                    : "RTO"}
                 </p>
                 <p>
                   <strong>Original Amount:</strong>{" "}

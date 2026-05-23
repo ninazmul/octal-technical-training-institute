@@ -16,6 +16,7 @@ export type CourseParams = {
   modules: { title: string; content: string }[];
   price: number;
   discountPrice?: number;
+  rtlPrice?: number;
   seats?: number;
   certification?: string;
   isActive?: boolean;
@@ -107,7 +108,7 @@ export const getCourseById = async (
         const course = await Course.findById(courseId)
           .select(
             `
-            title category photo price discountPrice seats batch
+            title category photo price discountPrice rtlPrice seats batch
             courseStartDate duration sessions registrationDeadline
             prerequisites description modules schedule isActive sku
           `,
@@ -143,7 +144,7 @@ export const searchCourses = async (query: string): Promise<ICourseSafe[]> => {
     })
       .limit(10)
       .select(
-        "title category photo price discountPrice seats duration courseStartDate registrationDeadline sku batch",
+        "title category photo price discountPrice rtlPrice seats duration courseStartDate registrationDeadline sku batch",
       )
       .lean<ICourse[]>();
 
