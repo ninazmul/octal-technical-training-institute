@@ -27,6 +27,7 @@ const courseFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
   mode: z.enum(["Online", "Offline"], { required_error: "Mode is required" }),
+  certification: z.enum(["NSDA", "BITM", "Institution"], { required_error: "Certification is required" }),
   photo: z.string().min(1, "Course photo is required"),
   description: z.string().min(1, "Description is required"),
   prerequisites: z.array(z.string()).optional(),
@@ -42,7 +43,6 @@ const courseFormSchema = z.object({
   discountPrice: z.coerce.number().optional(),
   rtlPrice: z.coerce.number().optional(),
   seats: z.coerce.number().min(0, "Seats are required"),
-  certification: z.string().min(1, "Certification is required"),
   isActive: z.boolean().default(true),
   batch: z.string().optional(),
   sku: z.string().optional(),
@@ -78,6 +78,9 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
       course?.mode === "Online" || course?.mode === "Offline"
         ? course.mode
         : "Online",
+    certification: course?.certification === "NSDA" || course?.certification === "BITM"
+        ? course.certification
+        : "Institution",
     photo: course?.photo || "",
     description: course?.description || "",
     prerequisites: course?.prerequisites || [""],
@@ -86,7 +89,6 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     discountPrice: course?.discountPrice,
     rtlPrice: course?.rtlPrice,
     seats: course?.seats || 0,
-    certification: course?.certification || "",
     isActive: course?.isActive ?? true,
     batch: course?.batch || "",
     sku: course?.sku || "",
@@ -224,14 +226,22 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
             )}
           />
 
-          <FormField
+           <FormField
             control={form.control}
             name="certification"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Certification</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter certification title" {...field} />
+                  <select
+                    {...field}
+                    className="w-full border rounded px-3 py-2"
+                    defaultValue={field.value || "Online"}
+                  >
+                    <option value="NSDA">NSDA</option>
+                    <option value="BITM">BITM</option>
+                    <option value="Institution">Institution</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
