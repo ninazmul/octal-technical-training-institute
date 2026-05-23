@@ -89,8 +89,8 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     prerequisites: course?.prerequisites || [""],
     modules: course?.modules || [{ title: "", content: "" }],
     price: course?.price || 0,
-    discountPrice: course?.discountPrice,
-    rtlPrice: course?.rtlPrice,
+    discountPrice: course?.discountPrice ?? 0,
+    rtlPrice: course?.rtlPrice ?? 0,
     seats: course?.seats || 0,
     isActive: course?.isActive ?? true,
     batch: course?.batch || "",
@@ -382,7 +382,11 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormItem>
                 <FormLabel>Price</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input
+                    type="number"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -395,7 +399,11 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormItem>
                 <FormLabel>Discount Price</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input
+                    type="number"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -408,7 +416,11 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormItem>
                 <FormLabel>RTL Price</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input
+                    type="number"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
