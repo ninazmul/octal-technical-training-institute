@@ -28,13 +28,13 @@ export default function VerifyCertificateView({ registration, course }: Props) {
         {/* Top Banner */}
         <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-6 text-white">
           <h2 className="text-2xl font-bold">{registration.englishName}</h2>
-          <div className="flex flex-wrap gap-4 mt-2 text-sm">
+          <div className="flex flex-wrap gap-2 mt-2 text-sm">
             <span>
-              <strong>Registration No:</strong>
+              <strong>Registration No: </strong>
               {registration.registrationNumber}
             </span>
             <span>
-              <strong>Issue Date:</strong>
+              <strong>Issue Date: </strong>
               {registration.certificateIssuedAt
                 ? new Date(
                     registration.certificateIssuedAt,
