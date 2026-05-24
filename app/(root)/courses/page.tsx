@@ -122,7 +122,10 @@ export default function CoursesPage() {
               className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white hover:scale-[1.02] transition"
             >
               <div className="relative w-full h-48">
-                <Link href={course._id.toString()}>
+                <Link
+                  href={`/courses/${course._id.toString()}`}
+                  className="block w-full h-full"
+                >
                   <Image
                     src={course.photo}
                     alt={course.title}
@@ -139,7 +142,7 @@ export default function CoursesPage() {
                 )}
               </div>
               <div className="p-5 flex flex-col flex-1 text-left">
-                <Link href={course._id.toString()}>
+                <Link href={`/courses/${course._id.toString()}`} className="block">
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
                   </h3>
