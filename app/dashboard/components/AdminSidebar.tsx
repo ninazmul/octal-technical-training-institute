@@ -57,7 +57,7 @@ const sidebarItems = [
     roles: ["admin"],
   },
   {
-    title: "Quick Registration", // updated to reflect quick course registration
+    title: "Quick Registration",
     url: "/dashboard/applies",
     icon: ClipboardCheck, // indicates user/application intent
     roles: ["admin", "moderator"],
