@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Facebook, Linkedin, Twitter, Globe } from "lucide-react";
 import TrainerModal from "./TrainerModal";
+import Marquee from "react-fast-marquee";
 
 function OurMentors({ setting }: { setting: ISettingSafe | null }) {
   const themeColor = setting?.theme || "#0055CE";
@@ -52,90 +53,103 @@ function OurMentors({ setting }: { setting: ISettingSafe | null }) {
         )}
       </motion.div>
 
-      {/* Mentors Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl mt-10">
-        {setting?.ourMentors?.mentors?.map((mentor, index) => {
-          const firstLetter = mentor.name?.charAt(0).toUpperCase() || "?";
+      {/* Mentors Marquee */}
+      <div className="relative w-full max-w-7xl mt-10 overflow-hidden">
+        <Marquee
+          gradient={false}
+          speed={40}
+          pauseOnHover
+          autoFill
+          className="py-4"
+        >
+          {setting?.ourMentors?.mentors?.map((mentor, index) => {
+            const firstLetter = mentor.name?.charAt(0).toUpperCase() || "?";
 
-          return (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-4 p-6 bg-white rounded-2xl shadow-md text-center"
-            >
-              {/* Avatar */}
-              {mentor.photo ? (
-                <Image
-                  src={mentor.photo}
-                  alt={mentor.name || "Mentor"}
-                  width={200}
-                  height={200}
-                  className="rounded-full object-contain h-[200px]"
-                />
-              ) : (
-                <div
-                  className="w-[200px] h-[200px] rounded-full flex items-center justify-center text-5xl font-bold text-white"
-                  style={{ backgroundColor: themeColor }}
-                >
-                  {firstLetter}
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                whileHover={{ scale: 1.05 }}
+                className="flex flex-col items-center gap-4 p-6 bg-white rounded-2xl shadow-md text-center mx-4 min-w-[260px]"
+              >
+                {/* Avatar */}
+                {mentor.photo ? (
+                  <Image
+                    src={mentor.photo}
+                    alt={mentor.name || "Mentor"}
+                    width={200}
+                    height={200}
+                    className="rounded-full object-cover w-[200px] h-[200px]"
+                  />
+                ) : (
+                  <div
+                    className="w-[200px] h-[200px] rounded-full flex items-center justify-center text-5xl font-bold text-white"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    {firstLetter}
+                  </div>
+                )}
+
+                {/* Name */}
+                <p className="font-semibold text-gray-800 text-lg">
+                  {mentor.name || "Anonymous"}
+                </p>
+
+                {/* Expertise */}
+                {mentor.expertise && (
+                  <p className="text-gray-600 text-sm">
+                    {mentor.expertise}
+                  </p>
+                )}
+
+                {/* Social Links */}
+                <div className="flex items-center gap-3">
+                  {mentor.social?.facebook && (
+                    <a
+                      href={mentor.social.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Facebook className="w-5 h-5 text-blue-600 hover:opacity-80" />
+                    </a>
+                  )}
+
+                  {mentor.social?.linkedIn && (
+                    <a
+                      href={mentor.social.linkedIn}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Linkedin className="w-5 h-5 text-blue-700 hover:opacity-80" />
+                    </a>
+                  )}
+
+                  {mentor.social?.twitter && (
+                    <a
+                      href={mentor.social.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Twitter className="w-5 h-5 text-sky-500 hover:opacity-80" />
+                    </a>
+                  )}
+
+                  {mentor.social?.other && (
+                    <a
+                      href={mentor.social.other}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Globe className="w-5 h-5 text-gray-500 hover:opacity-80" />
+                    </a>
+                  )}
                 </div>
-              )}
-
-              {/* Name */}
-              <p className="font-semibold text-gray-800 text-lg">
-                {mentor.name || "Anonymous"}
-              </p>
-
-              {/* Expertise */}
-              {mentor.expertise && (
-                <p className="text-gray-600 text-sm">{mentor.expertise}</p>
-              )}
-
-              {/* Social Links */}
-              <div className="flex items-center gap-3">
-                {mentor.social?.facebook && (
-                  <a
-                    href={mentor.social.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Facebook className="w-5 h-5 text-blue-600 hover:opacity-80" />
-                  </a>
-                )}
-                {mentor.social?.linkedIn && (
-                  <a
-                    href={mentor.social.linkedIn}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Linkedin className="w-5 h-5 text-blue-700 hover:opacity-80" />
-                  </a>
-                )}
-                {mentor.social?.twitter && (
-                  <a
-                    href={mentor.social.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Twitter className="w-5 h-5 text-sky-500 hover:opacity-80" />
-                  </a>
-                )}
-                {mentor.social?.other && (
-                  <a
-                    href={mentor.social.other}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Globe className="w-5 h-5 text-gray-500 hover:opacity-80" />
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </Marquee>
       </div>
       <div className="flex flex-wrap justify-center items-center gap-2 py-4">
         <p>
