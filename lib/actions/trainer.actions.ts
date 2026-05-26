@@ -3,6 +3,7 @@
 import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
 import Trainer from "../database/models/trainer.model";
+import { logActivity } from "./activity-log.actions";
 import { TrainerParams } from "@/types";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
@@ -116,6 +117,8 @@ export const updateTrainer = async (
       throw new Error("Trainer not found");
     }
 
+    await logActivity("UPDATE", "Trainer", `Updated trainer application for ${updatedTrainer.name}`);
+
     return JSON.parse(JSON.stringify(updatedTrainer));
   } catch (error) {
     handleError(error);
@@ -126,11 +129,18 @@ export const deleteTrainer = async (trainerId: string) => {
   try {
     await connectToDatabase();
 
+    const trainerToDelete = await Trainer.findById(trainerId);
+    if (!trainerToDelete) {
+      throw new Error("Trainer not found");
+    }
+
     const deletedTrainer = await Trainer.findByIdAndDelete(trainerId);
 
     if (!deletedTrainer) {
       throw new Error("Trainer not found");
     }
+
+    await logActivity("DELETE", "Trainer", `Deleted trainer application for ${trainerToDelete.name}`);
 
     return { message: "Trainer deleted successfully" };
   } catch (error) {

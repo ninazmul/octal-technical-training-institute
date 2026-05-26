@@ -25,6 +25,7 @@ import {
   MessageCircle,
   ClipboardCheck,
   TicketPercent,
+  History,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -96,6 +97,12 @@ const sidebarItems = [
     title: "Admins",
     url: "/dashboard/admins",
     icon: ShieldCheck, // authority + verified
+    roles: ["admin"],
+  },
+  {
+    title: "Activity Logs",
+    url: "/dashboard/activity-logs",
+    icon: History,
     roles: ["admin"],
   },
   {

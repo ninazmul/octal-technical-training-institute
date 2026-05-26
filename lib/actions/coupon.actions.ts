@@ -6,6 +6,7 @@ import Coupon, {
   CouponDiscountType,
 } from "../database/models/coupon.model";
 import { handleError } from "../utils";
+import { logActivity } from "./activity-log.actions";
 
 export type SerializedCoupon = {
   _id: string;
@@ -132,6 +133,8 @@ export const createCoupon = async (
 
     const coupon = await Coupon.create(validateCouponInput(data));
 
+    await logActivity("CREATE", "Coupon", `Created coupon code '${coupon.code}' with ${coupon.discountValue}${coupon.discountType === "percent" ? "%" : " TK"} discount`);
+
     revalidatePath("/dashboard/coupons");
     return serializeCoupon(coupon.toObject());
   } catch (error) {
@@ -154,6 +157,8 @@ export const updateCoupon = async (
 
     if (!coupon) throw new Error("Coupon not found");
 
+    await logActivity("UPDATE", "Coupon", `Updated coupon code '${coupon.code}'`);
+
     revalidatePath("/dashboard/coupons");
     return serializeCoupon(coupon);
   } catch (error) {
@@ -167,8 +172,13 @@ export const deleteCoupon = async (
   try {
     await connectToDatabase();
 
+    const couponToDelete = await Coupon.findById(couponId);
+    if (!couponToDelete) throw new Error("Coupon not found");
+
     const deleted = await Coupon.findByIdAndDelete(couponId);
     if (!deleted) throw new Error("Coupon not found");
+
+    await logActivity("DELETE", "Coupon", `Deleted coupon code '${couponToDelete.code}'`);
 
     revalidatePath("/dashboard/coupons");
     return { message: "Coupon deleted successfully" };

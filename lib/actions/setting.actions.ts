@@ -2,6 +2,7 @@
 
 import { handleError, sanitizeSetting } from "../utils";
 import { connectToDatabase } from "../database";
+import { logActivity } from "./activity-log.actions";
 import Setting, {
   ISetting,
   ISettingSafe,
@@ -128,6 +129,8 @@ export const upsertSetting = async (
     if (!setting) {
       return null;
     }
+
+    await logActivity("UPDATE", "Setting", "Updated landing page settings configuration");
 
     // setting here is a plain object, not ISetting
     cachedSetting = JSON.parse(

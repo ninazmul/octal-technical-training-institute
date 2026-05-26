@@ -4,6 +4,7 @@ import { connectToDatabase } from "../database";
 import { handleError } from "../utils";
 import Registration from "../database/models/registration.model";
 import Course from "../database/models/course.model";
+import { logActivity } from "./activity-log.actions";
 import { sendRegistrationSuccessEmail } from "../mailer/sendRegistrationSuccess";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
@@ -355,6 +356,8 @@ export const confirmRegistrationPayment = async (
 
     await registration.save();
 
+    await logActivity("UPDATE", "Registration", `Confirmed payment for student '${registration.englishName}' (Reg No: ${registration.registrationNumber || 'N/A'}) for course '${course.title}'`);
+
     // ✅ Send email (safe)
     try {
       await sendRegistrationSuccessEmail({
@@ -548,6 +551,10 @@ export const updateRegistration = async (
       .lean<Record<string, unknown>>();
 
     if (!updated) throw new Error("Registration not found");
+
+    const courseTitle = updated.course && typeof updated.course === 'object' && 'title' in updated.course ? (updated.course as any).title : '';
+    await logActivity("UPDATE", "Registration", `Updated registration for student '${updated.englishName}' (Reg No: ${updated.registrationNumber || 'N/A'}) for course '${courseTitle}'`);
+
     return serializeRegistration(updated);
   } catch (error) {
     handleError(error);
@@ -560,11 +567,19 @@ export const deleteRegistration = async (
 ): Promise<{ message: string } | undefined> => {
   try {
     await connectToDatabase();
+
+    const regToDelete = await Registration.findById(registrationId).populate("course", "title").lean<any>();
+    if (!regToDelete) throw new Error("Registration not found");
+
     const deleted =
       await Registration.findByIdAndDelete(registrationId).lean<
         Record<string, unknown>
       >();
     if (!deleted) throw new Error("Registration not found");
+
+    const courseTitle = regToDelete.course ? regToDelete.course.title : '';
+    await logActivity("DELETE", "Registration", `Deleted registration for student '${regToDelete.englishName}' (Reg No: ${regToDelete.registrationNumber || 'N/A'}) for course '${courseTitle}'`);
+
     return { message: "Registration deleted successfully" };
   } catch (error) {
     handleError(error);

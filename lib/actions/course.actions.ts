@@ -4,6 +4,7 @@ import { connectToDatabase } from "../database";
 import { handleError, sanitizeCourse, sanitizeCourses } from "../utils";
 import Course, { ICourse, ICourseSafe } from "../database/models/course.model";
 import { unstable_cache } from "next/cache";
+import { logActivity } from "./activity-log.actions";
 
 // -------------------- Params --------------------
 export type CourseParams = {
@@ -91,6 +92,11 @@ export const createCourse = async (
   try {
     await connectToDatabase();
     const newCourse = await Course.create(data);
+
+    if (newCourse) {
+      await logActivity("CREATE", "Course", `Created course '${newCourse.title}'`);
+    }
+
     return newCourse ? sanitizeCourse(newCourse) : undefined;
   } catch (error) {
     handleError(error);
@@ -166,6 +172,9 @@ export const updateCourse = async (
       runValidators: true,
     }).lean<ICourse>();
     if (!updatedCourse) throw new Error("Course not found");
+
+    await logActivity("UPDATE", "Course", `Updated course '${updatedCourse.title}'`);
+
     return updatedCourse;
   } catch (error) {
     handleError(error);
@@ -181,6 +190,9 @@ export const toggleCourseStatus = async (
     if (!course) throw new Error("Course not found");
     course.isActive = !course.isActive;
     await course.save();
+
+    await logActivity("TOGGLE_STATUS", "Course", `Toggled active status of course '${course.title}' to ${course.isActive}`);
+
     return course.toObject() as ICourse;
   } catch (error) {
     handleError(error);
@@ -192,8 +204,15 @@ export const deleteCourse = async (
 ): Promise<{ message: string } | undefined> => {
   try {
     await connectToDatabase();
+
+    const courseToDelete = await Course.findById(courseId);
+    if (!courseToDelete) throw new Error("Course not found");
+
     const deletedCourse = await Course.findByIdAndDelete(courseId).lean();
     if (!deletedCourse) throw new Error("Course not found");
+
+    await logActivity("DELETE", "Course", `Deleted course '${courseToDelete.title}'`);
+
     return { message: "Course deleted successfully" };
   } catch (error) {
     handleError(error);

@@ -5,6 +5,7 @@ import { connectToDatabase } from "../database";
 import { NoticeParams } from "@/types";
 import { revalidatePath } from "next/cache";
 import Notice from "../database/models/notice.model";
+import { logActivity } from "./activity-log.actions";
 
 // ====== CREATE Notice
 export const createNotice = async (params: NoticeParams) => {
@@ -12,6 +13,10 @@ export const createNotice = async (params: NoticeParams) => {
     await connectToDatabase();
 
     const newNotice = await Notice.create(params);
+
+    if (newNotice) {
+      await logActivity("CREATE", "Notice", `Created notice '${newNotice.title}'`);
+    }
 
     revalidatePath("/Notices");
 
@@ -87,6 +92,8 @@ export const updateNotice = async (
       throw new Error("Notice not found");
     }
 
+    await logActivity("UPDATE", "Notice", `Updated notice '${updatedNotice.title}'`);
+
     revalidatePath("/Notices");
 
     return JSON.parse(JSON.stringify(updatedNotice));
@@ -100,11 +107,18 @@ export const deleteNotice = async (NoticeId: string) => {
   try {
     await connectToDatabase();
 
+    const noticeToDelete = await Notice.findById(NoticeId);
+    if (!noticeToDelete) {
+      throw new Error("Notice not found");
+    }
+
     const deletedNotice = await Notice.findByIdAndDelete(NoticeId);
 
     if (!deletedNotice) {
       throw new Error("Notice not found");
     }
+
+    await logActivity("DELETE", "Notice", `Deleted notice '${noticeToDelete.title}'`);
 
     revalidatePath("/Notices");
 

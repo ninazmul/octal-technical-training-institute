@@ -32,3 +32,7 @@ export * from "./trainer.actions";
 
 // Success Stories
 export * from "./success-stories.actions";
+
+// Activity Logs
+export * from "./activity-log.actions";
+

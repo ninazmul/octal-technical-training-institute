@@ -5,6 +5,7 @@ import Complain from "../database/models/complain.model";
 import { ComplainParams } from "@/types";
 import { handleError } from "../utils";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+import { logActivity } from "./activity-log.actions";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 import { DashboardDateFilterResolved } from "../dashboard-date-filter";
 
@@ -129,6 +130,9 @@ export const updateComplain = async (
       throw new Error("Complain not found");
     }
 
+    const complainName = (complain as any).name || "Unknown";
+    await logActivity("UPDATE", "Complaint", `Updated complaint details/status for ${complainName}`);
+
     return complain;
   } catch (error) {
     handleError(error);
@@ -141,11 +145,18 @@ export const deleteComplain = async (complainId: string) => {
   try {
     await connectToDatabase();
 
+    const complainToDelete = await Complain.findById(complainId);
+    if (!complainToDelete) {
+      throw new Error("Complain not found");
+    }
+
     const complain = await Complain.findByIdAndDelete(complainId).lean();
 
     if (!complain) {
       throw new Error("Complain not found");
     }
+
+    await logActivity("DELETE", "Complaint", `Deleted complaint from ${complainToDelete.name}`);
 
     return { success: true };
   } catch (error) {

@@ -5,6 +5,7 @@ import { ApplyParams } from "@/types";
 import { handleError, sanitizeApplies, sanitizeApply } from "../utils";
 import Apply from "../database/models/apply.model";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
+import { logActivity } from "./activity-log.actions";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
 
 // 🔹 Create
@@ -58,6 +59,9 @@ export const updateApply = async (
       runValidators: true,
     });
     if (!apply) throw new Error("Apply not found");
+
+    await logActivity("UPDATE", "Quick Registration", `Updated quick registration status/details for ${apply.name}`);
+
     return sanitizeApply(apply);
   } catch (error) {
     handleError(error);
@@ -69,8 +73,15 @@ export const updateApply = async (
 export const deleteApply = async (applyId: string) => {
   try {
     await connectToDatabase();
+
+    const applyToDelete = await Apply.findById(applyId);
+    if (!applyToDelete) throw new Error("Apply not found");
+
     const apply = await Apply.findByIdAndDelete(applyId);
     if (!apply) throw new Error("Apply not found");
+
+    await logActivity("DELETE", "Quick Registration", `Deleted quick registration for ${applyToDelete.name}`);
+
     return { success: true };
   } catch (error) {
     handleError(error);

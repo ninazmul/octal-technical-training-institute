@@ -4,6 +4,7 @@ import { AdminParams } from "@/types";
 import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
 import Admin from "../database/models/admin.model";
+import { logActivity } from "./activity-log.actions";
 
 export const createAdmin = async ({ Name, Email, Role }: AdminParams) => {
   try {
@@ -14,6 +15,8 @@ export const createAdmin = async ({ Name, Email, Role }: AdminParams) => {
       email: Email,
       role: Role,
     });
+
+    await logActivity("CREATE", "Admin", `Created admin '${Name}' with role '${Role}'`);
 
     return JSON.parse(JSON.stringify(newAdmin));
   } catch (error) {
@@ -37,11 +40,18 @@ export const deleteAdmin = async (adminId: string) => {
   try {
     await connectToDatabase();
 
+    const adminToDelete = await Admin.findById(adminId);
+    if (!adminToDelete) {
+      throw new Error("Admin not found");
+    }
+
     const deletedAdmin = await Admin.findByIdAndDelete(adminId);
 
     if (!deletedAdmin) {
       throw new Error("Admin not found");
     }
+
+    await logActivity("DELETE", "Admin", `Deleted admin '${adminToDelete.name}' (${adminToDelete.email})`);
 
     return { message: "Admin deleted successfully" };
   } catch (error) {
