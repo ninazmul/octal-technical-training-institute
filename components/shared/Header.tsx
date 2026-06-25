@@ -207,7 +207,7 @@ export default function Header({ openSearch }: HeaderProps) {
             width={150}
             height={50}
             className="object-contain rounded-md h-10 w-auto"
-            alt={settings?.name || "Logo"}
+            alt={settings?.name || "Logo GIF"}
             unoptimized
           />
         </Link>
