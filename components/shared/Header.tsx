@@ -202,14 +202,14 @@ export default function Header({ openSearch }: HeaderProps) {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 py-3">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
-          <div className="relative w-16 md:w-32 h-10 rounded-md overflow-hidden bg-primary-500">
-            <Image
-              src={settings?.logo || "/assets/images/logo.png"}
-              fill
-              className="object-contain rounded-md"
-              alt={settings?.name || "Logo"}
-            />
-          </div>
+          <Image
+            src={"/assets/images/logo.gif"}
+            width={150}
+            height={50}
+            className="object-contain rounded-md h-10 w-auto"
+            alt={settings?.name || "Logo GIF"}
+            unoptimized
+          />
         </Link>
 
         {/* Search */}
