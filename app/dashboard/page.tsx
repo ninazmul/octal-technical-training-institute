@@ -6,6 +6,7 @@ import {
   getRegistrations,
   getSetting,
 } from "@/lib/actions";
+import { getAllApplies, SerializedApply } from "@/lib/actions/apply.actions";
 import DashboardClient from "./components/DashboardClient";
 import { IAdmin } from "@/lib/database/models/admin.model";
 import { ICourseSafe } from "@/lib/database/models/course.model";
@@ -32,7 +33,7 @@ export default async function DashboardPage({
     endDate: Array.isArray(endDateValue) ? endDateValue[0] : endDateValue,
   });
 
-  const [setting, admins, courses, registrations, trainers, complains] =
+  const [setting, admins, courses, registrations, trainers, complains, applies] =
     await Promise.all([
       getSetting(),
       getAllAdmins(),
@@ -40,6 +41,7 @@ export default async function DashboardPage({
       getRegistrations({ dateFilter }),
       getAllTrainers({ dateFilter }),
       getComplains({ dateFilter }),
+      getAllApplies({ dateFilter }),
     ]);
 
   return (
@@ -50,6 +52,7 @@ export default async function DashboardPage({
       registrations={(registrations ?? []) as SerializedRegistration[]}
       trainers={(trainers ?? []) as SerializedTrainer[]}
       complains={(complains ?? []) as SerializedComplain[]}
+      applies={(applies ?? []) as SerializedApply[]}
       dateFilter={dateFilter}
     />
   );

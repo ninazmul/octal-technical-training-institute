@@ -18,11 +18,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash } from "lucide-react";
+import { Download, FileText, Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCourseById } from "@/lib/actions/course.actions";
 import { RichTextEditor } from "@/components/shared/RichTextEditor";
 import { deleteApply } from "@/lib/actions/apply.actions";
+import {
+  ExportColumn,
+  exportRowsToCsv,
+  exportRowsToPdf,
+  getDateRangeMatch,
+} from "@/lib/export.client";
 
 export type applyItem = {
   _id: string;
@@ -47,6 +53,8 @@ type SortKey = keyof Pick<applyItem, "name" | "email" | "phone" | "createdAt">;
 export const ApplyTable: React.FC<Props> = ({ applies }) => {
   const [list, setList] = useState<applyItem[]>(applies || []);
   const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [courseMap, setCourseMap] = useState<Record<string, CourseInfo>>({});
@@ -104,11 +112,14 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
 
     const data = list.filter((r) => {
       const title = getCourseTitle(r.course).toLowerCase();
-      return (
+      const matchesSearch =
         r.name?.toLowerCase().includes(q) ||
         r.email?.toLowerCase().includes(q) ||
         r.phone?.toLowerCase().includes(q) ||
-        title.includes(q)
+        title.includes(q);
+
+      return (
+        matchesSearch && getDateRangeMatch(r.createdAt, startDate, endDate)
       );
     });
 
@@ -128,7 +139,49 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
         ? String(va || "").localeCompare(String(vb || ""))
         : String(vb || "").localeCompare(String(va || ""));
     });
-  }, [list, searchQuery, sortKey, sortOrder, getCourseTitle]);
+  }, [
+    list,
+    searchQuery,
+    startDate,
+    endDate,
+    sortKey,
+    sortOrder,
+    getCourseTitle,
+  ]);
+
+  const selectedRows = useMemo(
+    () => filtered.filter((r) => selectedApplies.includes(r._id)),
+    [filtered, selectedApplies],
+  );
+
+  const exportRows = selectedRows.length > 0 ? selectedRows : filtered;
+  const applyExportColumns = useMemo<ExportColumn<applyItem>[]>(
+    () => [
+      { header: "Name", value: (r) => r.name },
+      { header: "Email", value: (r) => r.email },
+      { header: "Phone", value: (r) => r.phone },
+      { header: "Course", value: (r) => getCourseTitle(r.course) },
+      {
+        header: "Applied At",
+        value: (r) =>
+          r.createdAt ? new Date(r.createdAt).toLocaleString() : "",
+      },
+    ],
+    [getCourseTitle],
+  );
+
+  const handleExportCsv = () => {
+    exportRowsToCsv(exportRows, applyExportColumns, "quick-registrations.csv");
+  };
+
+  const handleExportPdf = () => {
+    exportRowsToPdf(
+      exportRows,
+      applyExportColumns,
+      "quick-registrations.pdf",
+      "Quick Registrations Export",
+    );
+  };
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortOrder((p) => (p === "asc" ? "desc" : "asc"));
@@ -193,19 +246,50 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
   return (
     <div className="space-y-4">
       {/* Top */}
-      <div className="flex justify-between gap-4">
-        <Input
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="mb-4 w-full md:w-1/2 lg:w-1/3"
-        />
+      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+        <div className="grid w-full gap-3 md:grid-cols-[minmax(220px,1fr)_160px_160px] xl:max-w-3xl">
+          <Input
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            aria-label="Start date"
+          />
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            aria-label="End date"
+          />
+        </div>
 
-        {selectedApplies.length > 0 && (
-          <Button onClick={() => setEmailModalOpen(true)}>
-            Send ({selectedApplies.length})
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportCsv}
+            disabled={exportRows.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            CSV ({exportRows.length})
           </Button>
-        )}
+          <Button
+            variant="outline"
+            onClick={handleExportPdf}
+            disabled={exportRows.length === 0}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            PDF ({exportRows.length})
+          </Button>
+          {selectedApplies.length > 0 ? (
+            <Button onClick={() => setEmailModalOpen(true)}>
+              Send ({selectedApplies.length})
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {/* Table */}
@@ -215,7 +299,10 @@ export const ApplyTable: React.FC<Props> = ({ applies }) => {
             <TableHead className="text-white cursor-pointer">
               <input
                 type="checkbox"
-                checked={selectedApplies.length === filtered.length}
+                checked={
+                  filtered.length > 0 &&
+                  selectedApplies.length === filtered.length
+                }
                 onChange={(e) =>
                   setSelectedApplies(
                     e.target.checked ? filtered.map((r) => r._id) : [],

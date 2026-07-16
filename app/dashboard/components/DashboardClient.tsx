@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Download, FileText } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,12 @@ import {
 } from "@/lib/dashboard-date-filter";
 import { SerializedTrainer } from "@/lib/actions/trainer.actions";
 import { SerializedComplain } from "@/lib/actions/complain.actions";
+import { SerializedApply } from "@/lib/actions/apply.actions";
+import {
+  ExportColumn,
+  exportRowsToCsv,
+  exportRowsToPdf,
+} from "@/lib/export.client";
 import {
   ResponsiveContainer,
   LineChart,
@@ -45,6 +52,7 @@ interface DashboardClientProps {
   registrations: SerializedRegistration[];
   trainers: SerializedTrainer[];
   complains: SerializedComplain[];
+  applies: SerializedApply[];
   dateFilter: DashboardDateFilterResolved;
 }
 
@@ -218,6 +226,7 @@ export default function DashboardClient({
   registrations,
   trainers,
   complains,
+  applies,
   dateFilter,
 }: DashboardClientProps) {
   const router = useRouter();
@@ -332,8 +341,78 @@ export default function DashboardClient({
     () => registrations.slice(0, 6),
     [registrations],
   );
+  const recentApplies = useMemo(() => applies.slice(0, 6), [applies]);
   const recentTrainers = useMemo(() => trainers.slice(0, 6), [trainers]);
   const recentComplains = useMemo(() => complains.slice(0, 6), [complains]);
+  const courseTitleMap = useMemo(
+    () =>
+      courses.reduce<Record<string, string>>((acc, course) => {
+        acc[String(course._id)] = course.title;
+        return acc;
+      }, {}),
+    [courses],
+  );
+  const getApplyCourseTitle = (courseId?: string) =>
+    courseId ? courseTitleMap[courseId] ?? courseId : "-";
+  const dashboardRegistrationColumns = useMemo<
+    ExportColumn<SerializedRegistration>[]
+  >(
+    () => [
+      { header: "Registration No", value: (item) => item.registrationNumber },
+      { header: "Name", value: (item) => item.englishName },
+      { header: "Email", value: (item) => item.email },
+      { header: "Phone", value: (item) => item.number },
+      { header: "Payment Status", value: (item) => item.paymentStatus },
+      { header: "Payment Amount", value: (item) => item.paymentAmount },
+      { header: "Certificate", value: (item) => item.certificateStatus },
+      { header: "Created At", value: (item) => formatDate(item.createdAt) },
+    ],
+    [],
+  );
+  const dashboardApplyColumns = useMemo<ExportColumn<SerializedApply>[]>(
+    () => [
+      { header: "Name", value: (item) => item.name },
+      { header: "Email", value: (item) => item.email },
+      { header: "Phone", value: (item) => item.phone },
+      { header: "Course", value: (item) => getApplyCourseTitle(item.course) },
+      { header: "Applied At", value: (item) => formatDate(item.createdAt) },
+    ],
+    [courseTitleMap],
+  );
+
+  const handleDashboardRegistrationCsv = () => {
+    exportRowsToCsv(
+      registrations,
+      dashboardRegistrationColumns,
+      "dashboard-registrations.csv",
+    );
+  };
+
+  const handleDashboardRegistrationPdf = () => {
+    exportRowsToPdf(
+      registrations,
+      dashboardRegistrationColumns,
+      "dashboard-registrations.pdf",
+      "Dashboard Registrations",
+    );
+  };
+
+  const handleDashboardApplyCsv = () => {
+    exportRowsToCsv(
+      applies,
+      dashboardApplyColumns,
+      "dashboard-quick-registrations.csv",
+    );
+  };
+
+  const handleDashboardApplyPdf = () => {
+    exportRowsToPdf(
+      applies,
+      dashboardApplyColumns,
+      "dashboard-quick-registrations.pdf",
+      "Dashboard Quick Registrations",
+    );
+  };
 
   const canApplyCustom =
     preset !== "custom" ||
@@ -417,6 +496,7 @@ export default function DashboardClient({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard title="Trainer Applications" value={trainers.length} />
+          <MetricCard title="Quick Registrations" value={applies.length} />
           <MetricCard title="Registrations" value={registrations.length} />
           <MetricCard title="Complaints" value={complains.length} />
           <MetricCard
@@ -560,6 +640,99 @@ export default function DashboardClient({
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <MiniListCard
+            title="Recent Quick Registrations"
+            emptyText="No quick registrations for this range."
+          >
+            {recentApplies.length === 0 ? null : (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDashboardApplyCsv}
+                    disabled={applies.length === 0}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    CSV ({applies.length})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDashboardApplyPdf}
+                    disabled={applies.length === 0}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    PDF ({applies.length})
+                  </Button>
+                </div>
+                {recentApplies.map((item) => (
+                  <div
+                    key={item._id}
+                    className="rounded-2xl border border-slate-100 bg-white/60 p-4"
+                  >
+                    <p className="font-semibold text-slate-900">{item.name}</p>
+                    <p className="text-sm text-slate-500">
+                      {item.email || item.phone}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {getApplyCourseTitle(item.course)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {formatDate(item.createdAt)}
+                    </p>
+                  </div>
+                ))}
+              </>
+            )}
+          </MiniListCard>
+
+          <MiniListCard
+            title="Recent Registrations"
+            emptyText="No registrations for this range."
+          >
+            {recentRegistrations.length === 0 ? null : (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDashboardRegistrationCsv}
+                    disabled={registrations.length === 0}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    CSV ({registrations.length})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDashboardRegistrationPdf}
+                    disabled={registrations.length === 0}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    PDF ({registrations.length})
+                  </Button>
+                </div>
+                {recentRegistrations.map((item) => (
+                  <div
+                    key={item._id}
+                    className="rounded-2xl border border-slate-100 bg-white/60 p-4"
+                  >
+                    <p className="font-semibold text-slate-900">
+                      {item.englishName ?? "Unnamed"}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      {item.email ?? item.number ?? "-"}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {formatDate(item.createdAt)}
+                    </p>
+                  </div>
+                ))}
+              </>
+            )}
+          </MiniListCard>
+
+          <MiniListCard
             title="Recent Trainers"
             emptyText="No trainer data for this range."
           >
@@ -572,30 +745,6 @@ export default function DashboardClient({
                   >
                     <p className="font-semibold text-slate-900">{item.name}</p>
                     <p className="text-sm text-slate-500">{item.email}</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {formatDate(item.createdAt)}
-                    </p>
-                  </div>
-                ))}
-          </MiniListCard>
-
-          <MiniListCard
-            title="Recent Registrations"
-            emptyText="No registrations for this range."
-          >
-            {recentRegistrations.length === 0
-              ? null
-              : recentRegistrations.map((item) => (
-                  <div
-                    key={item._id}
-                    className="rounded-2xl border border-slate-100 bg-white/60 p-4"
-                  >
-                    <p className="font-semibold text-slate-900">
-                      {item.englishName ?? "Unnamed"}
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      {item.email ?? item.number ?? "-"}
-                    </p>
                     <p className="mt-1 text-xs text-slate-400">
                       {formatDate(item.createdAt)}
                     </p>

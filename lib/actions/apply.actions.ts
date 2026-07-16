@@ -7,6 +7,21 @@ import Apply from "../database/models/apply.model";
 import { sendRegistrationSMS } from "../mailer/sendRegistrationSMS";
 import { logActivity } from "./activity-log.actions";
 import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEmail";
+import { DashboardDateFilterResolved } from "../dashboard-date-filter";
+
+export type SerializedApply = {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  course: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApplyListFilter = {
+  dateFilter?: Pick<DashboardDateFilterResolved, "startDate" | "endDate">;
+};
 
 // 🔹 Create
 export const applyRegistration = async (params: ApplyParams) => {
@@ -37,13 +52,29 @@ export const applyRegistration = async (params: ApplyParams) => {
 };
 
 // 🔹 Get All
-export const getAllApplies = async () => {
+export const getAllApplies = async (
+  filter?: ApplyListFilter,
+): Promise<SerializedApply[]> => {
   try {
     await connectToDatabase();
-    const applies = await Apply.find();
+    const dateQuery: Record<string, Date> = {};
+    if (filter?.dateFilter?.startDate) {
+      dateQuery.$gte = filter.dateFilter.startDate;
+    }
+    if (filter?.dateFilter?.endDate) {
+      dateQuery.$lte = filter.dateFilter.endDate;
+    }
+
+    const query: Record<string, unknown> = {};
+    if (Object.keys(dateQuery).length > 0) {
+      query.createdAt = dateQuery;
+    }
+
+    const applies = await Apply.find(query).sort({ createdAt: -1 });
     return sanitizeApplies(applies);
   } catch (error) {
     handleError(error);
+    return [];
   }
 };
 

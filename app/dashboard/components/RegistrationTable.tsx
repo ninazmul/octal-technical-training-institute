@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Eye, Edit2 } from "lucide-react";
+import { Download, Eye, Edit2, FileText, Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { FormProvider, useForm } from "react-hook-form";
@@ -31,6 +31,12 @@ import {
 import { getCourseById } from "@/lib/actions/course.actions";
 import Link from "next/link";
 import { RichTextEditor } from "@/components/shared/RichTextEditor";
+import {
+  ExportColumn,
+  exportRowsToCsv,
+  exportRowsToPdf,
+  getDateRangeMatch,
+} from "@/lib/export.client";
 
 export type RegistrationItem = {
   _id: string;
@@ -167,6 +173,8 @@ const formatDateInputValue = (value?: string | Date) => {
 export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   const [list, setList] = useState<RegistrationItem[]>(registrations);
   const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -246,12 +254,15 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
     const q = searchQuery.trim().toLowerCase();
 
     const base = list.filter((r) => {
-      if (!q) return true;
-      return (
+      const matchesSearch =
+        !q ||
         (r.registrationNumber ?? "").toLowerCase().includes(q) ||
         (r.englishName ?? "").toLowerCase().includes(q) ||
         (r.email ?? "").toLowerCase().includes(q) ||
-        getCourseTitle(r.course).toLowerCase().includes(q)
+        getCourseTitle(r.course).toLowerCase().includes(q);
+
+      return (
+        matchesSearch && getDateRangeMatch(r.createdAt, startDate, endDate)
       );
     });
 
@@ -275,7 +286,57 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
         ? String(va ?? "").localeCompare(String(vb ?? ""))
         : String(vb ?? "").localeCompare(String(va ?? ""));
     });
-  }, [list, searchQuery, sortKey, sortOrder, getCourseTitle]); // now getCourseTitle is stable
+  }, [
+    list,
+    searchQuery,
+    startDate,
+    endDate,
+    sortKey,
+    sortOrder,
+    getCourseTitle,
+  ]);
+
+  const selectedRows = useMemo(
+    () => filtered.filter((r) => selectedRegistrations.includes(r._id)),
+    [filtered, selectedRegistrations],
+  );
+
+  const exportRows = selectedRows.length > 0 ? selectedRows : filtered;
+  const registrationExportColumns = useMemo<ExportColumn<RegistrationItem>[]>(
+    () => [
+      { header: "Registration No", value: (r) => r.registrationNumber },
+      { header: "Name", value: (r) => r.englishName },
+      { header: "Email", value: (r) => r.email },
+      { header: "Phone", value: (r) => r.number },
+      { header: "WhatsApp", value: (r) => r.whatsApp },
+      { header: "Course", value: (r) => getCourseTitle(r.course) },
+      { header: "Status", value: (r) => r.status },
+      { header: "Certificate", value: (r) => r.certificateStatus },
+      { header: "Issued At", value: (r) => formatDate(r.certificateIssuedAt) },
+      { header: "Payment Status", value: (r) => r.paymentStatus },
+      { header: "Payment Amount", value: (r) => r.paymentAmount },
+      { header: "Transaction ID", value: (r) => r.transactionId },
+      { header: "Created At", value: (r) => formatDate(r.createdAt) },
+    ],
+    [getCourseTitle],
+  );
+
+  const handleExportCsv = () => {
+    exportRowsToCsv(
+      exportRows,
+      registrationExportColumns,
+      "registrations-export.csv",
+    );
+  };
+
+  const handleExportPdf = () => {
+    exportRowsToPdf(
+      exportRows,
+      registrationExportColumns,
+      "registrations-export.pdf",
+      "Registrations Export",
+    );
+  };
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortOrder((p) => (p === "asc" ? "desc" : "asc"));
     else {
@@ -453,20 +514,48 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   /** ---------- Render ---------- */
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 w-full md:w-1/3">
+      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+        <div className="grid w-full gap-3 md:grid-cols-[minmax(220px,1fr)_160px_160px] xl:max-w-3xl">
           <Input
             placeholder="Search by reg#, name, email or course"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className=""
           />
-          {selectedRegistrations.length > 0 && (
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            aria-label="Start date"
+          />
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            aria-label="End date"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportCsv}
+            disabled={exportRows.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            CSV ({exportRows.length})
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportPdf}
+            disabled={exportRows.length === 0}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            PDF ({exportRows.length})
+          </Button>
+          {selectedRegistrations.length > 0 ? (
             <Button
               className="bg-primary hover:bg-primary-700 text-white"
               onClick={() => {
-                const emails = list
-                  .filter((r) => selectedRegistrations.includes(r._id))
+                const emails = selectedRows
                   .map((r) => r.email)
                   .filter(Boolean) as string[];
 
@@ -475,10 +564,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
             >
               Send Email to Selected ({selectedRegistrations.length})
             </Button>
-          )}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+          ) : null}
+          <div className="text-sm text-muted-foreground">
+            Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+          </div>
         </div>
       </div>
 
@@ -488,11 +577,14 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
             <TableHead className="text-white cursor-pointer">
               <input
                 type="checkbox"
-                checked={selectedRegistrations.length === registrations.length}
+                checked={
+                  filtered.length > 0 &&
+                  selectedRegistrations.length === filtered.length
+                }
                 onChange={(e) => {
                   if (e.target.checked) {
                     setSelectedRegistrations(
-                      registrations.map((r) => r._id.toString()),
+                      filtered.map((r) => r._id.toString()),
                     );
                   } else setSelectedRegistrations([]);
                 }}
