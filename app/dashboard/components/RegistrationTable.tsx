@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Eye, Edit2, FileText, Trash } from "lucide-react";
+import { Download, Eye, Edit2, FileText, Trash, Printer } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { FormProvider, useForm } from "react-hook-form";
@@ -51,7 +51,15 @@ export type RegistrationItem = {
   institution?: string;
   address?: string;
   photo?: string;
-  course?: { _id: string } | string;
+  course?:
+    | {
+        _id: string;
+        title?: string;
+        category?: string;
+        batch?: string;
+        sku?: string;
+      }
+    | string;
   registrationNumber?: string;
   status?: string;
   certificateStatus?: string;
@@ -74,6 +82,8 @@ type CourseInfo = {
   category?: string;
   photo?: string;
   price?: number;
+  batch?: string;
+  sku?: string;
 };
 
 // Converts a SerializedRegistration into a RegistrationItem
@@ -93,7 +103,18 @@ function normalizeRegistration(
     institution: updated.institution ?? undefined,
     address: updated.address ?? undefined,
     photo: updated.photo ?? undefined,
-    course: updated.course ?? undefined,
+    course:
+      updated.course == null
+        ? undefined
+        : typeof updated.course === "string"
+          ? updated.course
+          : {
+              _id: updated.course._id,
+              title: updated.course.title ?? undefined,
+              category: updated.course.category ?? undefined,
+              batch: updated.course.batch ?? undefined,
+              sku: updated.course.sku ?? undefined,
+            },
     registrationNumber: updated.registrationNumber ?? undefined,
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
@@ -173,6 +194,8 @@ const formatDateInputValue = (value?: string | Date) => {
 export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   const [list, setList] = useState<RegistrationItem[]>(registrations);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState<string>("all");
+  const [selectedSku, setSelectedSku] = useState<string>("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
@@ -215,6 +238,8 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
               category: course.category ?? "",
               photo: course.photo ?? "",
               price: course.price ?? 0,
+              batch: course.batch ?? "",
+              sku: course.sku ?? "",
             },
           }));
         }
@@ -238,31 +263,79 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   const getCourseTitle = useCallback(
     (course?: RegistrationItem["course"]) => {
       if (!course) return "—";
-
-      // Get the course ID whether course is string or object
+      if (typeof course === "object" && course.title) return course.title;
       const courseId = typeof course === "string" ? course : course._id;
       if (!courseId) return "—";
-
-      // Lookup in the course map
       return courseMap[courseId]?.title ?? courseId;
     },
-    [courseMap], // dependency on courseMap so it updates when fetched
+    [courseMap],
   );
+
+  const getCourseBatch = useCallback(
+    (course?: RegistrationItem["course"]) => {
+      if (!course) return "—";
+      if (typeof course === "object" && course.batch) return course.batch;
+      const courseId = typeof course === "string" ? course : course._id;
+      return (courseId && courseMap[courseId]?.batch) || "—";
+    },
+    [courseMap],
+  );
+
+  const getCourseSku = useCallback(
+    (course?: RegistrationItem["course"]) => {
+      if (!course) return "—";
+      if (typeof course === "object" && course.sku) return course.sku;
+      const courseId = typeof course === "string" ? course : course._id;
+      return (courseId && courseMap[courseId]?.sku) || "—";
+    },
+    [courseMap],
+  );
+
+  /** ---------- Filter Options ---------- */
+  const batchOptions = useMemo(() => {
+    const set = new Set<string>();
+    list.forEach((r) => {
+      const b = getCourseBatch(r.course);
+      if (b && b !== "—") set.add(b);
+    });
+    return Array.from(set).sort();
+  }, [list, getCourseBatch]);
+
+  const skuOptions = useMemo(() => {
+    const set = new Set<string>();
+    list.forEach((r) => {
+      const s = getCourseSku(r.course);
+      if (s && s !== "—") set.add(s);
+    });
+    return Array.from(set).sort();
+  }, [list, getCourseSku]);
 
   /** ---------- Filtering & Sorting ---------- */
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
     const base = list.filter((r) => {
+      const batch = getCourseBatch(r.course);
+      const sku = getCourseSku(r.course);
+
+      const matchesBatch = selectedBatch === "all" || batch === selectedBatch;
+      const matchesSku = selectedSku === "all" || sku === selectedSku;
+
       const matchesSearch =
         !q ||
         (r.registrationNumber ?? "").toLowerCase().includes(q) ||
         (r.englishName ?? "").toLowerCase().includes(q) ||
         (r.email ?? "").toLowerCase().includes(q) ||
-        getCourseTitle(r.course).toLowerCase().includes(q);
+        (r.number ?? "").toLowerCase().includes(q) ||
+        getCourseTitle(r.course).toLowerCase().includes(q) ||
+        batch.toLowerCase().includes(q) ||
+        sku.toLowerCase().includes(q);
 
       return (
-        matchesSearch && getDateRangeMatch(r.createdAt, startDate, endDate)
+        matchesBatch &&
+        matchesSku &&
+        matchesSearch &&
+        getDateRangeMatch(r.createdAt, startDate, endDate)
       );
     });
 
@@ -289,11 +362,15 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   }, [
     list,
     searchQuery,
+    selectedBatch,
+    selectedSku,
     startDate,
     endDate,
     sortKey,
     sortOrder,
     getCourseTitle,
+    getCourseBatch,
+    getCourseSku,
   ]);
 
   const selectedRows = useMemo(
@@ -310,6 +387,8 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       { header: "Phone", value: (r) => r.number },
       { header: "WhatsApp", value: (r) => r.whatsApp },
       { header: "Course", value: (r) => getCourseTitle(r.course) },
+      { header: "Batch", value: (r) => getCourseBatch(r.course) },
+      { header: "SKU", value: (r) => getCourseSku(r.course) },
       { header: "Status", value: (r) => r.status },
       { header: "Certificate", value: (r) => r.certificateStatus },
       { header: "Issued At", value: (r) => formatDate(r.certificateIssuedAt) },
@@ -318,7 +397,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       { header: "Transaction ID", value: (r) => r.transactionId },
       { header: "Created At", value: (r) => formatDate(r.createdAt) },
     ],
-    [getCourseTitle],
+    [getCourseTitle, getCourseBatch, getCourseSku],
   );
 
   const handleExportCsv = () => {
@@ -336,6 +415,98 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       "registrations-export.pdf",
       "Registrations Export",
     );
+  };
+
+  const handlePrintList = () => {
+    const win = window.open("", "_blank");
+    if (!win) {
+      toast.error("Please allow popups to print");
+      return;
+    }
+
+    const rowsHtml = exportRows
+      .map(
+        (r, index) => `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${index + 1}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${r.registrationNumber ?? "—"}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;">${r.englishName ?? "—"}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${r.email ?? "—"}<br/><small style="color: #666;">${r.number ?? ""}</small></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${getCourseTitle(r.course)}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${getCourseBatch(r.course)}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${getCourseSku(r.course)}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.status ?? "Pending"}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.paymentStatus ?? "—"}</td>
+        </tr>
+      `,
+      )
+      .join("");
+
+    const activeFilterText = [
+      selectedBatch !== "all" ? `Batch: ${selectedBatch}` : null,
+      selectedSku !== "all" ? `SKU: ${selectedSku}` : null,
+      startDate || endDate ? `Date: ${startDate || "Start"} to ${endDate || "End"}` : null,
+    ]
+      .filter(Boolean)
+      .join(" | ") || "All Registrations";
+
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Registration Details Report</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; color: #111; }
+            h1 { margin: 0 0 4px 0; font-size: 22px; text-align: center; }
+            h2 { margin: 0 0 12px 0; font-size: 15px; font-weight: 500; text-align: center; color: #444; }
+            .meta { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 16px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th { background-color: #f3f4f6; padding: 8px; border: 1px solid #ddd; text-align: left; }
+            footer { margin-top: 24px; font-size: 11px; text-align: center; color: #777; border-top: 1px solid #eee; padding-top: 12px; }
+            @media print {
+              body { padding: 0; }
+              @page { size: auto; margin: 12mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Octal Technical Training Institute</h1>
+          <h2>Registration Details Report</h2>
+          <div class="meta">
+            <div><strong>Filter:</strong> ${activeFilterText}</div>
+            <div><strong>Total Records:</strong> ${exportRows.length}</div>
+            <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: center; width: 30px;">#</th>
+                <th>Reg No</th>
+                <th>Student Name</th>
+                <th>Contact</th>
+                <th>Course</th>
+                <th style="text-align: center;">Batch</th>
+                <th style="text-align: center;">SKU</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: center;">Payment</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          <footer>
+            Report generated on ${new Date().toLocaleString()}
+          </footer>
+        </body>
+      </html>
+    `);
+
+    win.document.close();
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 500);
   };
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortOrder((p) => (p === "asc" ? "desc" : "asc"));
@@ -515,12 +686,36 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
-        <div className="grid w-full gap-3 md:grid-cols-[minmax(220px,1fr)_160px_160px] xl:max-w-3xl">
+        <div className="grid w-full gap-3 md:grid-cols-2 lg:grid-cols-5 xl:max-w-5xl">
           <Input
-            placeholder="Search by reg#, name, email or course"
+            placeholder="Search reg#, name, email, course, batch, sku..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <select
+            value={selectedBatch}
+            onChange={(e) => setSelectedBatch(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="all">All Batches</option>
+            {batchOptions.map((b) => (
+              <option key={b} value={b}>
+                Batch: {b}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedSku}
+            onChange={(e) => setSelectedSku(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="all">All SKUs</option>
+            {skuOptions.map((s) => (
+              <option key={s} value={s}>
+                SKU: {s}
+              </option>
+            ))}
+          </select>
           <Input
             type="date"
             value={startDate}
@@ -535,6 +730,15 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handlePrintList}
+            disabled={exportRows.length === 0}
+            title="Print registration report for current filter/selection"
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Print ({exportRows.length})
+          </Button>
           <Button
             variant="outline"
             onClick={handleExportCsv}
@@ -684,7 +888,22 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
 
               {/* Course */}
               <TableCell className="text-sm">
-                {getCourseTitle(r.course)}
+                <div className="font-medium">{getCourseTitle(r.course)}</div>
+                {(getCourseBatch(r.course) !== "—" ||
+                  getCourseSku(r.course) !== "—") && (
+                  <div className="text-xs flex flex-wrap gap-1 mt-1">
+                    {getCourseBatch(r.course) !== "—" && (
+                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-medium">
+                        {getCourseBatch(r.course)}
+                      </span>
+                    )}
+                    {getCourseSku(r.course) !== "—" && (
+                      <span className="bg-gray-100 text-gray-700 border border-gray-200 px-1.5 py-0.5 rounded font-medium">
+                        SKU: {getCourseSku(r.course)}
+                      </span>
+                    )}
+                  </div>
+                )}
               </TableCell>
 
               {/* Status Badge */}

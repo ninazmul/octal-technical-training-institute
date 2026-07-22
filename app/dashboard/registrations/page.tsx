@@ -14,9 +14,9 @@ import RegistrationTable, {
 } from "../components/RegistrationTable";
 
 function normalizeRegistration(r: SerializedRegistration): RegistrationItem {
-  const mapStr = (v: string | null): string | undefined =>
+  const mapStr = (v: string | null | undefined): string | undefined =>
     v == null ? undefined : v;
-  const mapNum = (v: number | null): number | undefined =>
+  const mapNum = (v: number | null | undefined): number | undefined =>
     v == null ? undefined : v;
 
   const course =
@@ -24,7 +24,13 @@ function normalizeRegistration(r: SerializedRegistration): RegistrationItem {
       ? undefined
       : typeof r.course === "string"
         ? r.course
-        : { _id: r.course._id };
+        : {
+            _id: r.course._id,
+            title: mapStr(r.course.title),
+            category: mapStr(r.course.category),
+            batch: mapStr(r.course.batch),
+            sku: mapStr(r.course.sku),
+          };
 
   return {
     _id: r._id,

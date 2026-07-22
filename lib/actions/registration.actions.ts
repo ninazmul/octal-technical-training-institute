@@ -11,7 +11,13 @@ import { sendSystemNotificationEmail } from "../mailer/sendSystemNotificationEma
 import { DashboardDateFilterResolved } from "../dashboard-date-filter";
 
 // -------------------- Serialized types --------------------
-export type SerializedCourse = { _id: string };
+export type SerializedCourse = {
+  _id: string;
+  title?: string | null;
+  category?: string | null;
+  batch?: string | null;
+  sku?: string | null;
+};
 
 export type SerializedRegistration = {
   _id: string;
@@ -26,9 +32,7 @@ export type SerializedRegistration = {
   institution: string | null;
   address: string | null;
   photo: string | null;
-  course: {
-    _id: string;
-  };
+  course: SerializedCourse;
   registrationNumber: string | null;
   status: string | null;
   certificateStatus: string | null;
@@ -117,8 +121,16 @@ function toISODateOrNull(val: unknown): string | null {
 function serializeCourse(raw: unknown): SerializedCourse {
   if (raw == null) return { _id: "" }; // fallback _id
   if (typeof raw === "string") return { _id: raw };
-  if (isPopulatedCourse(raw))
-    return { _id: String((raw as Record<string, unknown>)["_id"] ?? "") };
+  if (isPopulatedCourse(raw)) {
+    const c = raw as Record<string, unknown>;
+    return {
+      _id: String(c["_id"] ?? ""),
+      title: toStringOrNull(c["title"]),
+      category: toStringOrNull(c["category"]),
+      batch: toStringOrNull(c["batch"]),
+      sku: toStringOrNull(c["sku"]),
+    };
+  }
   return { _id: "" }; // fallback
 }
 
@@ -421,7 +433,7 @@ export const getRegistrations = async (
     }
 
     const raw = await Registration.find(query)
-      .populate("course", "title category batch price discountPrice rplPrice")
+      .populate("course", "title category batch price discountPrice rplPrice sku")
       .sort({ createdAt: -1 })
       .lean<Record<string, unknown>[]>();
 
@@ -439,7 +451,7 @@ export const getRegistrationById = async (
   try {
     await connectToDatabase();
     const raw = await Registration.findById(registrationId)
-      .populate("course", "title category batch price discountPrice rplPrice")
+      .populate("course", "title category batch price discountPrice rplPrice sku")
       .lean<Record<string, unknown>>();
 
     if (!raw) return null;
@@ -457,7 +469,7 @@ export const getRegistrationsByCourse = async (
   try {
     await connectToDatabase();
     const raw = await Registration.find({ course: courseId })
-      .populate("course", "title category batch")
+      .populate("course", "title category batch sku")
       .lean<Record<string, unknown>[]>();
 
     return raw.map((r) => serializeRegistration(r));
@@ -475,7 +487,7 @@ export const getRegistrationByNumber = async (
     await connectToDatabase();
 
     const raw = await Registration.findOne({ registrationNumber })
-      .populate("course", "title category batch price discountPrice rplPrice")
+      .populate("course", "title category batch price discountPrice rplPrice sku")
       .lean<Record<string, unknown>>();
 
     // ✅ Return null instead of throwing
@@ -498,7 +510,7 @@ export const getRegistrationByEmail = async (
     await connectToDatabase();
 
     const raw = await Registration.findOne({ email })
-      .populate("course", "title category batch price discountPrice rplPrice")
+      .populate("course", "title category batch price discountPrice rplPrice sku")
       .lean<Record<string, unknown>>();
 
     if (!raw) return null;
