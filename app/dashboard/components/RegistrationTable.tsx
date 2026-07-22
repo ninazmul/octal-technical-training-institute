@@ -52,14 +52,14 @@ export type RegistrationItem = {
   address?: string;
   photo?: string;
   course?:
-    | {
-        _id: string;
-        title?: string;
-        category?: string;
-        batch?: string;
-        sku?: string;
-      }
-    | string;
+  | {
+    _id: string;
+    title?: string;
+    category?: string;
+    batch?: string;
+    sku?: string;
+  }
+  | string;
   registrationNumber?: string;
   status?: string;
   certificateStatus?: string;
@@ -109,12 +109,12 @@ function normalizeRegistration(
         : typeof updated.course === "string"
           ? updated.course
           : {
-              _id: updated.course._id,
-              title: updated.course.title ?? undefined,
-              category: updated.course.category ?? undefined,
-              batch: updated.course.batch ?? undefined,
-              sku: updated.course.sku ?? undefined,
-            },
+            _id: updated.course._id,
+            title: updated.course.title ?? undefined,
+            category: updated.course.category ?? undefined,
+            batch: updated.course.batch ?? undefined,
+            sku: updated.course.sku ?? undefined,
+          },
     registrationNumber: updated.registrationNumber ?? undefined,
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
@@ -389,7 +389,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       { header: "Batch", value: (r) => getCourseBatch(r.course) },
       {
         header: "Course Type",
-        value: (r) => getCourseTitle(r.coursePriceType),
+        value: (r) => r.coursePriceType,
       },
       { header: "SKU", value: (r) => getCourseSku(r.course) },
       { header: "Payment Amount", value: (r) => r.paymentAmount },
@@ -431,9 +431,9 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           <td style="padding: 8px; border: 1px solid #ddd; font-weight: 600;">${r.englishName ?? "—"}</td>
           <td style="padding: 8px; border: 1px solid #ddd;">${r.email ?? "—"}<br/><small style="color: #666;">${r.number ?? ""}</small></td>
           <td style="padding: 8px; border: 1px solid #ddd;">${getCourseTitle(r.course)}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.coursePriceType?.toUpperCase() ?? "—"}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${getCourseBatch(r.course)}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${getCourseSku(r.course)}</td>
-          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.coursePriceType ?? "—"}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.status ?? "Pending"}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.paymentStatus ?? "—"}</td>
         </tr>
@@ -487,6 +487,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 <th>Student Name</th>
                 <th>Contact</th>
                 <th>Course</th>
+                <th>Course Type</th>
                 <th style="text-align: center;">Batch</th>
                 <th style="text-align: center;">SKU</th>
                 <th style="text-align: center;">Status</th>
@@ -902,11 +903,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
 
                   {r.coursePriceType && (
                     <span
-                      className={`rounded px-2 py-0.5 text-xs font-medium border ${
-                        r.coursePriceType === "rpl"
+                      className={`rounded px-2 py-0.5 text-xs font-medium border ${r.coursePriceType === "rpl"
                           ? "bg-green-50 text-green-700 border-green-200"
                           : "bg-orange-50 text-orange-700 border-orange-200"
-                      }`}
+                        }`}
                     >
                       {r.coursePriceType.toUpperCase()}
                     </span>
@@ -931,11 +931,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   size="icon"
                   disabled={loadingMap[`cert-${r._id}`]}
                   onClick={() => setCertConfirmId(r._id)}
-                  className={`rounded-full ${
-                    r.certificateStatus === "Certified"
+                  className={`rounded-full ${r.certificateStatus === "Certified"
                       ? "text-green-600 hover:bg-green-100"
                       : "text-gray-400 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   {r.certificateStatus === "Certified" ? "✓" : "—"}
                 </Button>
@@ -1134,6 +1133,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   {getCourseTitle(viewModalData.course)}
                 </p>
                 <p>
+                  <strong>Course Type:</strong>{" "}
+                  {viewModalData.coursePriceType?.toUpperCase()}
+                </p>
+                <p>
                   <strong>Reg#:</strong>{" "}
                   {viewModalData.registrationNumber ?? "—"}
                 </p>
@@ -1161,10 +1164,6 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 </p>
                 <p>
                   <strong>Amount:</strong> {viewModalData.paymentAmount ?? 0}
-                </p>
-                <p>
-                  <strong>Price Type:</strong>{" "}
-                  {viewModalData.coursePriceType === "rpl" ? "rpl" : "RTO"}
                 </p>
                 <p>
                   <strong>Original Amount:</strong>{" "}
