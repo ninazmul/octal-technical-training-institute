@@ -53,7 +53,7 @@ export default function Checkout({ course, email }: CheckoutProps) {
           )}
 
           {(course.rplPrice ?? 0) > 0 && (
-            <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
+            <InfoItem icon={<DollarSign size={18} />} label="RPL Price">
               <span className="font-bold text-gray-900">
                 টাকা {course.rplPrice}
               </span>
