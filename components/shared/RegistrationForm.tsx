@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 // import { useRouter } from "next/navigation";
@@ -74,11 +74,35 @@ export default function RegistrationForm({
   const { startUpload } = useUploadThing("mediaUploader");
   const hasRplPrice =
     typeof course.rplPrice === "number" && course.rplPrice > 0;
-  const getBaseAmount = (type: "rto" | "rpl") =>
-    type === "rpl" && hasRplPrice
-      ? Number(course.rplPrice ?? 0)
-      : getRtoPrice(course);
-  const [coursePriceType, setCoursePriceType] = useState<"rto" | "rpl">("rto");
+
+  const hasRtoPrice =
+    (typeof course.discountPrice === "number" && course.discountPrice > 0) ||
+    (typeof course.price === "number" && course.price > 0);
+
+  const getBaseAmount = (type: "rto" | "rpl") => {
+    if (type === "rpl" && hasRplPrice) {
+      return Number(course.rplPrice);
+    }
+
+    return getRtoPrice(course);
+  };
+  const [coursePriceType, setCoursePriceType] = useState<"rto" | "rpl">(
+    hasRtoPrice ? "rto" : "rpl",
+  );
+  useEffect(() => {
+    const nextType: "rto" | "rpl" = hasRtoPrice
+      ? "rto"
+      : hasRplPrice
+        ? "rpl"
+        : "rto";
+
+    if (coursePriceType !== nextType) {
+      setCoursePriceType(nextType);
+      form.setValue("coursePriceType", nextType);
+      resetCouponForAmount(getBaseAmount(nextType));
+    }
+  }, [hasRtoPrice, hasRplPrice]);
+
   const baseAmount = getBaseAmount(coursePriceType);
   const [couponPreview, setCouponPreview] = useState<CouponPreview | null>(
     null,
@@ -112,10 +136,13 @@ export default function RegistrationForm({
   }
 
   function handleCoursePriceTypeChange(nextType: "rto" | "rpl") {
-    const effectiveType = hasRplPrice ? nextType : "rto";
-    setCoursePriceType(effectiveType);
-    form.setValue("coursePriceType", effectiveType);
-    resetCouponForAmount(getBaseAmount(effectiveType));
+    // Don't allow selecting a type that doesn't exist
+    if (nextType === "rpl" && !hasRplPrice) return;
+    if (nextType === "rto" && !hasRtoPrice) return;
+
+    setCoursePriceType(nextType);
+    form.setValue("coursePriceType", nextType);
+    resetCouponForAmount(getBaseAmount(nextType));
   }
 
   async function applyCoupon() {
@@ -233,7 +260,7 @@ export default function RegistrationForm({
         <h2 className="text-2xl font-bold">Register for {course.title}</h2>
 
         <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
-          {hasRplPrice && (
+          {(hasRtoPrice || hasRplPrice) && (
             <FormField
               control={form.control}
               name="coursePriceType"
@@ -244,21 +271,26 @@ export default function RegistrationForm({
                     <select
                       {...field}
                       value={coursePriceType}
-                      onChange={(event) =>
+                      onChange={(e) =>
                         handleCoursePriceTypeChange(
-                          event.target.value as "rto" | "rpl",
+                          e.target.value as "rto" | "rpl",
                         )
                       }
                       className="w-full border rounded px-3 py-2 bg-white"
                     >
-                      <option value="rto">
-                        RTO Price (Long course) - ৳
-                        {getRtoPrice(course).toLocaleString()}
-                      </option>
-                      <option value="rpl">
-                        RPL Price (Quick examination) - ৳
-                        {course.rplPrice?.toLocaleString()}
-                      </option>
+                      {hasRtoPrice && (
+                        <option value="rto">
+                          RTO Price (Long course) - ৳
+                          {getRtoPrice(course).toLocaleString()}
+                        </option>
+                      )}
+
+                      {hasRplPrice && (
+                        <option value="rpl">
+                          RPL Price (Quick examination) - ৳
+                          {course.rplPrice!.toLocaleString()}
+                        </option>
+                      )}
                     </select>
                   </FormControl>
                   <FormMessage />
@@ -462,7 +494,7 @@ export default function RegistrationForm({
               <FormControl>
                 <FileUploader
                   imageUrl={field.value}
-                  setFiles={() => { }}
+                  setFiles={() => {}}
                   onFieldChange={async (_blobUrl, files) => {
                     if (files?.length) {
                       const uploaded = await startUpload(files);

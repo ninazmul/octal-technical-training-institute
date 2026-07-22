@@ -31,34 +31,34 @@ export default function Checkout({ course, email }: CheckoutProps) {
         >
           <h1 className="text-3xl font-bold mb-6">{course.title}</h1>
 
-          <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
-            {course.discountPrice !== undefined &&
-            course.discountPrice !== null &&
-            String(course.discountPrice).trim() !== "" &&
-            Number(course.discountPrice) > 0 ? (
-              <div className="flex items-center gap-2">
-                <span className="text-red-500 line-through text-sm">
+          {((course.discountPrice ?? 0) > 0 || (course.price ?? 0) > 0) && (
+            <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
+              {(course.discountPrice ?? 0) > 0 ? (
+                <div className="flex items-center gap-2">
+                  {(course.price ?? 0) > 0 && (
+                    <span className="text-red-500 line-through text-sm">
+                      টাকা {course.price}
+                    </span>
+                  )}
+                  <span className="text-green-600 font-bold">
+                    টাকা {course.discountPrice}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-bold text-gray-900">
                   টাকা {course.price}
                 </span>
-                <span className="text-green-600 font-bold">
-                  টাকা {course.discountPrice}
-                </span>
-              </div>
-            ) : (
-              <span className="font-bold text-gray-900">
-                টাকা {course.price}
-              </span>
-            )}
-          </InfoItem>
-          <InfoItem icon={<DollarSign size={18} />} label="RPL Price">
-            {typeof course.rplPrice === "number" && course.rplPrice > 0 ? (
+              )}
+            </InfoItem>
+          )}
+
+          {(course.rplPrice ?? 0) > 0 && (
+            <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
               <span className="font-bold text-gray-900">
                 টাকা {course.rplPrice}
               </span>
-            ) : (
-              "Not available"
-            )}
-          </InfoItem>
+            </InfoItem>
+          )}
 
           <InfoItem icon={<GraduationCap size={18} />} label="Batch">
             {course.batch || "N/A"}

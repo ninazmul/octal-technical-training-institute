@@ -74,7 +74,10 @@ function Courses({
             >
               {/* Course Image */}
               <div className="relative w-full h-48">
-                <Link href={`/courses/${course._id.toString()}`} className="block w-full h-full">
+                <Link
+                  href={`/courses/${course._id.toString()}`}
+                  className="block w-full h-full"
+                >
                   <Image
                     src={course.photo}
                     alt={course.title}
@@ -93,7 +96,10 @@ function Courses({
 
               {/* Course Info */}
               <div className="p-5 flex flex-col flex-1 text-left">
-                <Link href={`/courses/${course._id.toString()}`} className="block">
+                <Link
+                  href={`/courses/${course._id.toString()}`}
+                  className="block"
+                >
                   <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
                     {course.title}
                   </h3>
@@ -101,18 +107,24 @@ function Courses({
                 <div className="mt-auto flex justify-between items-center">
                   {course.discountPrice ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-red-500 line-through text-sm">
-                        টাকা {course.price}
-                      </span>
+                      {course.price && (
+                        <span className="text-red-500 line-through text-sm">
+                          টাকা {course.price}
+                        </span>
+                      )}
                       <span className="font-bold text-lg text-primary">
                         টাকা {course.discountPrice}
                       </span>
                     </div>
-                  ) : (
+                  ) : course.price ? (
                     <span className="font-bold text-lg text-primary">
                       টাকা {course.price}
                     </span>
-                  )}
+                  ) : course.rplPrice ? (
+                    <span className="font-bold text-lg text-primary">
+                      টাকা {course.rplPrice}
+                    </span>
+                  ) : null}
 
                   {course.certification && (
                     <span

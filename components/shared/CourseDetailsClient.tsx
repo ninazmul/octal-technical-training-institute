@@ -78,34 +78,36 @@ export default function CourseDetailsClient({
         <aside className="space-y-8 lg:sticky lg:top-24 self-start">
           <InfoCard title="Course Details">
             {/* Info Items */}
-            <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
-              {course.discountPrice ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-red-500 line-through text-sm">
+            {((course.discountPrice ?? 0) > 0 || (course.price ?? 0) > 0) && (
+              <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
+                {(course.discountPrice ?? 0) > 0 ? (
+                  <div className="flex items-center gap-2">
+                    {(course.price ?? 0) > 0 && (
+                      <span className="text-red-500 line-through text-sm">
+                        টাকা {course.price}
+                      </span>
+                    )}
+                    <span className="text-green-600 font-bold">
+                      টাকা {course.discountPrice}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="font-bold text-gray-900">
                     টাকা {course.price}
                   </span>
-                  <span className="text-green-600 font-bold">
-                    টাকা {course.discountPrice}
-                  </span>
-                </div>
-              ) : (
-                <span className="font-bold text-gray-900">
-                  টাকা {course.price}
-                </span>
-              )}
-            </InfoItem>
-            <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
-              {course.rplPrice && (
+                )}
+              </InfoItem>
+            )}
+
+            {(course.rplPrice ?? 0) > 0 && (
+              <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
                 <span className="font-bold text-gray-900">
                   টাকা {course.rplPrice}
                 </span>
-              )}
-            </InfoItem>
+              </InfoItem>
+            )}
             {course.certification && (
-              <InfoItem
-                icon={<FaCertificate />}
-                label="Certification"
-              >
+              <InfoItem icon={<FaCertificate />} label="Certification">
                 {course.certification || "N/A"}
               </InfoItem>
             )}
