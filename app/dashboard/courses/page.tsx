@@ -4,6 +4,7 @@ import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
 import { redirect } from "next/navigation";
 import { getCourses } from "@/lib/actions/course.actions";
+import { safeFetch } from "@/lib/actions/safeFetch";
 import CourseTable from "../components/CourseTable";
 
 const Page = async () => {
@@ -17,7 +18,7 @@ const Page = async () => {
   }
 
   // ✅ fetch all courses with normalization
-  const courses = await getCourses({ tab: "all" });
+  const courses = await safeFetch(() => getCourses({ tab: "all" })) ?? [];
 
   return (
     <>
@@ -41,4 +42,6 @@ const Page = async () => {
   );
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default Page;

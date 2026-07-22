@@ -8,12 +8,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { getAllPhoto } from "@/lib/actions/gallery.actions";
+import { safeFetch } from "@/lib/actions/safeFetch";
 import GalleryForm from "../components/GalleryForm";
 import GalleryTable from "../components/GalleryTable";
 
 const Page = async () => {
 
-  const photos = await getAllPhoto();
+  const photos = await safeFetch(() => getAllPhoto()) ?? [];
 
   return (
     <>
@@ -50,5 +51,6 @@ const Page = async () => {
     </>
   );
 };
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default Page;

@@ -5,10 +5,8 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
 import { redirect } from "next/navigation";
-import {
-  getRegistrations,
-  SerializedRegistration,
-} from "@/lib/actions/registration.actions";
+import { getRegistrations, SerializedRegistration } from "@/lib/actions/registration.actions";
+import { safeFetch } from "@/lib/actions/safeFetch";
 import RegistrationTable, {
   RegistrationItem,
 } from "../components/RegistrationTable";
@@ -73,7 +71,7 @@ const Page = async () => {
     redirect("/dashboard");
   }
 
-  const registrationsRaw: SerializedRegistration[] = await getRegistrations();
+  const registrationsRaw: SerializedRegistration[] = await safeFetch(() => getRegistrations()) ?? [];
 
   const registrations: RegistrationItem[] = registrationsRaw.map(
     normalizeRegistration,
