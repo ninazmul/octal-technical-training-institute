@@ -21,11 +21,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { INotice } from "@/lib/database/models/notice.model";
 import NoticeForm from "./NoticeForm";
 
 const NoticeTable = ({ notices }: { notices: INotice[] }) => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"title" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -61,6 +63,7 @@ const NoticeTable = ({ notices }: { notices: INotice[] }) => {
       const response = await deleteNotice(noticeId);
       if (response) {
         toast.success("Notice deleted successfully");
+        router.refresh();
       }
     } catch (error) {
       toast.error("Failed to delete notice");

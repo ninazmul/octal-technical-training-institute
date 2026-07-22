@@ -76,11 +76,13 @@ const GalleryForm = ({
         if (newPhoto) {
           form.reset();
           router.push("/dashboard/gallery");
+          router.refresh();
         }
       } else if (type === "Update" && photoId) {
         const updatedTrainer = await updatePhoto(photoId, galleryData);
         if (updatedTrainer) {
           router.push("/dashboard/gallery");
+          router.refresh();
         }
       }
     } catch (error) {

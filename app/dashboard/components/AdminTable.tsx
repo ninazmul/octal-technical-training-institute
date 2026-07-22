@@ -15,11 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Trash, SortAsc, SortDesc } from "lucide-react";
 import toast from "react-hot-toast";
 
+import { useRouter } from "next/navigation";
+
 const AdminTable = ({
   admins,
 }: {
   admins: Array<{ _id: string; name: string; email: string; role: string }>;
 }) => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"name" | "email" | "role" | null>(
     null,
@@ -60,6 +63,7 @@ const AdminTable = ({
       const response = await deleteAdmin(adminId);
       if (response) {
         toast.success(response.message);
+        router.refresh();
       }
     } catch (error) {
       toast.error("Failed to delete admin");

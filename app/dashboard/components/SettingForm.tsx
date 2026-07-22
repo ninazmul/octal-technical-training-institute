@@ -28,22 +28,37 @@ import {
 import { HexColorPicker } from "react-colorful";
 import { Switch } from "@/components/ui/switch";
 
+import { useMemo, useEffect } from "react";
+
 /* ---------- helpers ---------- */
 
 const optionalString = z.preprocess(
-  (v) => (v === null || v === "" ? undefined : v),
+  (v) => (v === null || v === "" || v === undefined ? undefined : v),
   z.string().optional(),
 );
 
-const optionalEmail = z.preprocess(
-  (v) => (v === null || v === "" ? undefined : v),
-  z.string().email().optional(),
-);
+const optionalEmail = z.preprocess((v) => {
+  if (v === null || v === "" || v === undefined) return undefined;
+  if (typeof v === "string") {
+    const trimmed = v.trim();
+    if (!trimmed) return undefined;
+    return trimmed;
+  }
+  return v;
+}, z.string().email("Invalid email address").optional().or(z.literal("")));
 
-const optionalUrl = z.preprocess(
-  (v) => (v === null || v === "" ? undefined : v),
-  z.string().url().optional(),
-);
+const optionalUrl = z.preprocess((v) => {
+  if (v === null || v === "" || v === undefined) return undefined;
+  if (typeof v === "string") {
+    const trimmed = v.trim();
+    if (!trimmed) return undefined;
+    if (!/^https?:\/\//i.test(trimmed)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  }
+  return v;
+}, z.string().url("Invalid URL").optional().or(z.literal("")));
 
 // ================= Zod Schema =================
 export const settingSchema = z.object({
@@ -247,10 +262,53 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   const router = useRouter();
   const { startUpload } = useUploadThing("mediaUploader");
 
+  const safeDefaultValues = useMemo(() => {
+    try {
+      return settingSchema.parse(initialData ?? {});
+    } catch (err) {
+      console.warn("Failed to parse initialData, using fallback defaults", err);
+      return {
+        logo: initialData?.logo || "",
+        favicon: initialData?.favicon || "",
+        name: initialData?.name || "",
+        tagline: initialData?.tagline || "",
+        description: initialData?.description || "",
+        email: initialData?.email || "",
+        phoneNumber: initialData?.phoneNumber || "",
+        address: initialData?.address || "",
+        theme: initialData?.theme || "light",
+        facebook: initialData?.facebook || "",
+        instagram: initialData?.instagram || "",
+        twitter: initialData?.twitter || "",
+        facebookGroup: initialData?.facebookGroup || "",
+        youtube: initialData?.youtube || "",
+        returnPolicy: initialData?.returnPolicy || "",
+        termsOfService: initialData?.termsOfService || "",
+        privacyPolicy: initialData?.privacyPolicy || "",
+        ceo: initialData?.ceo || { name: "", photo: "", about: "" },
+        hero: initialData?.hero || { title: "", description: "", image: "", offerStartDate: "", offerEndDate: "" },
+        popup: initialData?.popup || { image: "", offerStartDate: "", offerEndDate: "" },
+        certificate: initialData?.certificate || "",
+        features: initialData?.features || { badge: "", title: "", description: "", items: [] },
+        testimonials: initialData?.testimonials || { badge: "", title: "", description: "", totalEnrollment: 0, totalSucceededStudents: 0, totalIndustryExperts: 0, feedbacks: [] },
+        ourMentors: initialData?.ourMentors || { badge: "", title: "", description: "", mentors: [] },
+        partners: initialData?.partners || { badge: "", title: "", description: "", logos: [] },
+        faqs: initialData?.faqs || { badge: "", title: "", description: "", items: [] },
+        links: initialData?.links || [],
+      };
+    }
+  }, [initialData]);
+
   const form = useForm<SettingFormValues>({
     resolver: zodResolver(settingSchema),
-    defaultValues: settingSchema.parse(initialData ?? {}),
+    defaultValues: safeDefaultValues,
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset(safeDefaultValues);
+    }
+  }, [initialData, safeDefaultValues]);
 
   const {
     formState: { isDirty, isSubmitting },
@@ -319,16 +377,22 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(async (data) => {
-          try {
-            await onSubmit(data);
-            toast.success("Settings saved!");
-            router.refresh();
-          } catch (error) {
-            console.error(error);
-            toast.error("Failed to save settings.");
-          }
-        })}
+        onSubmit={form.handleSubmit(
+          async (data) => {
+            try {
+              await onSubmit(data);
+              toast.success("Settings saved successfully!");
+              router.refresh();
+            } catch (error) {
+              console.error(error);
+              toast.error("Failed to save settings.");
+            }
+          },
+          (errors) => {
+            console.error("Setting form validation errors:", errors);
+            toast.error("Please fix invalid fields before saving.");
+          },
+        )}
         className="space-y-6 max-w-5xl mx-auto p-6 bg-white rounded shadow"
       >
         <Accordion type="single" collapsible defaultValue="branding">

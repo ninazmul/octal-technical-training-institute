@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
 import { deletePhoto } from "@/lib/actions/gallery.actions";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import GalleryForm from "./GalleryForm";
 
@@ -31,6 +32,7 @@ type Photo = {
 };
 
 const GalleryTable = ({ photos }: { photos: Array<Photo> }) => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"title" | "image" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -68,6 +70,7 @@ const GalleryTable = ({ photos }: { photos: Array<Photo> }) => {
       const response = await deletePhoto(photoId);
       if (response) {
         alert(response.message);
+        router.refresh();
       }
     } catch (error) {
       alert("Failed to delete photo");

@@ -23,8 +23,10 @@ import { Trash, SortAsc, SortDesc, Edit2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { deleteTrainer, SerializedTrainer } from "@/lib/actions/trainer.actions";
 import TrainerForm from "./TrainerForm";
+import { useRouter } from "next/navigation";
 
 const TrainerTable = ({ trainers }: { trainers: SerializedTrainer[] }) => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"name" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -60,6 +62,7 @@ const TrainerTable = ({ trainers }: { trainers: SerializedTrainer[] }) => {
       const response = await deleteTrainer(trainerId);
       if (response) {
         toast.success("Trainer deleted successfully");
+        router.refresh();
       }
     } catch (error) {
       toast.error("Failed to delete trainer");

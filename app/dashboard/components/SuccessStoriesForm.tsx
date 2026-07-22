@@ -64,6 +64,7 @@ const SuccessStoriesForm = ({
         if (newStory) {
           form.reset({ title: "", description: "", photo: "" });
           router.push("/dashboard/success-stories");
+          router.refresh();
         }
       } else if (type === "Update" && successStoriesId) {
         const updatedStory = await updateSuccessStories(
@@ -72,6 +73,7 @@ const SuccessStoriesForm = ({
         );
         if (updatedStory) {
           router.push("/dashboard/success-stories");
+          router.refresh();
         }
       }
     } catch (error) {

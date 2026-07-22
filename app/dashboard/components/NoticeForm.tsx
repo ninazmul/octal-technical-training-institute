@@ -67,11 +67,13 @@ const NoticeForm = ({
         if (newNotice) {
           form.reset();
           router.push("/dashboard/notices");
+          router.refresh();
         }
       } else if (type === "Update" && noticeId) {
         const updatedNotice = await updateNotice(noticeId, noticeData);
         if (updatedNotice) {
           router.push("/dashboard/notices");
+          router.refresh();
         }
       }
     } catch (error) {

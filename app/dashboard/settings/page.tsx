@@ -2,6 +2,9 @@ import { getSetting } from "@/lib/actions/setting.actions";
 import { SettingFormValues } from "../components/SettingForm";
 import ClientWrapper from "../components/ClientWrapper";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SettingsPage() {
   const setting = await getSetting();
 

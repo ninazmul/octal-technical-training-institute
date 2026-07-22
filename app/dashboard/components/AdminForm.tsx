@@ -47,6 +47,7 @@ const AdminForm = ({ userId, type }: { userId: string; type: "Create" }) => {
         if (newAdmin) {
           form.reset();
           router.push(`/dashboard/admins`);
+          router.refresh();
         }
       }
     } catch (error) {

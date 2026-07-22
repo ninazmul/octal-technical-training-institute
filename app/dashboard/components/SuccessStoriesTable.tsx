@@ -26,11 +26,14 @@ import {
 import SuccessStoriesForm from "./SuccessStoriesForm";
 import { ISuccessStories } from "@/lib/database/models/success-stories.model";
 
+import { useRouter } from "next/navigation";
+
 const SuccessStoriesTable = ({
   successStories,
 }: {
   successStories: ISuccessStories[];
 }) => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<"title" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -66,6 +69,7 @@ const SuccessStoriesTable = ({
       const response = await deleteSuccessStories(successStoryId);
       if (response) {
         toast.success("Success Story deleted successfully");
+        router.refresh();
       }
     } catch (error) {
       toast.error("Failed to delete Success Story");
