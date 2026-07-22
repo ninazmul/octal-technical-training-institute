@@ -200,20 +200,31 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                     Select a category
                   </option>
                   {[
-                    "Design",
-                    "Front End Development",
-                    "IT Security",
-                    "Management",
-                    "Mobile Application Development",
-                    "Web Development",
+                    "Information Technology",
                     "Programming",
-                    "Office Application",
-                    "Video Editing & Motion",
-                    "Marketing",
-                    "Workshop",
+                    "Web Development",
+                    "Mobile Application Development",
+                    "Software Development",
                     "Networking",
+                    "Cyber Security",
                     "Database Administration",
-                    "Freelancing",
+                    "Cloud Computing",
+                    "Artificial Intelligence",
+                    "Graphic Design",
+                    "Video Editing & Motion Graphics",
+                    "Digital Marketing",
+                    "Office Applications",
+                    "Hardware & Maintenance",
+                    "Freelancing & Outsourcing",
+                    "Business & Management",
+                    "Project Management",
+                    "Professional Development",
+                    "Communication Skills",
+                    "Language",
+                    "Self Development",
+                    "Accounting & Finance",
+                    "Entrepreneurship",
+                    "Workshop"
                   ].map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
@@ -282,7 +293,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormControl>
                 <FileUploader
                   imageUrl={field.value}
-                  setFiles={() => {}}
+                  setFiles={() => { }}
                   onFieldChange={async (_blobUrl, files) => {
                     if (files?.length) {
                       const uploaded = await startUpload(files);
