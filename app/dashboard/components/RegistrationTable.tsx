@@ -52,14 +52,14 @@ export type RegistrationItem = {
   address?: string;
   photo?: string;
   course?:
-  | {
-    _id: string;
-    title?: string;
-    category?: string;
-    batch?: string;
-    sku?: string;
-  }
-  | string;
+    | {
+        _id: string;
+        title?: string;
+        category?: string;
+        batch?: string;
+        sku?: string;
+      }
+    | string;
   registrationNumber?: string;
   status?: string;
   certificateStatus?: string;
@@ -109,12 +109,12 @@ function normalizeRegistration(
         : typeof updated.course === "string"
           ? updated.course
           : {
-            _id: updated.course._id,
-            title: updated.course.title ?? undefined,
-            category: updated.course.category ?? undefined,
-            batch: updated.course.batch ?? undefined,
-            sku: updated.course.sku ?? undefined,
-          },
+              _id: updated.course._id,
+              title: updated.course.title ?? undefined,
+              category: updated.course.category ?? undefined,
+              batch: updated.course.batch ?? undefined,
+              sku: updated.course.sku ?? undefined,
+            },
     registrationNumber: updated.registrationNumber ?? undefined,
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
@@ -387,6 +387,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       { header: "Email", value: (r) => r.email },
       { header: "WhatsApp", value: (r) => r.whatsApp },
       { header: "Batch", value: (r) => getCourseBatch(r.course) },
+      {
+        header: "Course Type",
+        value: (r) => getCourseTitle(r.coursePriceType),
+      },
       { header: "SKU", value: (r) => getCourseSku(r.course) },
       { header: "Payment Amount", value: (r) => r.paymentAmount },
       { header: "Transaction ID", value: (r) => r.transactionId },
@@ -429,6 +433,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           <td style="padding: 8px; border: 1px solid #ddd;">${getCourseTitle(r.course)}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${getCourseBatch(r.course)}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${getCourseSku(r.course)}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.coursePriceType ?? "—"}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.status ?? "Pending"}</td>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.paymentStatus ?? "—"}</td>
         </tr>
@@ -436,13 +441,16 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       )
       .join("");
 
-    const activeFilterText = [
-      selectedBatch !== "all" ? `Batch: ${selectedBatch}` : null,
-      selectedSku !== "all" ? `SKU: ${selectedSku}` : null,
-      startDate || endDate ? `Date: ${startDate || "Start"} to ${endDate || "End"}` : null,
-    ]
-      .filter(Boolean)
-      .join(" | ") || "All Registrations";
+    const activeFilterText =
+      [
+        selectedBatch !== "all" ? `Batch: ${selectedBatch}` : null,
+        selectedSku !== "all" ? `SKU: ${selectedSku}` : null,
+        startDate || endDate
+          ? `Date: ${startDate || "Start"} to ${endDate || "End"}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" | ") || "All Registrations";
 
     win.document.write(`
       <!DOCTYPE html>
@@ -533,8 +541,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
           : "Certified";
       const updated = await updateRegistration(id, {
         certificateStatus: nextStatus,
-        certificateIssuedAt:
-          nextStatus === "Certified" ? new Date() : null,
+        certificateIssuedAt: nextStatus === "Certified" ? new Date() : null,
       });
       if (!updated) throw new Error("Update failed");
 
@@ -879,21 +886,32 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
               {/* Course */}
               <TableCell className="text-sm">
                 <div className="font-medium">{getCourseTitle(r.course)}</div>
-                {(getCourseBatch(r.course) !== "—" ||
-                  getCourseSku(r.course) !== "—") && (
-                    <div className="text-xs flex flex-wrap gap-1 mt-1">
-                      {getCourseBatch(r.course) !== "—" && (
-                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-medium">
-                          {getCourseBatch(r.course)}
-                        </span>
-                      )}
-                      {getCourseSku(r.course) !== "—" && (
-                        <span className="bg-gray-100 text-gray-700 border border-gray-200 px-1.5 py-0.5 rounded font-medium">
-                          SKU: {getCourseSku(r.course)}
-                        </span>
-                      )}
-                    </div>
+
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {getCourseBatch(r.course) !== "—" && (
+                    <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                      {getCourseBatch(r.course)}
+                    </span>
                   )}
+
+                  {getCourseSku(r.course) !== "—" && (
+                    <span className="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                      SKU: {getCourseSku(r.course)}
+                    </span>
+                  )}
+
+                  {r.coursePriceType && (
+                    <span
+                      className={`rounded px-2 py-0.5 text-xs font-medium border ${
+                        r.coursePriceType === "rpl"
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-orange-50 text-orange-700 border-orange-200"
+                      }`}
+                    >
+                      {r.coursePriceType.toUpperCase()}
+                    </span>
+                  )}
+                </div>
               </TableCell>
 
               {/* Status Badge */}
@@ -913,10 +931,11 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   size="icon"
                   disabled={loadingMap[`cert-${r._id}`]}
                   onClick={() => setCertConfirmId(r._id)}
-                  className={`rounded-full ${r.certificateStatus === "Certified"
-                    ? "text-green-600 hover:bg-green-100"
-                    : "text-gray-400 hover:bg-gray-100"
-                    }`}
+                  className={`rounded-full ${
+                    r.certificateStatus === "Certified"
+                      ? "text-green-600 hover:bg-green-100"
+                      : "text-gray-400 hover:bg-gray-100"
+                  }`}
                 >
                   {r.certificateStatus === "Certified" ? "✓" : "—"}
                 </Button>
@@ -1145,9 +1164,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 </p>
                 <p>
                   <strong>Price Type:</strong>{" "}
-                  {viewModalData.coursePriceType === "rpl"
-                    ? "rpl"
-                    : "RTO"}
+                  {viewModalData.coursePriceType === "rpl" ? "rpl" : "RTO"}
                 </p>
                 <p>
                   <strong>Original Amount:</strong>{" "}

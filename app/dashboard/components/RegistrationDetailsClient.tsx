@@ -15,6 +15,8 @@ import {
   Phone,
   Clipboard,
   Printer,
+  Calendar,
+  Type,
 } from "lucide-react";
 import { SerializedRegistration } from "@/lib/actions/registration.actions";
 import { ICourseSafe } from "@/lib/database/models/course.model";
@@ -86,6 +88,8 @@ export default function RegistrationDetailsClient({
         <h2>Course Information</h2>
         <table>
           <tr><th>Course</th><td>${course?.title || "N/A"}</td></tr>
+          <tr><th>Course Type</th><td>${registration?.coursePriceType?.toUpperCase() ?? "N/A"}</td></tr>
+          <tr><th>Batch</th><td>${course?.batch || "N/A"}</td></tr>
           <tr><th>Price</th><td>${course?.discountPrice ? course.discountPrice + " (Discounted)" : course?.price || "N/A"}</td></tr>
           <tr><th>Start Date</th><td>${course?.courseStartDate || "TBA"}</td></tr>
           <tr><th>Duration</th><td>${course?.duration || "N/A"}</td></tr>
@@ -279,34 +283,52 @@ export default function RegistrationDetailsClient({
               {course?.title || "N/A"}
             </InfoItem>
 
-            <InfoItem icon={<DollarSign size={18} />} label="Price">
-              {course?.discountPrice ? (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-400 line-through">
-                    টাকা {course.price}
-                  </span>
-                  <span className="px-2 py-1 rounded-md bg-green-50 text-green-800 font-semibold text-sm">
-                    টাকা {course.discountPrice}
-                  </span>
-                </div>
-              ) : (
-                <span className="font-semibold text-gray-900">
-                  টাকা {course?.price || "N/A"}
-                </span>
-              )}
+            <InfoItem icon={<Type size={18} />} label="Course Type">
+              {registration?.coursePriceType?.toUpperCase() || "N/A"}
             </InfoItem>
 
-            {course?.certification && (
-              <InfoItem
-                icon={<FaCertificate size={18} />}
-                label="Certification"
-              >
-                {course.certification || "N/A"}
+            <InfoItem icon={<Calendar size={18} />} label="Batch">
+              {course?.batch || "N/A"}
+            </InfoItem>
+
+            {((course?.discountPrice ?? 0) > 0 || (course?.price ?? 0) > 0) && (
+              <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
+                {(course?.discountPrice ?? 0) > 0 ? (
+                  <div className="flex items-center gap-2">
+                    {(course?.price ?? 0) > 0 && (
+                      <span className="text-red-500 line-through text-sm">
+                        ৳{course?.price}
+                      </span>
+                    )}
+                    <span className="font-bold text-green-600">
+                      ৳{course?.discountPrice}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="font-bold text-gray-900">
+                    ৳{course?.price}
+                  </span>
+                )}
+              </InfoItem>
+            )}
+
+            {(course?.rplPrice ?? 0) > 0 && (
+              <InfoItem icon={<DollarSign size={18} />} label="RPL Price">
+                <span className="font-bold text-gray-900">
+                  ৳{course?.rplPrice}
+                </span>
               </InfoItem>
             )}
 
             <InfoItem icon={<CalendarDays size={18} />} label="Start Date">
               {course?.courseStartDate || "TBA"}
+            </InfoItem>
+
+            <InfoItem
+              icon={<AlertCircle size={18} />}
+              label="Registration Deadline"
+            >
+              {course?.registrationDeadline || "Not specified"}
             </InfoItem>
 
             <InfoItem icon={<Clock size={18} />} label="Duration">
@@ -323,12 +345,14 @@ export default function RegistrationDetailsClient({
                 : "No seats left"}
             </InfoItem>
 
-            <InfoItem
-              icon={<AlertCircle size={18} />}
-              label="Registration Deadline"
-            >
-              {course?.registrationDeadline || "Not specified"}
-            </InfoItem>
+            {course?.certification && (
+              <InfoItem
+                icon={<FaCertificate size={18} />}
+                label="Certification"
+              >
+                {course.certification}
+              </InfoItem>
+            )}
           </InfoCard>
         </aside>
       </div>
