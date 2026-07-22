@@ -48,6 +48,40 @@ function classifyCourse(
   return "unknown";
 }
 
+function sortCoursesByNearestDate(courses: ICourse[]): ICourse[] {
+  const today = new Date();
+
+  return [...courses].sort((a, b) => {
+    const aDate = a.courseStartDate
+      ? new Date(a.courseStartDate)
+      : a.registrationDeadline
+        ? new Date(a.registrationDeadline)
+        : null;
+
+    const bDate = b.courseStartDate
+      ? new Date(b.courseStartDate)
+      : b.registrationDeadline
+        ? new Date(b.registrationDeadline)
+        : null;
+
+    // Courses without dates go last
+    if (!aDate && !bDate) return 0;
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+
+    const aDistance = Math.abs(aDate.getTime() - today.getTime());
+    const bDistance = Math.abs(bDate.getTime() - today.getTime());
+
+    // Nearest date to today comes first
+    if (aDistance !== bDistance) {
+      return aDistance - bDistance;
+    }
+
+    // Tie-breaker: earlier date first
+    return aDate.getTime() - bDate.getTime();
+  });
+}
+
 // -------------------- Unified Action --------------------
 export async function getCourses(options: {
   tab?: "all" | "upcoming" | "ongoing" | "old";
@@ -63,7 +97,7 @@ export async function getCourses(options: {
 
       const courses = await Course.find(query).lean<ICourse[]>();
 
-      let filtered = courses;
+      let filtered = sortCoursesByNearestDate(courses);
 
       // Tab filter
       if (options.tab && options.tab !== "all") {
@@ -154,7 +188,9 @@ export const searchCourses = async (query: string): Promise<ICourseSafe[]> => {
       )
       .lean<ICourse[]>();
 
-    return courses ? sanitizeCourses(courses) : [];
+    return courses
+      ? sanitizeCourses(sortCoursesByNearestDate(courses))
+      : [];
   } catch (error) {
     handleError(error);
     return [];
