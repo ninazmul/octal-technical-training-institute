@@ -1,5 +1,5 @@
 "use server";
-
+import { unstable_cache } from 'next/cache';
 import { connectToDatabase } from "../database";
 import { handleError } from "../utils";
 import Registration from "../database/models/registration.model";
@@ -418,26 +418,28 @@ export const getRegistrations = async (
   filter?: RegistrationListFilter,
 ): Promise<SerializedRegistration[]> => {
   try {
-    await connectToDatabase();
-    const dateQuery: Record<string, Date> = {};
-    if (filter?.dateFilter?.startDate) {
-      dateQuery.$gte = filter.dateFilter.startDate;
-    }
-    if (filter?.dateFilter?.endDate) {
-      dateQuery.$lte = filter.dateFilter.endDate;
-    }
+    return unstable_cache(async () => {
+      await connectToDatabase();
+      const dateQuery: Record<string, Date> = {};
+      if (filter?.dateFilter?.startDate) {
+        dateQuery.$gte = filter.dateFilter.startDate;
+      }
+      if (filter?.dateFilter?.endDate) {
+        dateQuery.$lte = filter.dateFilter.endDate;
+      }
 
-    const query: Record<string, unknown> = {};
-    if (Object.keys(dateQuery).length > 0) {
-      query.createdAt = dateQuery;
-    }
+      const query: Record<string, unknown> = {};
+      if (Object.keys(dateQuery).length > 0) {
+        query.createdAt = dateQuery;
+      }
 
-    const raw = await Registration.find(query)
-      .populate("course", "title category batch price discountPrice rplPrice sku")
-      .sort({ createdAt: -1 })
-      .lean<Record<string, unknown>[]>();
+      const raw = await Registration.find(query)
+        .populate("course", "title category batch price discountPrice rplPrice sku")
+        .sort({ createdAt: -1 })
+        .lean<Record<string, unknown>[]>();
 
-    return raw.map((r) => serializeRegistration(r));
+      return raw.map((r) => serializeRegistration(r));
+    }, [`getRegistrations-${JSON.stringify(filter)}`], { revalidate: 600 })();
   } catch (error) {
     handleError(error);
     return [];

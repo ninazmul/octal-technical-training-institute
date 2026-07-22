@@ -55,30 +55,32 @@ export async function getCourses(options: {
   status?: "all" | "active"; // NEW option
 }): Promise<ICourseSafe[]> {
   try {
-    await connectToDatabase();
+    return unstable_cache(async () => {
+      await connectToDatabase();
 
-    // Decide query based on status
-    const query = options.status === "active" ? { isActive: true } : {};
+      // Decide query based on status
+      const query = options.status === "active" ? { isActive: true } : {};
 
-    const courses = await Course.find(query).lean<ICourse[]>();
+      const courses = await Course.find(query).lean<ICourse[]>();
 
-    let filtered = courses;
+      let filtered = courses;
 
-    // Tab filter
-    if (options.tab && options.tab !== "all") {
-      filtered = filtered.filter(
-        (course) => classifyCourse(course) === options.tab,
-      );
-    }
+      // Tab filter
+      if (options.tab && options.tab !== "all") {
+        filtered = filtered.filter(
+          (course) => classifyCourse(course) === options.tab,
+        );
+      }
 
-    // Category filter
-    if (options.category && options.category.trim() !== "") {
-      filtered = filtered.filter(
-        (course) => course.category === options.category,
-      );
-    }
+      // Category filter
+      if (options.category && options.category.trim() !== "") {
+        filtered = filtered.filter(
+          (course) => course.category === options.category,
+        );
+      }
 
-    return sanitizeCourses(filtered);
+      return sanitizeCourses(filtered);
+    }, [`getCourses-${options.tab}-${options.category}-${options.status}`], { revalidate: 600 })();
   } catch (error) {
     handleError(error);
     return [];
