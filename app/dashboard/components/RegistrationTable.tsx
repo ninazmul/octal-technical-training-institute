@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Eye, Edit2, FileText, Trash, Printer, Filter } from "lucide-react";
+import { Download, Eye, Edit2, FileText, Trash, Printer } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { FormProvider, useForm } from "react-hook-form";
@@ -37,10 +37,6 @@ import {
   exportRowsToPdf,
   getDateRangeMatch,
 } from "@/lib/export.client";
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 
 export type RegistrationItem = {
   _id: string;
@@ -683,118 +679,91 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   /** ---------- Render ---------- */
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex-1">
+      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+        <div className="grid w-full gap-3 md:grid-cols-2 lg:grid-cols-5 xl:max-w-5xl">
           <Input
-            placeholder="Search registration, name, email..."
+            placeholder="Search reg#, name, email, course, batch, sku..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Filters */}
-          {/* Export */}
-          {selectedRegistrations.length > 0 && (
-            <Button>
-              Send Email ({selectedRegistrations.length})
-            </Button>
-          )}
-          <Badge variant="secondary">
-            {filtered.length} Results
-          </Badge>
-        </div>
-      </div>
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            Filters
+          <select
+            value={selectedBatch}
+            onChange={(e) => setSelectedBatch(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="all">All Batches</option>
+            {batchOptions.map((b) => (
+              <option key={b} value={b}>
+                Batch: {b}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedSku}
+            onChange={(e) => setSelectedSku(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="all">All SKUs</option>
+            {skuOptions.map((s) => (
+              <option key={s} value={s}>
+                SKU: {s}
+              </option>
+            ))}
+          </select>
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            aria-label="Start date"
+          />
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            aria-label="End date"
+          />
+          <Button
+            variant="outline"
+            onClick={handlePrintList}
+            disabled={exportRows.length === 0}
+            title="Print registration report for current filter/selection"
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Print ({exportRows.length})
           </Button>
-        </SheetTrigger>
-
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Filters</SheetTitle>
-          </SheetHeader>
-
-          <div className="mt-6 space-y-5">
-
-            {/* Batch */}
-            <div>
-              <Label>Batch</Label>
-              <Select value={selectedBatch} onValueChange={setSelectedBatch}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All batches" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value="all">All batches</SelectItem>
-
-                  {batchOptions.map((batch) => (
-                    <SelectItem key={batch} value={batch}>
-                      {batch}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* SKU */}
-            <div>
-              <Label>SKU</Label>
-              <Select value={selectedSku} onValueChange={setSelectedSku}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All SKUs" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value="all">All SKUs</SelectItem>
-
-                  {skuOptions.map((sku) => (
-                    <SelectItem key={sku} value={sku}>
-                      {sku}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Dates */}
-            <div>
-              <Label>Start Date</Label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label>End Date</Label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <SheetFooter className="mt-6">
+          <Button
+            variant="outline"
+            onClick={handleExportCsv}
+            disabled={exportRows.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            CSV ({exportRows.length})
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportPdf}
+            disabled={exportRows.length === 0}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            PDF ({exportRows.length})
+          </Button>
+          {selectedRegistrations.length > 0 ? (
             <Button
-              variant="outline"
+              className="bg-primary hover:bg-primary-700 text-white"
               onClick={() => {
-                setSelectedBatch("all");
-                setSelectedSku("all");
-                setStartDate("");
-                setEndDate("");
+                const emails = selectedRows
+                  .map((r) => r.email)
+                  .filter(Boolean) as string[];
+
+                openEmailModal(emails);
               }}
             >
-              Reset
+              Send Email to Selected ({selectedRegistrations.length})
             </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+          ) : null}
+        </div>
+        Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+      </div>
 
       <Table className="border rounded-xl overflow-hidden">
         <TableHeader className="bg-gray-50">
