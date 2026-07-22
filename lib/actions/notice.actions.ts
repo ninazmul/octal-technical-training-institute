@@ -18,7 +18,9 @@ export const createNotice = async (params: NoticeParams) => {
       await logActivity("CREATE", "Notice", `Created notice '${newNotice.title}'`);
     }
 
-    revalidatePath("/Notices");
+    revalidatePath("/dashboard/notices");
+    revalidatePath("/notices");
+    revalidatePath("/");
 
     return JSON.parse(JSON.stringify(newNotice));
   } catch (error) {
@@ -94,7 +96,9 @@ export const updateNotice = async (
 
     await logActivity("UPDATE", "Notice", `Updated notice '${updatedNotice.title}'`);
 
-    revalidatePath("/Notices");
+    revalidatePath("/dashboard/notices");
+    revalidatePath("/notices");
+    revalidatePath("/");
 
     return JSON.parse(JSON.stringify(updatedNotice));
   } catch (error) {
@@ -120,7 +124,9 @@ export const deleteNotice = async (NoticeId: string) => {
 
     await logActivity("DELETE", "Notice", `Deleted notice '${noticeToDelete.title}'`);
 
-    revalidatePath("/Notices");
+    revalidatePath("/dashboard/notices");
+    revalidatePath("/notices");
+    revalidatePath("/");
 
     return { message: "Notice deleted successfully" };
   } catch (error) {

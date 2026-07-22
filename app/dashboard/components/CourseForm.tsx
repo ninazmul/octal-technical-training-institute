@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -69,6 +71,12 @@ type CourseFormProps = {
   courseId?: string;
 };
 
+const formatDateForInput = (dateStr?: string) => {
+  if (!dateStr) return "";
+  if (dateStr.includes("T")) return dateStr.split("T")[0];
+  return dateStr;
+};
+
 const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
   const router = useRouter();
   const { startUpload } = useUploadThing("mediaUploader");
@@ -86,8 +94,10 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
         : "Institution",
     photo: course?.photo || "",
     description: course?.description || "",
-    prerequisites: course?.prerequisites || [""],
-    modules: course?.modules || [{ title: "", content: "" }],
+    prerequisites: course?.prerequisites?.length ? course.prerequisites : [""],
+    modules: course?.modules?.length
+      ? course.modules.map((m) => ({ title: m.title || "", content: m.content || "" }))
+      : [{ title: "", content: "" }],
     price: course?.price || 0,
     discountPrice: course?.discountPrice ?? 0,
     rplPrice: course?.rplPrice ?? 0,
@@ -95,9 +105,11 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     isActive: course?.isActive ?? true,
     batch: course?.batch || "",
     sku: course?.sku || "",
-    courseStartDate: course?.courseStartDate || "",
-    registrationDeadline: course?.registrationDeadline || "",
-    schedule: course?.schedule || [{ day: "", start: "", end: "" }],
+    courseStartDate: formatDateForInput(course?.courseStartDate),
+    registrationDeadline: formatDateForInput(course?.registrationDeadline),
+    schedule: course?.schedule?.length
+      ? course.schedule.map((s) => ({ day: s.day || "", start: s.start || "", end: s.end || "" }))
+      : [{ day: "", start: "", end: "" }],
     duration: course?.duration || "",
     sessions: course?.sessions || "",
   };
@@ -106,6 +118,12 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     resolver: zodResolver(courseFormSchema),
     defaultValues: initialValues,
   });
+
+  useEffect(() => {
+    if (course) {
+      form.reset(initialValues);
+    }
+  }, [course]);
 
   const modulesFieldArray = useFieldArray({
     control: form.control,
@@ -127,6 +145,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           form.reset();
           toast.success("Course created successfully!");
           router.push("/dashboard/courses");
+          router.refresh();
         }
       } else if (type === "Update" && courseId) {
         const updatedCourse = await updateCourse(courseId, payload);
@@ -134,6 +153,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           form.reset();
           toast.success("Course updated successfully!");
           router.push("/dashboard/courses");
+          router.refresh();
         }
       }
     } catch (error) {

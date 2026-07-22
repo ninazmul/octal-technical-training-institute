@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "../database";
 import Complain from "../database/models/complain.model";
 import { ComplainParams } from "@/types";
@@ -61,6 +62,9 @@ export const createComplain = async (params: ComplainParams) => {
       subject: "New Complaint",
       message: emailMessage,
     });
+
+    revalidatePath("/dashboard/complains");
+    revalidatePath("/dashboard");
 
     return complain.toObject();
   } catch (error) {
@@ -133,6 +137,9 @@ export const updateComplain = async (
     const complainName = (complain as any).name || "Unknown";
     await logActivity("UPDATE", "Complaint", `Updated complaint details/status for ${complainName}`);
 
+    revalidatePath("/dashboard/complains");
+    revalidatePath("/dashboard");
+
     return complain;
   } catch (error) {
     handleError(error);
@@ -157,6 +164,9 @@ export const deleteComplain = async (complainId: string) => {
     }
 
     await logActivity("DELETE", "Complaint", `Deleted complaint from ${complainToDelete.name}`);
+
+    revalidatePath("/dashboard/complains");
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (error) {

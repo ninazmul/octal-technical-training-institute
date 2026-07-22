@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "../database";
 import { ApplyParams } from "@/types";
 import { handleError, sanitizeApplies, sanitizeApply } from "../utils";
@@ -43,6 +44,9 @@ export const applyRegistration = async (params: ApplyParams) => {
       subject: "New Registration",
       message: emailMessage,
     });
+
+    revalidatePath("/dashboard/applies");
+    revalidatePath("/dashboard");
 
     return sanitizeApply(apply);
   } catch (error) {
@@ -93,6 +97,9 @@ export const updateApply = async (
 
     await logActivity("UPDATE", "Quick Registration", `Updated quick registration status/details for ${apply.name}`);
 
+    revalidatePath("/dashboard/applies");
+    revalidatePath("/dashboard");
+
     return sanitizeApply(apply);
   } catch (error) {
     handleError(error);
@@ -112,6 +119,9 @@ export const deleteApply = async (applyId: string) => {
     if (!apply) throw new Error("Apply not found");
 
     await logActivity("DELETE", "Quick Registration", `Deleted quick registration for ${applyToDelete.name}`);
+
+    revalidatePath("/dashboard/applies");
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (error) {

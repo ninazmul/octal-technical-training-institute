@@ -1,5 +1,5 @@
 "use server";
-import { unstable_cache } from 'next/cache';
+import { unstable_cache, revalidatePath } from 'next/cache';
 import { connectToDatabase } from "../database";
 import { handleError } from "../utils";
 import Registration from "../database/models/registration.model";
@@ -321,6 +321,9 @@ export const createPendingRegistration = async (
       paymentMethod: data.paymentMethod ?? undefined,
     });
 
+    revalidatePath("/dashboard/registrations");
+    revalidatePath("/dashboard");
+
     const leanObj = created.toObject
       ? (created.toObject() as Record<string, unknown>)
       : (created as unknown as Record<string, unknown>);
@@ -583,6 +586,9 @@ export const updateRegistration = async (
       `Updated registration for student '${updated.englishName}' (Reg No: ${updated.registrationNumber || "N/A"}) for course '${courseTitle}'`,
     );
 
+    revalidatePath("/dashboard/registrations");
+    revalidatePath("/dashboard");
+
     return serializeRegistration(updated);
   } catch (error) {
     handleError(error);
@@ -613,6 +619,9 @@ export const deleteRegistration = async (
       "Registration",
       `Deleted registration for student '${regToDelete.englishName}' (Reg No: ${regToDelete.registrationNumber || "N/A"}) for course '${courseTitle}'`,
     );
+
+    revalidatePath("/dashboard/registrations");
+    revalidatePath("/dashboard");
 
     return { message: "Registration deleted successfully" };
   } catch (error) {

@@ -3,7 +3,7 @@
 import { connectToDatabase } from "../database";
 import { handleError, sanitizeCourse, sanitizeCourses } from "../utils";
 import Course, { ICourse, ICourseSafe } from "../database/models/course.model";
-import { unstable_cache } from "next/cache";
+import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 import { logActivity } from "./activity-log.actions";
 
 // -------------------- Params --------------------
@@ -80,7 +80,7 @@ export async function getCourses(options: {
       }
 
       return sanitizeCourses(filtered);
-    }, [`getCourses-${options.tab}-${options.category}-${options.status}`], { revalidate: 600 })();
+    }, [`getCourses-${options.tab}-${options.category}-${options.status}`], { revalidate: 600, tags: ["courses"] })();
   } catch (error) {
     handleError(error);
     return [];
@@ -101,6 +101,8 @@ export const createCourse = async (
         "Course",
         `Created course '${newCourse.title}'`,
       );
+      revalidatePath("/dashboard/courses");
+      revalidatePath("/");
     }
 
     return newCourse ? sanitizeCourse(newCourse) : undefined;
@@ -117,15 +119,7 @@ export const getCourseById = async (
     return unstable_cache(
       async () => {
         await connectToDatabase();
-        const course = await Course.findById(courseId)
-          .select(
-            `
-            title category photo price discountPrice rplPrice seats batch
-            courseStartDate duration sessions registrationDeadline
-            prerequisites description modules schedule isActive sku
-          `,
-          )
-          .lean<ICourse>();
+        const course = await Course.findById(courseId).lean<ICourse>();
 
         return course ? sanitizeCourse(course) : null;
       },
@@ -133,7 +127,7 @@ export const getCourseById = async (
       [`course-by-id-${courseId}`],
       {
         revalidate: 600, // 10 minutes
-        tags: [`course-by-id-${courseId}`], // Tag for invalidation
+        tags: [`course-by-id-${courseId}`, "courses"], // Tag for invalidation
       },
     )();
   } catch (error) {
@@ -185,6 +179,11 @@ export const updateCourse = async (
       `Updated course '${updatedCourse.title}'`,
     );
 
+    revalidatePath("/dashboard/courses");
+    revalidatePath(`/dashboard/courses/${courseId}/update`);
+    revalidatePath(`/courses/${courseId}`);
+    revalidatePath("/");
+
     return updatedCourse;
   } catch (error) {
     handleError(error);
@@ -206,6 +205,9 @@ export const toggleCourseStatus = async (
       "Course",
       `Toggled active status of course '${course.title}' to ${course.isActive}`,
     );
+
+    revalidatePath("/dashboard/courses");
+    revalidatePath("/");
 
     return course.toObject() as ICourse;
   } catch (error) {
@@ -230,6 +232,9 @@ export const deleteCourse = async (
       "Course",
       `Deleted course '${courseToDelete.title}'`,
     );
+
+    revalidatePath("/dashboard/courses");
+    revalidatePath("/");
 
     return { message: "Course deleted successfully" };
   } catch (error) {

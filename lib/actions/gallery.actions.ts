@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { AddPhotoParams } from "@/types";
 import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
@@ -15,6 +16,9 @@ export const addPhoto = async ({ title, image }: AddPhotoParams) => {
     if (newPhoto) {
       await logActivity("CREATE", "Gallery", `Added photo '${newPhoto.title}' to gallery`);
     }
+
+    revalidatePath("/dashboard/gallery");
+    revalidatePath("/");
 
     return JSON.parse(JSON.stringify(newPhoto));
   } catch (error) {
@@ -52,6 +56,9 @@ export const updatePhoto = async (
 
     await logActivity("UPDATE", "Gallery", `Updated photo '${updatedGallery.title}' in gallery`);
 
+    revalidatePath("/dashboard/gallery");
+    revalidatePath("/");
+
     return JSON.parse(JSON.stringify(updatedGallery));
   } catch (error) {
     handleError(error);
@@ -74,6 +81,9 @@ export const deletePhoto = async (photoId: string) => {
     }
 
     await logActivity("DELETE", "Gallery", `Deleted photo '${photoToDelete.title}' from gallery`);
+
+    revalidatePath("/dashboard/gallery");
+    revalidatePath("/");
 
     return { message: "Photo deleted successfully" };
   } catch (error) {

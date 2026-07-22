@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
 import Trainer from "../database/models/trainer.model";
@@ -60,6 +61,9 @@ export const createTrainer = async (params: TrainerParams) => {
       message: emailMessage,
     });
 
+    revalidatePath("/dashboard/trainers");
+    revalidatePath("/dashboard");
+
     return newTrainer.toObject();
   } catch (error) {
     handleError(error);
@@ -119,6 +123,9 @@ export const updateTrainer = async (
 
     await logActivity("UPDATE", "Trainer", `Updated trainer application for ${updatedTrainer.name}`);
 
+    revalidatePath("/dashboard/trainers");
+    revalidatePath("/dashboard");
+
     return JSON.parse(JSON.stringify(updatedTrainer));
   } catch (error) {
     handleError(error);
@@ -141,6 +148,9 @@ export const deleteTrainer = async (trainerId: string) => {
     }
 
     await logActivity("DELETE", "Trainer", `Deleted trainer application for ${trainerToDelete.name}`);
+
+    revalidatePath("/dashboard/trainers");
+    revalidatePath("/dashboard");
 
     return { message: "Trainer deleted successfully" };
   } catch (error) {

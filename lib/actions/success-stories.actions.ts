@@ -18,7 +18,9 @@ export const createSuccessStories = async (params: SuccessStoriesParams) => {
       await logActivity("CREATE", "Success Story", `Created success story for ${newSuccessStories.name}`);
     }
 
-    revalidatePath("/SuccessStoriess");
+    revalidatePath("/dashboard/success-stories");
+    revalidatePath("/success-stories");
+    revalidatePath("/");
 
     return JSON.parse(JSON.stringify(newSuccessStories));
   } catch (error) {
@@ -75,7 +77,9 @@ export const updateSuccessStories = async (
 
     await logActivity("UPDATE", "Success Story", `Updated success story for ${updatedSuccessStories.name}`);
 
-    revalidatePath("/SuccessStoriess");
+    revalidatePath("/dashboard/success-stories");
+    revalidatePath("/success-stories");
+    revalidatePath("/");
 
     return JSON.parse(JSON.stringify(updatedSuccessStories));
   } catch (error) {
@@ -101,7 +105,9 @@ export const deleteSuccessStories = async (SuccessStoriesId: string) => {
 
     await logActivity("DELETE", "Success Story", `Deleted success story for ${storyToDelete.name}`);
 
-    revalidatePath("/SuccessStoriess");
+    revalidatePath("/dashboard/success-stories");
+    revalidatePath("/success-stories");
+    revalidatePath("/");
 
     return { message: "SuccessStories deleted successfully" };
   } catch (error) {

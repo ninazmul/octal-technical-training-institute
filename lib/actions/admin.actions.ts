@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { AdminParams } from "@/types";
 import { handleError } from "../utils";
 import { connectToDatabase } from "../database";
@@ -17,6 +18,8 @@ export const createAdmin = async ({ Name, Email, Role }: AdminParams) => {
     });
 
     await logActivity("CREATE", "Admin", `Created admin '${Name}' with role '${Role}'`);
+
+    revalidatePath("/dashboard/admins");
 
     return JSON.parse(JSON.stringify(newAdmin));
   } catch (error) {
@@ -52,6 +55,8 @@ export const deleteAdmin = async (adminId: string) => {
     }
 
     await logActivity("DELETE", "Admin", `Deleted admin '${adminToDelete.name}' (${adminToDelete.email})`);
+
+    revalidatePath("/dashboard/admins");
 
     return { message: "Admin deleted successfully" };
   } catch (error) {

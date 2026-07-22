@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { handleError, sanitizeSetting } from "../utils";
 import { connectToDatabase } from "../database";
 import { logActivity } from "./activity-log.actions";
@@ -137,6 +138,10 @@ export const upsertSetting = async (
       JSON.stringify(sanitizeSetting(setting as unknown as ISetting)),
     );
     cacheTimestamp = Date.now();
+
+    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard");
+    revalidatePath("/");
 
     return JSON.parse(JSON.stringify(cachedSetting));
   } catch (error) {
