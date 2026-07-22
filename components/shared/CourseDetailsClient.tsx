@@ -78,7 +78,7 @@ export default function CourseDetailsClient({
         <aside className="space-y-8 lg:sticky lg:top-24 self-start">
           <InfoCard title="Course Details">
             {/* Info Items */}
-            <InfoItem icon={<DollarSign size={18} />} label="Price">
+            <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
               {course.discountPrice ? (
                 <div className="flex items-center gap-2">
                   <span className="text-red-500 line-through text-sm">
@@ -94,9 +94,16 @@ export default function CourseDetailsClient({
                 </span>
               )}
             </InfoItem>
+            <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
+              {course.rplPrice && (
+                <span className="font-bold text-gray-900">
+                  টাকা {course.rplPrice}
+                </span>
+              )}
+            </InfoItem>
             {course.certification && (
               <InfoItem
-                icon={<FaCertificate size={18} />}
+                icon={<FaCertificate />}
                 label="Certification"
               >
                 {course.certification || "N/A"}

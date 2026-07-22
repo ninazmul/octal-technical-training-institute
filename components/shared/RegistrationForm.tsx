@@ -50,7 +50,7 @@ type CouponPreview = {
 
 type RegistrationFormProps = {
   course: ICourseSafe;
-  email: string;
+  email?: string;
 };
 
 export default function RegistrationForm({
@@ -79,7 +79,7 @@ export default function RegistrationForm({
       fathersName: "",
       mothersName: "",
       gender: "Male",
-      email: email,
+      email: email ?? "",
       number: "",
       whatsApp: "",
       occupation: "",
@@ -365,10 +365,9 @@ export default function RegistrationForm({
               <FormControl>
                 <Input
                   type="email"
+                  placeholder="Enter your email"
                   {...field}
-                  value={email} // fill from props
-                  disabled // make field read-only
-                  className="bg-gray-100 cursor-not-allowed"
+                  value={field.value}
                 />
               </FormControl>
               <FormMessage />
@@ -461,7 +460,7 @@ export default function RegistrationForm({
               <FormControl>
                 <FileUploader
                   imageUrl={field.value}
-                  setFiles={() => {}}
+                  setFiles={() => { }}
                   onFieldChange={async (_blobUrl, files) => {
                     if (files?.length) {
                       const uploaded = await startUpload(files);

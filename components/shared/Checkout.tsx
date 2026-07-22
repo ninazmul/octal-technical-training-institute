@@ -15,7 +15,7 @@ import {
 
 type CheckoutProps = {
   course: ICourseSafe;
-  email: string;
+  email?: string;
 };
 
 export default function Checkout({ course, email }: CheckoutProps) {
