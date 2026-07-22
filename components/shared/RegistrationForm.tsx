@@ -53,6 +53,19 @@ type RegistrationFormProps = {
   email?: string;
 };
 
+// Helper to calculate RTO price correctly when discount is 0, empty string, or unavailable
+const getRtoPrice = (c: ICourseSafe): number => {
+  if (
+    c.discountPrice !== undefined &&
+    c.discountPrice !== null &&
+    String(c.discountPrice).trim() !== "" &&
+    Number(c.discountPrice) > 0
+  ) {
+    return Number(c.discountPrice);
+  }
+  return Number(c.price ?? 0);
+};
+
 export default function RegistrationForm({
   course,
   email,
@@ -63,8 +76,8 @@ export default function RegistrationForm({
     typeof course.rplPrice === "number" && course.rplPrice > 0;
   const getBaseAmount = (type: "rto" | "rpl") =>
     type === "rpl" && hasRplPrice
-      ? (course.rplPrice ?? 0)
-      : (course.discountPrice ?? course.price);
+      ? Number(course.rplPrice ?? 0)
+      : getRtoPrice(course);
   const [coursePriceType, setCoursePriceType] = useState<"rto" | "rpl">("rto");
   const baseAmount = getBaseAmount(coursePriceType);
   const [couponPreview, setCouponPreview] = useState<CouponPreview | null>(
@@ -99,12 +112,18 @@ export default function RegistrationForm({
   }
 
   function handleCoursePriceTypeChange(nextType: "rto" | "rpl") {
-    setCoursePriceType(nextType);
-    form.setValue("coursePriceType", nextType);
-    resetCouponForAmount(getBaseAmount(nextType));
+    const effectiveType = hasRplPrice ? nextType : "rto";
+    setCoursePriceType(effectiveType);
+    form.setValue("coursePriceType", effectiveType);
+    resetCouponForAmount(getBaseAmount(effectiveType));
   }
 
   async function applyCoupon() {
+    if (coursePriceType === "rpl") {
+      toast.error("Coupons are only applicable for RTO registration");
+      return;
+    }
+
     const couponCode = form.getValues("couponCode")?.trim();
 
     if (!couponCode) {
@@ -158,6 +177,7 @@ export default function RegistrationForm({
   async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
     try {
       // 1. Create pending registration
+      const effectiveType = hasRplPrice ? coursePriceType : "rto";
       const res = await fetch("/api/registration/create-pending", {
         method: "POST",
         headers: {
@@ -166,7 +186,7 @@ export default function RegistrationForm({
         body: JSON.stringify({
           ...values,
           courseId: course._id,
-          coursePriceType,
+          coursePriceType: effectiveType,
         }),
       });
 
@@ -204,29 +224,6 @@ export default function RegistrationForm({
     }
   }
 
-  // async function onSubmit(values: z.infer<typeof registrationFormSchema>) {
-  //   try {
-  //     const payload = {
-  //       ...values,
-  //       email,
-  //       courseId: course._id.toString(),
-  //       paymentAmount: course.discountPrice ?? course.price,
-  //     };
-  //     const registration = await createRegistration(payload);
-
-  //     if (registration) {
-  //       toast.success(
-  //         `Registration successful! Your registration number is ${registration.registrationNumber}`,
-  //       );
-  //       form.reset();
-  //       // router.push("/registrations");
-  //     }
-  //   } catch (error) {
-  //     console.error("Registration failed", error);
-  //     toast.error("Something went wrong.");
-  //   }
-  // }
-
   return (
     <Form {...form}>
       <form
@@ -236,44 +233,45 @@ export default function RegistrationForm({
         <h2 className="text-2xl font-bold">Register for {course.title}</h2>
 
         <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
-          <FormField
-            control={form.control}
-            name="coursePriceType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Registration Type</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    value={coursePriceType}
-                    onChange={(event) =>
-                      handleCoursePriceTypeChange(
-                        event.target.value as "rto" | "rpl",
-                      )
-                    }
-                    className="w-full border rounded px-3 py-2 bg-white"
-                  >
-                    <option value="rto">
-                      RTO Price (Long course) - ৳
-                      {(course.discountPrice ?? course.price).toLocaleString()}
-                    </option>
-                    <option value="rpl" disabled={!hasRplPrice}>
-                      RPL Price (Quick examination)
-                      {hasRplPrice
-                        ? ` - ৳${course.rplPrice?.toLocaleString()}`
-                        : " - Not available"}
-                    </option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {hasRplPrice && (
+            <FormField
+              control={form.control}
+              name="coursePriceType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Registration Type</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      value={coursePriceType}
+                      onChange={(event) =>
+                        handleCoursePriceTypeChange(
+                          event.target.value as "rto" | "rpl",
+                        )
+                      }
+                      className="w-full border rounded px-3 py-2 bg-white"
+                    >
+                      <option value="rto">
+                        RTO Price (Long course) - ৳
+                        {getRtoPrice(course).toLocaleString()}
+                      </option>
+                      <option value="rpl">
+                        RPL Price (Quick examination) - ৳
+                        {course.rplPrice?.toLocaleString()}
+                      </option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
           <div className="flex justify-between text-sm">
-            <span>{coursePriceType === "rpl" ? "rpl price" : "RTO price"}</span>
+            <span>{coursePriceType === "rpl" ? "RPL Price" : "RTO Price"}</span>
             <span>৳{baseAmount.toLocaleString()}</span>
           </div>
-          {couponPreview && (
+          {couponPreview && coursePriceType === "rto" && (
             <div className="flex justify-between text-sm text-green-700">
               <span>Coupon ({couponPreview.code})</span>
               <span>-৳{couponPreview.discountAmount.toLocaleString()}</span>
@@ -282,7 +280,11 @@ export default function RegistrationForm({
           <div className="flex justify-between font-semibold">
             <span>Payable amount</span>
             <span>
-              ৳{(couponPreview?.finalAmount ?? baseAmount).toLocaleString()}
+              ৳
+              {(couponPreview && coursePriceType === "rto"
+                ? couponPreview.finalAmount
+                : baseAmount
+              ).toLocaleString()}
             </span>
           </div>
         </div>
@@ -484,8 +486,13 @@ export default function RegistrationForm({
               <div className="flex gap-2">
                 <FormControl>
                   <Input
-                    placeholder="Enter coupon code"
+                    placeholder={
+                      coursePriceType === "rpl"
+                        ? "Coupon not applicable for RPL"
+                        : "Enter coupon code"
+                    }
                     {...field}
+                    disabled={coursePriceType === "rpl"}
                     onChange={(event) => {
                       field.onChange(event.target.value.toUpperCase());
                       setCouponPreview(null);
@@ -496,12 +503,17 @@ export default function RegistrationForm({
                 <button
                   type="button"
                   onClick={applyCoupon}
-                  disabled={couponLoading}
+                  disabled={couponLoading || coursePriceType === "rpl"}
                   className="px-4 py-2 rounded-md bg-primary text-white font-semibold disabled:opacity-60"
                 >
                   Apply
                 </button>
               </div>
+              {coursePriceType === "rpl" && (
+                <p className="text-xs text-amber-600 font-medium">
+                  Coupons are only applicable for RTO registration.
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}

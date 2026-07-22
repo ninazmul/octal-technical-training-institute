@@ -32,7 +32,10 @@ export default function Checkout({ course, email }: CheckoutProps) {
           <h1 className="text-3xl font-bold mb-6">{course.title}</h1>
 
           <InfoItem icon={<DollarSign size={18} />} label="RTO Price">
-            {course.discountPrice ? (
+            {course.discountPrice !== undefined &&
+            course.discountPrice !== null &&
+            String(course.discountPrice).trim() !== "" &&
+            Number(course.discountPrice) > 0 ? (
               <div className="flex items-center gap-2">
                 <span className="text-red-500 line-through text-sm">
                   টাকা {course.price}
@@ -48,7 +51,7 @@ export default function Checkout({ course, email }: CheckoutProps) {
             )}
           </InfoItem>
           <InfoItem icon={<DollarSign size={18} />} label="RPL Price">
-            {course.rplPrice ? (
+            {typeof course.rplPrice === "number" && course.rplPrice > 0 ? (
               <span className="font-bold text-gray-900">
                 টাকা {course.rplPrice}
               </span>

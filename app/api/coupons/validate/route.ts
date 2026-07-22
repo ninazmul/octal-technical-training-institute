@@ -25,10 +25,28 @@ export async function POST(req: NextRequest) {
     }
 
     const priceType = body.coursePriceType === "rpl" ? "rpl" : "rto";
-    const amount =
-      priceType === "rpl" && course.rplPrice
-        ? course.rplPrice
-        : (course.discountPrice ?? course.price ?? 0);
+
+    if (priceType === "rpl") {
+      const rplAmt = Number(course.rplPrice ?? 0);
+      return NextResponse.json({
+        valid: false,
+        message: "Coupons are not applicable for RPL price",
+        originalAmount: rplAmt,
+        discountAmount: 0,
+        finalAmount: rplAmt,
+      });
+    }
+
+    const hasDiscount =
+      course.discountPrice !== undefined &&
+      course.discountPrice !== null &&
+      String(course.discountPrice).trim() !== "" &&
+      Number(course.discountPrice) > 0;
+
+    const amount = hasDiscount
+      ? Number(course.discountPrice)
+      : Number(course.price ?? 0);
+
     const result = await validateCoupon(String(body.code ?? ""), amount);
 
     return NextResponse.json(result);

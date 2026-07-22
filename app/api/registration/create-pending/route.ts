@@ -14,30 +14,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false });
     }
 
-    const coursePriceType = body.coursePriceType === "rpl" ? "rpl" : "rto";
+    const hasRplPrice =
+      typeof course.rplPrice === "number" && course.rplPrice > 0;
+    const coursePriceType =
+      hasRplPrice && body.coursePriceType === "rpl" ? "rpl" : "rto";
+
+    const hasDiscount =
+      course.discountPrice !== undefined &&
+      course.discountPrice !== null &&
+      String(course.discountPrice).trim() !== "" &&
+      Number(course.discountPrice) > 0;
+
     const originalAmount =
-      coursePriceType === "rpl" && course.rplPrice
-        ? course.rplPrice
-        : (course.discountPrice ?? course.price);
+      coursePriceType === "rpl"
+        ? Number(course.rplPrice ?? 0)
+        : hasDiscount
+        ? Number(course.discountPrice)
+        : Number(course.price ?? 0);
+
     const couponCode =
       typeof body.couponCode === "string" ? body.couponCode.trim() : "";
-    const couponResult = couponCode
-      ? await validateCoupon(couponCode, originalAmount)
-      : null;
 
-    if (couponCode && !couponResult?.valid) {
+    // Coupon only works on RTO price, not RPL
+    const couponResult =
+      couponCode && coursePriceType !== "rpl"
+        ? await validateCoupon(couponCode, originalAmount)
+        : null;
+
+    if (couponCode && coursePriceType !== "rpl" && !couponResult?.valid) {
       return NextResponse.json({
         success: false,
         message: couponResult?.message ?? "Invalid coupon",
       });
     }
 
-    const paymentAmount = couponResult?.valid
-      ? couponResult.finalAmount
-      : originalAmount;
-    const couponDiscount = couponResult?.valid
-      ? couponResult.discountAmount
-      : 0;
+    const paymentAmount =
+      couponResult?.valid && coursePriceType === "rto"
+        ? couponResult.finalAmount
+        : originalAmount;
+    const couponDiscount =
+      couponResult?.valid && coursePriceType === "rto"
+        ? couponResult.discountAmount
+        : 0;
 
     const registration = await Registration.create({
       ...body,
