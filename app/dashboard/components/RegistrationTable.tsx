@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Eye, Edit2, FileText, Trash, Printer } from "lucide-react";
+import { Download, Eye, Edit2, FileText, Trash, Printer, Filter } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { FormProvider, useForm } from "react-hook-form";
@@ -37,6 +37,10 @@ import {
   exportRowsToPdf,
   getDateRangeMatch,
 } from "@/lib/export.client";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 export type RegistrationItem = {
   _id: string;
@@ -52,14 +56,14 @@ export type RegistrationItem = {
   address?: string;
   photo?: string;
   course?:
-    | {
-        _id: string;
-        title?: string;
-        category?: string;
-        batch?: string;
-        sku?: string;
-      }
-    | string;
+  | {
+    _id: string;
+    title?: string;
+    category?: string;
+    batch?: string;
+    sku?: string;
+  }
+  | string;
   registrationNumber?: string;
   status?: string;
   certificateStatus?: string;
@@ -109,12 +113,12 @@ function normalizeRegistration(
         : typeof updated.course === "string"
           ? updated.course
           : {
-              _id: updated.course._id,
-              title: updated.course.title ?? undefined,
-              category: updated.course.category ?? undefined,
-              batch: updated.course.batch ?? undefined,
-              sku: updated.course.sku ?? undefined,
-            },
+            _id: updated.course._id,
+            title: updated.course.title ?? undefined,
+            category: updated.course.category ?? undefined,
+            batch: updated.course.batch ?? undefined,
+            sku: updated.course.sku ?? undefined,
+          },
     registrationNumber: updated.registrationNumber ?? undefined,
     status: updated.status ?? undefined,
     certificateStatus: updated.certificateStatus ?? undefined,
@@ -221,6 +225,7 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
 
   const [mode, setMode] = useState<"email" | "sms">("email");
   const [smsContent, setSmsContent] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   /** ---------- Fetch Course Info ---------- */
   useEffect(() => {
@@ -678,95 +683,118 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
   /** ---------- Render ---------- */
   return (
     <div className="space-y-4">
-      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
-        <div className="grid w-full gap-3 md:grid-cols-2 lg:grid-cols-5 xl:max-w-5xl">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex-1">
           <Input
-            placeholder="Search reg#, name, email, course, batch, sku..."
+            placeholder="Search registration, name, email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <select
-            value={selectedBatch}
-            onChange={(e) => setSelectedBatch(e.target.value)}
-            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          >
-            <option value="all">All Batches</option>
-            {batchOptions.map((b) => (
-              <option key={b} value={b}>
-                Batch: {b}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedSku}
-            onChange={(e) => setSelectedSku(e.target.value)}
-            className="border rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          >
-            <option value="all">All SKUs</option>
-            {skuOptions.map((s) => (
-              <option key={s} value={s}>
-                SKU: {s}
-              </option>
-            ))}
-          </select>
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            aria-label="Start date"
-          />
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            aria-label="End date"
-          />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handlePrintList}
-            disabled={exportRows.length === 0}
-            title="Print registration report for current filter/selection"
-          >
-            <Printer className="mr-2 h-4 w-4" />
-            Print ({exportRows.length})
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleExportCsv}
-            disabled={exportRows.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            CSV ({exportRows.length})
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleExportPdf}
-            disabled={exportRows.length === 0}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            PDF ({exportRows.length})
-          </Button>
-          {selectedRegistrations.length > 0 ? (
-            <Button
-              className="bg-primary hover:bg-primary-700 text-white"
-              onClick={() => {
-                const emails = selectedRows
-                  .map((r) => r.email)
-                  .filter(Boolean) as string[];
 
-                openEmailModal(emails);
-              }}
-            >
-              Send Email to Selected ({selectedRegistrations.length})
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Filters */}
+          {/* Export */}
+          {selectedRegistrations.length > 0 && (
+            <Button>
+              Send Email ({selectedRegistrations.length})
             </Button>
-          ) : null}
-          <div className="text-sm text-muted-foreground">
-            Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-          </div>
+          )}
+          <Badge variant="secondary">
+            {filtered.length} Results
+          </Badge>
         </div>
       </div>
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" />
+            Filters
+          </Button>
+        </SheetTrigger>
+
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Filters</SheetTitle>
+          </SheetHeader>
+
+          <div className="mt-6 space-y-5">
+
+            {/* Batch */}
+            <div>
+              <Label>Batch</Label>
+              <Select value={selectedBatch} onValueChange={setSelectedBatch}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All batches" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="all">All batches</SelectItem>
+
+                  {batchOptions.map((batch) => (
+                    <SelectItem key={batch} value={batch}>
+                      {batch}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* SKU */}
+            <div>
+              <Label>SKU</Label>
+              <Select value={selectedSku} onValueChange={setSelectedSku}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All SKUs" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="all">All SKUs</SelectItem>
+
+                  {skuOptions.map((sku) => (
+                    <SelectItem key={sku} value={sku}>
+                      {sku}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Dates */}
+            <div>
+              <Label>Start Date</Label>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label>End Date</Label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <SheetFooter className="mt-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedBatch("all");
+                setSelectedSku("all");
+                setStartDate("");
+                setEndDate("");
+              }}
+            >
+              Reset
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <Table className="border rounded-xl overflow-hidden">
         <TableHeader className="bg-gray-50">
@@ -884,19 +912,19 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 <div className="font-medium">{getCourseTitle(r.course)}</div>
                 {(getCourseBatch(r.course) !== "—" ||
                   getCourseSku(r.course) !== "—") && (
-                  <div className="text-xs flex flex-wrap gap-1 mt-1">
-                    {getCourseBatch(r.course) !== "—" && (
-                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-medium">
-                        {getCourseBatch(r.course)}
-                      </span>
-                    )}
-                    {getCourseSku(r.course) !== "—" && (
-                      <span className="bg-gray-100 text-gray-700 border border-gray-200 px-1.5 py-0.5 rounded font-medium">
-                        SKU: {getCourseSku(r.course)}
-                      </span>
-                    )}
-                  </div>
-                )}
+                    <div className="text-xs flex flex-wrap gap-1 mt-1">
+                      {getCourseBatch(r.course) !== "—" && (
+                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-medium">
+                          {getCourseBatch(r.course)}
+                        </span>
+                      )}
+                      {getCourseSku(r.course) !== "—" && (
+                        <span className="bg-gray-100 text-gray-700 border border-gray-200 px-1.5 py-0.5 rounded font-medium">
+                          SKU: {getCourseSku(r.course)}
+                        </span>
+                      )}
+                    </div>
+                  )}
               </TableCell>
 
               {/* Status Badge */}
@@ -916,11 +944,10 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                   size="icon"
                   disabled={loadingMap[`cert-${r._id}`]}
                   onClick={() => setCertConfirmId(r._id)}
-                  className={`rounded-full ${
-                    r.certificateStatus === "Certified"
-                      ? "text-green-600 hover:bg-green-100"
-                      : "text-gray-400 hover:bg-gray-100"
-                  }`}
+                  className={`rounded-full ${r.certificateStatus === "Certified"
+                    ? "text-green-600 hover:bg-green-100"
+                    : "text-gray-400 hover:bg-gray-100"
+                    }`}
                 >
                   {r.certificateStatus === "Certified" ? "✓" : "—"}
                 </Button>
