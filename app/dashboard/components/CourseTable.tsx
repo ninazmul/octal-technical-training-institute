@@ -123,7 +123,7 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
               "title",
               "price",
               "discountPrice",
-              "rtlPrice",
+              "rplPrice",
               "seats",
               "SKU",
               "isActive",
@@ -190,7 +190,9 @@ const CourseTable = ({ courses }: { courses: ICourseSafe[] }) => {
                     : "-"}
                 </TableCell>
                 <TableCell>
-                  {course.rtlPrice ? `৳${course.rtlPrice.toLocaleString()}` : "-"}
+                  {course.rplPrice
+                    ? `৳${course.rplPrice.toLocaleString()}`
+                    : "-"}
                 </TableCell>
 
                 {/* Seats & SKU */}

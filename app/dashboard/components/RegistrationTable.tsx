@@ -56,7 +56,7 @@ export type RegistrationItem = {
   status?: string;
   certificateStatus?: string;
   certificateIssuedAt?: string | Date;
-  coursePriceType?: "rto" | "rtl";
+  coursePriceType?: "rto" | "rpl";
   originalPaymentAmount?: number;
   couponCode?: string;
   couponDiscount?: number;
@@ -937,8 +937,8 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
                 </p>
                 <p>
                   <strong>Price Type:</strong>{" "}
-                  {viewModalData.coursePriceType === "rtl"
-                    ? "RTL"
+                  {viewModalData.coursePriceType === "rpl"
+                    ? "rpl"
                     : "RTO"}
                 </p>
                 <p>

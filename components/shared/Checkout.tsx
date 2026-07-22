@@ -47,10 +47,10 @@ export default function Checkout({ course, email }: CheckoutProps) {
               </span>
             )}
           </InfoItem>
-          <InfoItem icon={<DollarSign size={18} />} label="RTL Price">
-            {course.rtlPrice ? (
+          <InfoItem icon={<DollarSign size={18} />} label="RPL Price">
+            {course.rplPrice ? (
               <span className="font-bold text-gray-900">
-                টাকা {course.rtlPrice}
+                টাকা {course.rplPrice}
               </span>
             ) : (
               "Not available"

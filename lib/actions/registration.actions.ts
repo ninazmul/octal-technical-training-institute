@@ -33,7 +33,7 @@ export type SerializedRegistration = {
   status: string | null;
   certificateStatus: string | null;
   certificateIssuedAt: string | null;
-  coursePriceType: "rto" | "rtl" | null;
+  coursePriceType: "rto" | "rpl" | null;
   originalPaymentAmount: number | null;
   couponCode: string | null;
   couponDiscount: number | null;
@@ -64,7 +64,7 @@ export type RegistrationParams = {
   status?: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus?: "Not Certified" | "Certified";
   certificateIssuedAt?: Date | null;
-  coursePriceType?: "rto" | "rtl";
+  coursePriceType?: "rto" | "rpl";
   originalPaymentAmount?: number;
   couponCode?: string;
   couponDiscount?: number;
@@ -144,7 +144,7 @@ function serializeRegistration(
     certificateStatus: toStringOrNull(raw["certificateStatus"]),
     certificateIssuedAt: toISODateOrNull(raw["certificateIssuedAt"]),
     coursePriceType:
-      raw["coursePriceType"] === "rtl" || raw["coursePriceType"] === "rto"
+      raw["coursePriceType"] === "rpl" || raw["coursePriceType"] === "rto"
         ? raw["coursePriceType"]
         : null,
     originalPaymentAmount: parseNumberOrNull(raw["originalPaymentAmount"]),
@@ -221,7 +221,7 @@ function buildValidatedUpdate(
 
   if (
     data.coursePriceType !== undefined &&
-    ["rto", "rtl"].includes(data.coursePriceType)
+    ["rto", "rpl"].includes(data.coursePriceType)
   ) {
     out.coursePriceType = data.coursePriceType;
   }
@@ -299,7 +299,8 @@ export const createPendingRegistration = async (
       certificateStatus: data.certificateStatus ?? "Not Certified",
       certificateIssuedAt: data.certificateIssuedAt ?? undefined,
       coursePriceType: data.coursePriceType ?? "rto",
-      originalPaymentAmount: data.originalPaymentAmount ?? data.paymentAmount ?? 0,
+      originalPaymentAmount:
+        data.originalPaymentAmount ?? data.paymentAmount ?? 0,
       couponCode: data.couponCode?.trim().toUpperCase() || undefined,
       couponDiscount: data.couponDiscount ?? 0,
       paymentAmount: data.paymentAmount ?? 0,
@@ -356,7 +357,11 @@ export const confirmRegistrationPayment = async (
 
     await registration.save();
 
-    await logActivity("UPDATE", "Registration", `Confirmed payment for student '${registration.englishName}' (Reg No: ${registration.registrationNumber || 'N/A'}) for course '${course.title}'`);
+    await logActivity(
+      "UPDATE",
+      "Registration",
+      `Confirmed payment for student '${registration.englishName}' (Reg No: ${registration.registrationNumber || "N/A"}) for course '${course.title}'`,
+    );
 
     // ✅ Send email (safe)
     try {
@@ -416,7 +421,7 @@ export const getRegistrations = async (
     }
 
     const raw = await Registration.find(query)
-      .populate("course", "title category batch price discountPrice rtlPrice")
+      .populate("course", "title category batch price discountPrice rplPrice")
       .sort({ createdAt: -1 })
       .lean<Record<string, unknown>[]>();
 
@@ -434,7 +439,7 @@ export const getRegistrationById = async (
   try {
     await connectToDatabase();
     const raw = await Registration.findById(registrationId)
-      .populate("course", "title category batch price discountPrice rtlPrice")
+      .populate("course", "title category batch price discountPrice rplPrice")
       .lean<Record<string, unknown>>();
 
     if (!raw) return null;
@@ -470,7 +475,7 @@ export const getRegistrationByNumber = async (
     await connectToDatabase();
 
     const raw = await Registration.findOne({ registrationNumber })
-      .populate("course", "title category batch price discountPrice rtlPrice")
+      .populate("course", "title category batch price discountPrice rplPrice")
       .lean<Record<string, unknown>>();
 
     // ✅ Return null instead of throwing
@@ -493,7 +498,7 @@ export const getRegistrationByEmail = async (
     await connectToDatabase();
 
     const raw = await Registration.findOne({ email })
-      .populate("course", "title category batch price discountPrice rtlPrice")
+      .populate("course", "title category batch price discountPrice rplPrice")
       .lean<Record<string, unknown>>();
 
     if (!raw) return null;
@@ -552,8 +557,17 @@ export const updateRegistration = async (
 
     if (!updated) throw new Error("Registration not found");
 
-    const courseTitle = updated.course && typeof updated.course === 'object' && 'title' in updated.course ? (updated.course as any).title : '';
-    await logActivity("UPDATE", "Registration", `Updated registration for student '${updated.englishName}' (Reg No: ${updated.registrationNumber || 'N/A'}) for course '${courseTitle}'`);
+    const courseTitle =
+      updated.course &&
+      typeof updated.course === "object" &&
+      "title" in updated.course
+        ? (updated.course as any).title
+        : "";
+    await logActivity(
+      "UPDATE",
+      "Registration",
+      `Updated registration for student '${updated.englishName}' (Reg No: ${updated.registrationNumber || "N/A"}) for course '${courseTitle}'`,
+    );
 
     return serializeRegistration(updated);
   } catch (error) {
@@ -568,7 +582,9 @@ export const deleteRegistration = async (
   try {
     await connectToDatabase();
 
-    const regToDelete = await Registration.findById(registrationId).populate("course", "title").lean<any>();
+    const regToDelete = await Registration.findById(registrationId)
+      .populate("course", "title")
+      .lean<any>();
     if (!regToDelete) throw new Error("Registration not found");
 
     const deleted =
@@ -577,8 +593,12 @@ export const deleteRegistration = async (
       >();
     if (!deleted) throw new Error("Registration not found");
 
-    const courseTitle = regToDelete.course ? regToDelete.course.title : '';
-    await logActivity("DELETE", "Registration", `Deleted registration for student '${regToDelete.englishName}' (Reg No: ${regToDelete.registrationNumber || 'N/A'}) for course '${courseTitle}'`);
+    const courseTitle = regToDelete.course ? regToDelete.course.title : "";
+    await logActivity(
+      "DELETE",
+      "Registration",
+      `Deleted registration for student '${regToDelete.englishName}' (Reg No: ${regToDelete.registrationNumber || "N/A"}) for course '${courseTitle}'`,
+    );
 
     return { message: "Registration deleted successfully" };
   } catch (error) {

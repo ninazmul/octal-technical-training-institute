@@ -28,7 +28,7 @@ export interface IRegistration extends Document {
   status: "Pending" | "Ongoing" | "Completed" | "Closed";
   certificateStatus: "Not Certified" | "Certified";
   certificateIssuedAt?: Date;
-  coursePriceType?: "rto" | "rtl";
+  coursePriceType?: "rto" | "rpl";
   originalPaymentAmount?: number;
   couponCode?: string;
   couponDiscount?: number;
@@ -82,7 +82,7 @@ const RegistrationSchema = new Schema<IRegistration>(
     certificateIssuedAt: { type: Date },
     coursePriceType: {
       type: String,
-      enum: ["rto", "rtl"],
+      enum: ["rto", "rpl"],
       default: "rto",
     },
     originalPaymentAmount: { type: Number, default: 0 },

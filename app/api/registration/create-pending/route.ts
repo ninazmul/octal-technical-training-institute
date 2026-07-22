@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false });
     }
 
-    const coursePriceType = body.coursePriceType === "rtl" ? "rtl" : "rto";
+    const coursePriceType = body.coursePriceType === "rpl" ? "rpl" : "rto";
     const originalAmount =
-      coursePriceType === "rtl" && course.rtlPrice
-        ? course.rtlPrice
-        : course.discountPrice ?? course.price;
+      coursePriceType === "rpl" && course.rplPrice
+        ? course.rplPrice
+        : (course.discountPrice ?? course.price);
     const couponCode =
       typeof body.couponCode === "string" ? body.couponCode.trim() : "";
     const couponResult = couponCode

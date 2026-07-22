@@ -21,7 +21,7 @@ export interface ICourse extends Document {
   // Pricing & Seats
   price: number;
   discountPrice?: number;
-  rtlPrice?: number;
+  rplPrice?: number;
   seats: number;
   certification?: string;
 
@@ -55,7 +55,7 @@ export interface ICourseSafe {
   modules: { title: string; content: string }[];
   price: number;
   discountPrice?: number;
-  rtlPrice?: number;
+  rplPrice?: number;
   seats?: number;
   certification?: string;
   isActive?: boolean;
@@ -97,7 +97,7 @@ const CourseSchema = new Schema<ICourse>(
     // Pricing & Seats
     price: { type: Number, required: true },
     discountPrice: { type: Number },
-    rtlPrice: { type: Number },
+    rplPrice: { type: Number },
     seats: { type: Number, required: true, default: 0 },
     certification: { type: String },
 

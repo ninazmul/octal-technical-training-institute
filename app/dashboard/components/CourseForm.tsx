@@ -43,7 +43,7 @@ const courseFormSchema = z.object({
     .min(1, "At least one module is required"),
   price: z.coerce.number().min(0, "Price is required"),
   discountPrice: z.coerce.number().optional(),
-  rtlPrice: z.coerce.number().optional(),
+  rplPrice: z.coerce.number().optional(),
   seats: z.coerce.number().min(0, "Seats are required"),
   isActive: z.boolean().default(true),
   batch: z.string().optional(),
@@ -90,7 +90,7 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
     modules: course?.modules || [{ title: "", content: "" }],
     price: course?.price || 0,
     discountPrice: course?.discountPrice ?? 0,
-    rtlPrice: course?.rtlPrice ?? 0,
+    rplPrice: course?.rplPrice ?? 0,
     seats: course?.seats || 0,
     isActive: course?.isActive ?? true,
     batch: course?.batch || "",
@@ -173,8 +173,8 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
               <FormControl>
                 <select
                   {...field}
+                  value={field.value ?? ""}
                   className="w-full border rounded px-3 py-2"
-                  defaultValue={field.value || ""}
                 >
                   <option value="" disabled>
                     Select a category
@@ -217,8 +217,8 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                 <FormControl>
                   <select
                     {...field}
+                    value={field.value ?? ""}
                     className="w-full border rounded px-3 py-2"
-                    defaultValue={field.value || "Online"}
                   >
                     <option value="Online">Online</option>
                     <option value="Offline">Offline</option>
@@ -238,8 +238,8 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
                 <FormControl>
                   <select
                     {...field}
+                    value={field.value ?? ""}
                     className="w-full border rounded px-3 py-2"
-                    value={field.value || "Institution"}
                   >
                     <option value="NSDA">NSDA</option>
                     <option value="BITM">BITM</option>
@@ -411,10 +411,10 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
           />
           <FormField
             control={form.control}
-            name="rtlPrice"
+            name="rplPrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>RTL Price</FormLabel>
+                <FormLabel>RPL Price</FormLabel>
                 <FormControl>
                   <Input
                     type="number"

@@ -36,7 +36,7 @@ const registrationFormSchema = z.object({
   institution: z.string().min(1, "Institution is required"),
   address: z.string().min(1, "Address is required"),
   photo: z.string().min(1, "Photo is required"),
-  coursePriceType: z.enum(["rto", "rtl"]),
+  coursePriceType: z.enum(["rto", "rpl"]),
   couponCode: z.string().optional(),
   paymentAmount: z.number(), // new field
 });
@@ -59,12 +59,13 @@ export default function RegistrationForm({
 }: RegistrationFormProps) {
   // const router = useRouter();
   const { startUpload } = useUploadThing("mediaUploader");
-  const hasRtlPrice = typeof course.rtlPrice === "number" && course.rtlPrice > 0;
-  const getBaseAmount = (type: "rto" | "rtl") =>
-    type === "rtl" && hasRtlPrice
-      ? course.rtlPrice ?? 0
-      : course.discountPrice ?? course.price;
-  const [coursePriceType, setCoursePriceType] = useState<"rto" | "rtl">("rto");
+  const hasRplPrice =
+    typeof course.rplPrice === "number" && course.rplPrice > 0;
+  const getBaseAmount = (type: "rto" | "rpl") =>
+    type === "rpl" && hasRplPrice
+      ? (course.rplPrice ?? 0)
+      : (course.discountPrice ?? course.price);
+  const [coursePriceType, setCoursePriceType] = useState<"rto" | "rpl">("rto");
   const baseAmount = getBaseAmount(coursePriceType);
   const [couponPreview, setCouponPreview] = useState<CouponPreview | null>(
     null,
@@ -97,7 +98,7 @@ export default function RegistrationForm({
     form.setValue("paymentAmount", amount);
   }
 
-  function handleCoursePriceTypeChange(nextType: "rto" | "rtl") {
+  function handleCoursePriceTypeChange(nextType: "rto" | "rpl") {
     setCoursePriceType(nextType);
     form.setValue("coursePriceType", nextType);
     resetCouponForAmount(getBaseAmount(nextType));
@@ -247,7 +248,7 @@ export default function RegistrationForm({
                     value={coursePriceType}
                     onChange={(event) =>
                       handleCoursePriceTypeChange(
-                        event.target.value as "rto" | "rtl",
+                        event.target.value as "rto" | "rpl",
                       )
                     }
                     className="w-full border rounded px-3 py-2 bg-white"
@@ -256,10 +257,10 @@ export default function RegistrationForm({
                       RTO Price (Long course) - ৳
                       {(course.discountPrice ?? course.price).toLocaleString()}
                     </option>
-                    <option value="rtl" disabled={!hasRtlPrice}>
-                      RTL Price (Quick examination)
-                      {hasRtlPrice
-                        ? ` - ৳${course.rtlPrice?.toLocaleString()}`
+                    <option value="rpl" disabled={!hasRplPrice}>
+                      RPL Price (Quick examination)
+                      {hasRplPrice
+                        ? ` - ৳${course.rplPrice?.toLocaleString()}`
                         : " - Not available"}
                     </option>
                   </select>
@@ -269,9 +270,7 @@ export default function RegistrationForm({
             )}
           />
           <div className="flex justify-between text-sm">
-            <span>
-              {coursePriceType === "rtl" ? "RTL price" : "RTO price"}
-            </span>
+            <span>{coursePriceType === "rpl" ? "rpl price" : "RTO price"}</span>
             <span>৳{baseAmount.toLocaleString()}</span>
           </div>
           {couponPreview && (
@@ -283,8 +282,7 @@ export default function RegistrationForm({
           <div className="flex justify-between font-semibold">
             <span>Payable amount</span>
             <span>
-              ৳
-              {(couponPreview?.finalAmount ?? baseAmount).toLocaleString()}
+              ৳{(couponPreview?.finalAmount ?? baseAmount).toLocaleString()}
             </span>
           </div>
         </div>

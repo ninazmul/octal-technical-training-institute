@@ -17,7 +17,7 @@ export type CourseParams = {
   modules: { title: string; content: string }[];
   price: number;
   discountPrice?: number;
-  rtlPrice?: number;
+  rplPrice?: number;
   seats?: number;
   certification?: string;
   isActive?: boolean;
@@ -94,7 +94,11 @@ export const createCourse = async (
     const newCourse = await Course.create(data);
 
     if (newCourse) {
-      await logActivity("CREATE", "Course", `Created course '${newCourse.title}'`);
+      await logActivity(
+        "CREATE",
+        "Course",
+        `Created course '${newCourse.title}'`,
+      );
     }
 
     return newCourse ? sanitizeCourse(newCourse) : undefined;
@@ -114,7 +118,7 @@ export const getCourseById = async (
         const course = await Course.findById(courseId)
           .select(
             `
-            title category photo price discountPrice rtlPrice seats batch
+            title category photo price discountPrice rplPrice seats batch
             courseStartDate duration sessions registrationDeadline
             prerequisites description modules schedule isActive sku
           `,
@@ -150,7 +154,7 @@ export const searchCourses = async (query: string): Promise<ICourseSafe[]> => {
     })
       .limit(10)
       .select(
-        "title category photo price discountPrice rtlPrice seats duration courseStartDate registrationDeadline sku batch",
+        "title category photo price discountPrice rplPrice seats duration courseStartDate registrationDeadline sku batch",
       )
       .lean<ICourse[]>();
 
@@ -173,7 +177,11 @@ export const updateCourse = async (
     }).lean<ICourse>();
     if (!updatedCourse) throw new Error("Course not found");
 
-    await logActivity("UPDATE", "Course", `Updated course '${updatedCourse.title}'`);
+    await logActivity(
+      "UPDATE",
+      "Course",
+      `Updated course '${updatedCourse.title}'`,
+    );
 
     return updatedCourse;
   } catch (error) {
@@ -191,7 +199,11 @@ export const toggleCourseStatus = async (
     course.isActive = !course.isActive;
     await course.save();
 
-    await logActivity("TOGGLE_STATUS", "Course", `Toggled active status of course '${course.title}' to ${course.isActive}`);
+    await logActivity(
+      "TOGGLE_STATUS",
+      "Course",
+      `Toggled active status of course '${course.title}' to ${course.isActive}`,
+    );
 
     return course.toObject() as ICourse;
   } catch (error) {
@@ -211,7 +223,11 @@ export const deleteCourse = async (
     const deletedCourse = await Course.findByIdAndDelete(courseId).lean();
     if (!deletedCourse) throw new Error("Course not found");
 
-    await logActivity("DELETE", "Course", `Deleted course '${courseToDelete.title}'`);
+    await logActivity(
+      "DELETE",
+      "Course",
+      `Deleted course '${courseToDelete.title}'`,
+    );
 
     return { message: "Course deleted successfully" };
   } catch (error) {
