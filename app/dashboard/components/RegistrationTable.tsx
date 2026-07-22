@@ -384,7 +384,6 @@ export const RegistrationTable: React.FC<Props> = ({ registrations }) => {
       { header: "Registration No", value: (r) => r.registrationNumber },
       { header: "Name", value: (r) => r.englishName },
       { header: "Email", value: (r) => r.email },
-      { header: "Phone", value: (r) => r.number },
       { header: "WhatsApp", value: (r) => r.whatsApp },
       { header: "Batch", value: (r) => getCourseBatch(r.course) },
       { header: "SKU", value: (r) => getCourseSku(r.course) },
