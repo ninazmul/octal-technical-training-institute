@@ -87,8 +87,19 @@ export async function startOrResumeExam({
         };
       }
 
-      // Check if time has expired
-      if (now > new Date(attempt.effectiveDeadline)) {
+      // Align the attempt to the shared examination window so every
+      // participant is dismissed at the same moment.
+      const sharedDeadline = new Date(olympiad.examEndDate);
+      if (
+        new Date(attempt.effectiveDeadline).getTime() !==
+        sharedDeadline.getTime()
+      ) {
+        attempt.effectiveDeadline = sharedDeadline;
+        await attempt.save();
+      }
+
+      // Check if the shared window has expired
+      if (now > sharedDeadline) {
         // Automatically finalize timed-out attempt
         await finalizeAttemptInternal(attempt._id.toString(), "timed_out");
         return {
@@ -109,7 +120,7 @@ export async function startOrResumeExam({
         studentName: attempt.studentName,
         registrationNumber: registration.registrationNumber,
         startedAt: attempt.startedAt,
-        effectiveDeadline: attempt.effectiveDeadline,
+        effectiveDeadline: sharedDeadline,
         serverTime: now,
         durationMinutes: olympiad.durationMinutes,
         allowBackNavigation: olympiad.allowBackNavigation,
@@ -118,14 +129,10 @@ export async function startOrResumeExam({
       };
     }
 
-    // 4. Create new Attempt with authoritative server timing
-    // Effective deadline = min(now + duration, examEndDate)
-    const allowedDurationMs = olympiad.durationMinutes * 60 * 1000;
-    const durationDeadline = new Date(now.getTime() + allowedDurationMs);
-    const examEnd = new Date(olympiad.examEndDate);
-
-    const effectiveDeadline =
-      durationDeadline < examEnd ? durationDeadline : examEnd;
+    // 4. Create new Attempt bound to the shared authoritative window.
+    // Every participant is admitted into one common examination window that
+    // closes at examEndDate — late entrants simply have less time remaining.
+    const effectiveDeadline = new Date(olympiad.examEndDate);
 
     attempt = await OlympiadAttempt.create({
       olympiadId: olympiad._id,
@@ -232,6 +239,85 @@ export async function submitExamAttempt(attemptId: string) {
     return await finalizeAttemptInternal(attemptId, "submitted");
   } catch (error) {
     handleError(error);
+  }
+}
+
+// -------------------- Proctoring / Anti-Cheat --------------------
+
+/**
+ * Records a blocked integrity violation (copy, print, screenshot shortcut,
+ * context menu, dev-tools) without ending the session.
+ */
+export async function logProctoringViolation({
+  attemptId,
+  type,
+  detail,
+}: {
+  attemptId: string;
+  type: string;
+  detail?: string;
+}) {
+  try {
+    await connectToDatabase();
+
+    const updated = await OlympiadAttempt.findOneAndUpdate(
+      { _id: attemptId, status: "in_progress" },
+      { $push: { "proctoring.violations": { type, detail, at: new Date() } } },
+      { new: true },
+    );
+
+    if (!updated) {
+      return { success: false, reason: "Attempt is no longer active." };
+    }
+
+    return {
+      success: true,
+      violationCount: updated.proctoring?.violations?.length ?? 0,
+    };
+  } catch (error) {
+    handleError(error);
+    return { success: false, reason: "Failed to record violation." };
+  }
+}
+
+/**
+ * Maximum-strictness enforcement: the first critical violation (leaving the
+ * exam tab, window blur, exiting fullscreen, printing) immediately finalises
+ * the attempt and flags it for administrative review.
+ */
+export async function terminateAttemptForViolation({
+  attemptId,
+  type,
+  detail,
+}: {
+  attemptId: string;
+  type: string;
+  detail?: string;
+}) {
+  try {
+    await connectToDatabase();
+
+    const flagged = await OlympiadAttempt.findOneAndUpdate(
+      { _id: attemptId, status: "in_progress" },
+      {
+        $push: { "proctoring.violations": { type, detail, at: new Date() } },
+        $set: {
+          "proctoring.terminated": true,
+          "proctoring.terminationReason": detail || type,
+        },
+      },
+      { new: true },
+    );
+
+    if (!flagged) {
+      return { success: true, alreadyFinalized: true, terminated: true };
+    }
+
+    const result = await finalizeAttemptInternal(attemptId, "submitted");
+    return { ...(result || {}), terminated: true };
+  } catch (error) {
+    handleError(error);
+    return { success: false, terminated: true };
   }
 }
 

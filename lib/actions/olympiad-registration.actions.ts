@@ -8,7 +8,12 @@ import OlympiadRegistration, {
 import Olympiad, { IOlympiad } from "@/lib/database/models/olympiad.model";
 import Counter from "@/lib/database/models/counter.model";
 import { getOlympiadLifecycleState } from "@/lib/olympiad-lifecycle";
-import { dispatchRegistrationConfirmation } from "@/lib/mailer/olympiad-notifications";
+import {
+  createOlympiadTransporter,
+  dispatchRegistrationConfirmation,
+  sendOlympiadEmail,
+  sendOlympiadSMS,
+} from "@/lib/mailer/olympiad-notifications";
 import { logActivity } from "@/lib/actions/activity-log.actions";
 import { handleError } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
@@ -38,6 +43,23 @@ function validateBangladeshPhone(phone: string): boolean {
 
 function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
+ * Runs tasks in fixed-size batches so a bulk dispatch never opens hundreds of
+ * SMTP / gateway connections at the same instant. Returns the success count.
+ */
+async function runInBatches<T>(
+  items: T[],
+  batchSize: number,
+  task: (item: T) => Promise<boolean>,
+): Promise<number> {
+  let succeeded = 0;
+  for (let i = 0; i < items.length; i += batchSize) {
+    const results = await Promise.all(items.slice(i, i + batchSize).map(task));
+    succeeded += results.filter(Boolean).length;
+  }
+  return succeeded;
 }
 
 export async function registerForOlympiad(data: RegistrationInput) {
@@ -247,5 +269,129 @@ export async function cancelRegistrationAdmin(registrationId: string) {
     return { success: true };
   } catch (error) {
     handleError(error);
+  }
+}
+
+// -------------------- Admin Bulk Messaging --------------------
+
+/**
+ * Sends a bulk SMS or email to selected confirmed registrants of an Olympiad,
+ * using each participant's registered contact details. Every dispatch is
+ * recorded in the Olympiad notification log for auditing.
+ */
+export async function sendBulkMessageToRegistrants({
+  olympiadId,
+  registrationIds,
+  channel,
+  subject,
+  html,
+  message,
+}: {
+  olympiadId: string;
+  registrationIds: string[];
+  channel: "email" | "sms";
+  subject?: string;
+  html?: string;
+  message?: string;
+}): Promise<{
+  success: boolean;
+  sent: number;
+  failed: number;
+  total: number;
+  error?: string;
+}> {
+  try {
+    const { sessionClaims } = await auth();
+    const userId = sessionClaims?.userId as string;
+    const adminEmail = await getUserEmailById(userId);
+    if (!adminEmail || !(await isAdmin(adminEmail))) {
+      throw new Error("Forbidden: Admin privileges required");
+    }
+
+    await connectToDatabase();
+
+    if (!registrationIds?.length) {
+      throw new Error("Select at least one participant.");
+    }
+
+    const recipients = await OlympiadRegistration.find({
+      _id: { $in: registrationIds },
+      olympiadId,
+      status: "Confirmed",
+    }).lean<IOlympiadRegistration[]>();
+
+    if (recipients.length === 0) {
+      throw new Error("No confirmed registrations matched the selection.");
+    }
+
+    // Unique per dispatch so admins can legitimately re-send the same message.
+    const batchKey = Date.now();
+    let sent = 0;
+
+    if (channel === "email") {
+      if (!subject?.trim() || !html?.trim()) {
+        throw new Error("Email subject and body are required.");
+      }
+
+      const transporter = createOlympiadTransporter();
+      if (!transporter) {
+        throw new Error("SMTP credentials are not configured on the server.");
+      }
+
+      const targetSubject = subject.trim();
+      const targetHtml = html;
+
+      sent = await runInBatches(recipients, 5, (reg) =>
+        sendOlympiadEmail({
+          olympiadId,
+          email: reg.email,
+          recipientName: reg.studentName,
+          subject: targetSubject,
+          htmlContent: targetHtml,
+          type: "CUSTOM",
+          idempotencyKey: `CUSTOM_EMAIL_${String(reg._id)}_${batchKey}`,
+          transporter,
+        }),
+      );
+    } else {
+      if (!message?.trim()) {
+        throw new Error("SMS message is required.");
+      }
+
+      const targetMessage = message.trim();
+
+      sent = await runInBatches(recipients, 10, (reg) =>
+        sendOlympiadSMS({
+          olympiadId,
+          number: reg.phoneNumber,
+          message: targetMessage,
+          type: "CUSTOM",
+          idempotencyKey: `CUSTOM_SMS_${String(reg._id)}_${batchKey}`,
+          recipientName: reg.studentName,
+        }),
+      );
+    }
+
+    await logActivity(
+      "UPDATE",
+      "OlympiadRegistration",
+      `Sent bulk ${channel.toUpperCase()} to ${sent}/${recipients.length} participant(s) of Olympiad ${olympiadId}`,
+    );
+
+    return {
+      success: true,
+      sent,
+      failed: recipients.length - sent,
+      total: recipients.length,
+    };
+  } catch (error: any) {
+    handleError(error);
+    return {
+      success: false,
+      sent: 0,
+      failed: 0,
+      total: 0,
+      error: error?.message || "Failed to send bulk message.",
+    };
   }
 }

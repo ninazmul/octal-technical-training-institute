@@ -10,9 +10,19 @@ import {
 import {
   updateOlympiad,
 } from "@/lib/actions/olympiad.actions";
-import { cancelRegistrationAdmin } from "@/lib/actions/olympiad-registration.actions";
+import { cancelRegistrationAdmin, sendBulkMessageToRegistrants } from "@/lib/actions/olympiad-registration.actions";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 import { exportRowsToCsv } from "@/lib/export.client";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { RichTextEditor } from "@/components/shared/RichTextEditor";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,6 +40,10 @@ import {
   RefreshCw,
   ExternalLink,
   Edit,
+  Mail,
+  MessageSquare,
+  Send,
+  ShieldAlert,
 } from "lucide-react";
 
 interface OlympiadHubProps {
@@ -53,6 +67,15 @@ export default function OlympiadHub({
   // Registration Filter & Search
   const [regSearch, setRegSearch] = useState("");
   const [regGradeFilter, setRegGradeFilter] = useState("all");
+
+  // Bulk Messaging State
+  const [selectedRegs, setSelectedRegs] = useState<string[]>([]);
+  const [msgModalOpen, setMsgModalOpen] = useState(false);
+  const [msgChannel, setMsgChannel] = useState<"email" | "sms">("email");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailHtml, setEmailHtml] = useState("");
+  const [smsMessage, setSmsMessage] = useState("");
+  const [isSendingMsg, setIsSendingMsg] = useState(false);
 
   // Manual Grading State
   const [evaluatingAttemptId, setEvaluatingAttemptId] = useState<string | null>(
@@ -82,6 +105,71 @@ export default function OlympiadHub({
 
     return matchesSearch && matchesGrade;
   });
+
+  // Selections are tracked by id so they survive search/filter changes.
+  const selectedRegRows = registrations.filter((r) =>
+    selectedRegs.includes(r._id),
+  );
+  const allFilteredSelected =
+    filteredRegistrations.length > 0 &&
+    filteredRegistrations.every((r) => selectedRegs.includes(r._id));
+
+  const toggleRegSelection = (id: string, checked: boolean) => {
+    setSelectedRegs((prev) =>
+      checked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
+  };
+
+  const toggleSelectAllFiltered = (checked: boolean) => {
+    if (checked) {
+      setSelectedRegs((prev) =>
+        Array.from(
+          new Set([...prev, ...filteredRegistrations.map((r) => r._id)]),
+        ),
+      );
+    } else {
+      const filteredIds = new Set(filteredRegistrations.map((r) => r._id));
+      setSelectedRegs((prev) => prev.filter((id) => !filteredIds.has(id)));
+    }
+  };
+
+  const handleSendBulkMessage = async () => {
+    if (selectedRegs.length === 0) {
+      toast.error("Select at least one participant.");
+      return;
+    }
+
+    setIsSendingMsg(true);
+    try {
+      const res = await sendBulkMessageToRegistrants({
+        olympiadId: olympiad._id,
+        registrationIds: selectedRegs,
+        channel: msgChannel,
+        subject: emailSubject,
+        html: emailHtml,
+        message: smsMessage,
+      });
+
+      if (!res?.success) {
+        throw new Error(res?.error || "Failed to send messages.");
+      }
+
+      toast.success(
+        `Sent ${res.sent}/${res.total} ${
+          msgChannel === "email" ? "email(s)" : "SMS"
+        }${res.failed ? ` • ${res.failed} failed` : ""}`,
+      );
+      setMsgModalOpen(false);
+      setEmailSubject("");
+      setEmailHtml("");
+      setSmsMessage("");
+      setSelectedRegs([]);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send messages.");
+    } finally {
+      setIsSendingMsg(false);
+    }
+  };
 
   // Descriptive answers pending evaluation
   const pendingEvaluationAttempts = attempts.filter(
@@ -126,6 +214,15 @@ export default function OlympiadHub({
         { header: "Correct Count", value: (a) => a.correctCount },
         { header: "Incorrect Count", value: (a) => a.incorrectCount },
         { header: "Status", value: (a) => a.status },
+        {
+          header: "Integrity Flags",
+          value: (a) =>
+            a.proctoring?.terminated
+              ? "TERMINATED"
+              : a.proctoring?.violations?.length
+                ? `${a.proctoring.violations.length} flag(s)`
+                : "Clean",
+        },
         {
           header: "Submitted At",
           value: (a) => formatDhakaDateTime(a.submittedAt),
@@ -403,6 +500,14 @@ export default function OlympiadHub({
               </select>
 
               <button
+                onClick={() => setMsgModalOpen(true)}
+                disabled={selectedRegs.length === 0}
+                className="bg-primary text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send className="w-4 h-4" /> Bulk Message ({selectedRegs.length})
+              </button>
+
+              <button
                 onClick={handleExportRegistrations}
                 className="border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1.5 transition"
               >
@@ -415,6 +520,15 @@ export default function OlympiadHub({
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 border-b text-gray-600 text-xs uppercase font-medium">
                 <tr>
+                  <th className="py-3 px-4 w-10">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all filtered registrations"
+                      checked={allFilteredSelected}
+                      onChange={(e) => toggleSelectAllFiltered(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                    />
+                  </th>
                   <th className="py-3 px-4">Reg No</th>
                   <th className="py-3 px-4">Student Name</th>
                   <th className="py-3 px-4">Contact Info</th>
@@ -426,13 +540,24 @@ export default function OlympiadHub({
               <tbody className="divide-y divide-gray-200">
                 {filteredRegistrations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-gray-400">
+                    <td colSpan={7} className="text-center py-8 text-gray-400">
                       No registrations found.
                     </td>
                   </tr>
                 ) : (
                   filteredRegistrations.map((reg) => (
                     <tr key={reg._id} className="hover:bg-gray-50/50">
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${reg.studentName}`}
+                          checked={selectedRegs.includes(reg._id)}
+                          onChange={(e) =>
+                            toggleRegSelection(reg._id, e.target.checked)
+                          }
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        />
+                      </td>
                       <td className="py-3 px-4 font-mono font-semibold text-primary text-xs">
                         {reg.registrationNumber}
                       </td>
@@ -512,13 +637,14 @@ export default function OlympiadHub({
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Score</th>
                   <th className="py-3 px-4">Accuracy</th>
+                  <th className="py-3 px-4">Integrity</th>
                   <th className="py-3 px-4">Timing</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {attempts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-gray-400">
+                    <td colSpan={7} className="text-center py-8 text-gray-400">
                       No attempts recorded yet.
                     </td>
                   </tr>
@@ -556,6 +682,23 @@ export default function OlympiadHub({
                           {att.incorrectCount} wrong
                         </span>{" "}
                         • {att.unansweredCount} skipped
+                      </td>
+                      <td className="py-3 px-4">
+                        {att.proctoring?.terminated ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700">
+                            <ShieldAlert className="w-3.5 h-3.5" /> Terminated
+                          </span>
+                        ) : att.proctoring?.violations?.length ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">
+                            <ShieldAlert className="w-3.5 h-3.5" />
+                            {att.proctoring.violations.length} flag
+                            {att.proctoring.violations.length > 1 ? "s" : ""}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">
+                            Clean
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-xs text-gray-500">
                         Submitted:{" "}
@@ -861,6 +1004,111 @@ export default function OlympiadHub({
           </div>
         </div>
       )}
+
+      {/* Bulk Messaging Dialog */}
+      <Dialog open={msgModalOpen} onOpenChange={setMsgModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Message Participants</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg w-fit">
+              <button
+                type="button"
+                onClick={() => setMsgChannel("email")}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition ${
+                  msgChannel === "email"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <Mail className="w-4 h-4" /> Email
+              </button>
+              <button
+                type="button"
+                onClick={() => setMsgChannel("sms")}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition ${
+                  msgChannel === "sms"
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" /> SMS
+              </button>
+            </div>
+
+            <div className="text-xs text-gray-500 bg-gray-50 border rounded-lg px-3 py-2">
+              Sending to{" "}
+              <strong className="text-gray-700">{selectedRegRows.length}</strong>{" "}
+              selected participant
+              {selectedRegRows.length === 1 ? "" : "s"}. Recipients without a
+              valid {msgChannel === "email" ? "email address" : "phone number"}{" "}
+              will be skipped automatically.
+            </div>
+
+            {msgChannel === "email" ? (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Subject
+                  </label>
+                  <Input
+                    placeholder="e.g. Olympiad Exam Schedule Update"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Message
+                  </label>
+                  <RichTextEditor value={emailHtml} onChange={setEmailHtml} />
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  SMS Message
+                </label>
+                <textarea
+                  rows={4}
+                  maxLength={320}
+                  placeholder="Type your SMS message..."
+                  value={smsMessage}
+                  onChange={(e) => setSmsMessage(e.target.value)}
+                  className="w-full border rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+                <div className="text-xs text-gray-400 mt-1 text-right">
+                  {smsMessage.length}/320 characters
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMsgModalOpen(false)}
+              disabled={isSendingMsg}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSendBulkMessage}
+              disabled={isSendingMsg}
+              className="flex items-center gap-1.5"
+            >
+              <Send className="w-4 h-4" />
+              {isSendingMsg
+                ? "Sending..."
+                : `Send ${msgChannel === "email" ? "Email" : "SMS"}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

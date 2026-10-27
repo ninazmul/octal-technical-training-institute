@@ -5,6 +5,8 @@ import {
   startOrResumeExam,
   autosaveAnswer,
   submitExamAttempt,
+  logProctoringViolation,
+  terminateAttemptForViolation,
 } from "@/lib/actions/olympiad-exam.actions";
 import { getQuestionsForExamStudent } from "@/lib/actions/olympiad-question.actions";
 import toast from "react-hot-toast";
@@ -20,6 +22,9 @@ import {
   Save,
   HelpCircle,
   ShieldCheck,
+  ShieldAlert,
+  Lock,
+  Maximize,
   User,
   ArrowRight,
 } from "lucide-react";
@@ -70,6 +75,190 @@ export default function OlympiadExamEngine({
 
   // Debounce ref for text answers
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ---- Proctoring / anti-cheat state ----
+  const [supportsFullscreen, setSupportsFullscreen] = useState(false);
+  const [fullscreenActive, setFullscreenActive] = useState(false);
+  const [violationNotice, setViolationNotice] = useState("");
+  const terminatedRef = useRef(false);
+  const lastLoggedRef = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    setSupportsFullscreen(
+      typeof document !== "undefined" &&
+        typeof document.documentElement.requestFullscreen === "function",
+    );
+  }, []);
+
+  // Ends the attempt immediately after a critical integrity violation.
+  const terminateForViolation = useCallback(
+    async (type: string, detail: string) => {
+      const attemptId = sessionData?.attemptId;
+      if (terminatedRef.current || !attemptId) return;
+      terminatedRef.current = true;
+
+      try {
+        await terminateAttemptForViolation({ attemptId, type, detail });
+      } catch {
+        // Attempt is already finalised server-side.
+      } finally {
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        setSubmittedAttempt({ status: "terminated", reason: detail });
+        setStage("submitted");
+        toast.error(detail);
+      }
+    },
+    [sessionData?.attemptId],
+  );
+
+  // Enforce the examination integrity rules while the test is live.
+  // Enforcement arms only once full-screen is active so the transition itself
+  // cannot be mistaken for a violation.
+  useEffect(() => {
+    if (stage !== "exam") return;
+    if (supportsFullscreen && !fullscreenActive) return;
+
+    const logOnce = (type: string, detail: string) => {
+      const now = Date.now();
+      if (now - (lastLoggedRef.current[type] || 0) < 3000) return;
+      lastLoggedRef.current[type] = now;
+      const attemptId = sessionData?.attemptId;
+      if (attemptId) {
+        logProctoringViolation({ attemptId, type, detail }).catch(() => {});
+      }
+      setViolationNotice(detail);
+      setTimeout(() => setViolationNotice(""), 4000);
+    };
+
+    const onBlocked = (type: string, detail: string) => (e: Event) => {
+      e.preventDefault();
+      logOnce(type, detail);
+    };
+
+    const onCopy = onBlocked(
+      "copy_attempt",
+      "Copying examination content is not allowed.",
+    );
+    const onCut = onBlocked(
+      "copy_attempt",
+      "Cutting examination content is not allowed.",
+    );
+    const onPaste = onBlocked(
+      "paste_attempt",
+      "Pasting content into the examination is not allowed.",
+    );
+    const onContextMenu = onBlocked(
+      "context_menu",
+      "Right-click is disabled during the examination.",
+    );
+    const onDragStart = onBlocked(
+      "copy_attempt",
+      "Dragging examination content is not allowed.",
+    );
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const key = e.key;
+      const ctrl = e.ctrlKey || e.metaKey;
+
+      if (key === "PrintScreen") {
+        e.preventDefault();
+        logOnce(
+          "screenshot_attempt",
+          "Screenshots are not allowed during the examination.",
+        );
+        return;
+      }
+
+      if (key === "F12" || (ctrl && e.shiftKey && ["i", "j", "c"].includes(key.toLowerCase()))) {
+        e.preventDefault();
+        logOnce("devtools_attempt", "Developer tools are not allowed.");
+        return;
+      }
+
+      if (ctrl && ["c", "x", "v", "a", "s", "p", "u"].includes(key.toLowerCase())) {
+        e.preventDefault();
+        logOnce(
+          "shortcut_blocked",
+          `Keyboard shortcut Ctrl/Cmd+${key.toUpperCase()} is disabled.`,
+        );
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        terminateForViolation(
+          "tab_switch",
+          "You switched away from the examination tab. Your exam has been submitted automatically.",
+        );
+      }
+    };
+
+    const onWindowBlur = () => {
+      terminateForViolation(
+        "window_blur",
+        "You left the examination window. Your exam has been submitted automatically.",
+      );
+    };
+
+    const onFullscreenChange = () => {
+      const active = Boolean(document.fullscreenElement);
+      setFullscreenActive(active);
+      if (!active && supportsFullscreen) {
+        terminateForViolation(
+          "fullscreen_exit",
+          "You exited full-screen mode. Your exam has been submitted automatically.",
+        );
+      }
+    };
+
+    const onBeforePrint = () => {
+      terminateForViolation(
+        "print_attempt",
+        "Printing is not allowed during the examination.",
+      );
+    };
+
+    document.addEventListener("copy", onCopy);
+    document.addEventListener("cut", onCut);
+    document.addEventListener("paste", onPaste);
+    document.addEventListener("contextmenu", onContextMenu);
+    document.addEventListener("dragstart", onDragStart);
+    document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    window.addEventListener("blur", onWindowBlur);
+    window.addEventListener("beforeprint", onBeforePrint);
+
+    return () => {
+      document.removeEventListener("copy", onCopy);
+      document.removeEventListener("cut", onCut);
+      document.removeEventListener("paste", onPaste);
+      document.removeEventListener("contextmenu", onContextMenu);
+      document.removeEventListener("dragstart", onDragStart);
+      document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      window.removeEventListener("blur", onWindowBlur);
+      window.removeEventListener("beforeprint", onBeforePrint);
+    };
+  }, [
+    stage,
+    sessionData?.attemptId,
+    supportsFullscreen,
+    fullscreenActive,
+    terminateForViolation,
+  ]);
+
+  const enterFullscreen = async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+      setFullscreenActive(true);
+    } catch {
+      toast.error("Full-screen mode is required to continue the examination.");
+    }
+  };
 
   // 1. Enter Exam Gate
   const handleStartExam = async (e: React.FormEvent) => {
@@ -275,6 +464,11 @@ export default function OlympiadExamEngine({
             ? "Time expired! Examination submitted automatically."
             : "Examination submitted successfully!",
         );
+        // Normal completion: leave full-screen without tripping the proctoring guard.
+        terminatedRef.current = true;
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
         setSubmittedAttempt(res.attempt);
         setStage("submitted");
       }
@@ -310,6 +504,26 @@ export default function OlympiadExamEngine({
           </div>
         )}
 
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-left space-y-2">
+          <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wide">
+            <ShieldAlert className="w-4 h-4" /> Examination Integrity Rules
+          </div>
+          <ul className="text-[11px] text-amber-900/90 space-y-1 list-disc pl-4">
+            <li>
+              All participants sit the <strong>same examination</strong> within
+              one common window; the countdown is the shared remaining time.
+            </li>
+            <li>
+              The test runs in <strong>full-screen</strong>. Leaving full-screen
+              or switching tab/window submits your exam immediately.
+            </li>
+            <li>
+              Copying, pasting, right-click, screenshot and print shortcuts are
+              blocked and recorded for review.
+            </li>
+          </ul>
+        </div>
+
         <form onSubmit={handleStartExam} className="space-y-4 text-left">
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">
@@ -340,8 +554,9 @@ export default function OlympiadExamEngine({
         </form>
 
         <div className="text-[11px] text-gray-400 border-t pt-3">
-          Authoritative server timer begins immediately upon initial test entry.
-          Page refreshes will not reset your allotted time.
+          This is a common examination window shared by all participants. The
+          authoritative server timer counts down to the shared deadline and page
+          refreshes will not reset it.
         </div>
       </div>
     );
@@ -349,26 +564,44 @@ export default function OlympiadExamEngine({
 
   // ==================== STAGE: SUBMITTED ====================
   if (stage === "submitted") {
+    const isTerminated = submittedAttempt?.status === "terminated";
+
     return (
       <div className="max-w-xl mx-auto my-12 bg-white p-8 md:p-10 rounded-3xl border border-gray-200 shadow-sm text-center space-y-6">
-        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle2 className="w-10 h-10" />
+        <div
+          className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${
+            isTerminated
+              ? "bg-red-100 text-red-600"
+              : "bg-green-100 text-green-600"
+          }`}
+        >
+          {isTerminated ? (
+            <ShieldAlert className="w-10 h-10" />
+          ) : (
+            <CheckCircle2 className="w-10 h-10" />
+          )}
         </div>
 
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-green-600">
-            Session Completed
+          <span
+            className={`text-xs font-bold uppercase tracking-wider ${
+              isTerminated ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {isTerminated ? "Session Terminated" : "Session Completed"}
           </span>
           <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mt-1">
-            Examination Submitted!
+            {isTerminated ? "Examination Ended" : "Examination Submitted!"}
           </h2>
           <p className="text-sm text-gray-600 mt-2">
-            Your answers have been securely finalized and recorded on our
-            evaluation servers.
+            {isTerminated
+              ? submittedAttempt?.reason ||
+                "Your examination session was ended because an integrity rule was violated. This session has been recorded for review."
+              : "Your answers have been securely finalized and recorded on our evaluation servers."}
           </p>
         </div>
 
-        {submittedAttempt?.status === "evaluated" && (
+        {!isTerminated && submittedAttempt?.status === "evaluated" && (
           <div className="p-6 bg-blue-50/70 border border-blue-200 rounded-2xl text-left space-y-2">
             <div className="text-xs text-gray-500 font-semibold uppercase">
               Immediate Evaluation Result
@@ -422,6 +655,14 @@ export default function OlympiadExamEngine({
 
   return (
     <div className="max-w-6xl mx-auto my-4 space-y-4 px-2">
+      {/* Integrity warning banner */}
+      {violationNotice && (
+        <div className="sticky top-2 z-40 flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-300 text-red-700 text-xs font-semibold shadow-sm">
+          <ShieldAlert className="w-4 h-4 shrink-0" />
+          {violationNotice}
+        </div>
+      )}
+
       {/* Top Authoritative Bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-2 z-30">
         <div className="flex items-center gap-3">
@@ -438,6 +679,9 @@ export default function OlympiadExamEngine({
               <span className="text-green-600 font-medium flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 {isSaving ? "Saving..." : "Autosaved"}
+              </span>
+              <span className="text-primary font-medium flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" /> Proctored
               </span>
             </div>
           </div>
@@ -510,16 +754,17 @@ export default function OlympiadExamEngine({
               </div>
 
               {/* Question Text */}
-              <div className="text-base md:text-lg font-medium text-gray-900 leading-relaxed">
+              <div className="text-base md:text-lg font-medium text-gray-900 leading-relaxed select-none">
                 {currentQuestion.questionText}
               </div>
 
               {/* Optional Question Image */}
               {currentQuestion.image && (
-                <div className="rounded-xl overflow-hidden border max-w-md mx-auto">
+                <div className="rounded-xl overflow-hidden border max-w-md mx-auto select-none">
                   <img
                     src={currentQuestion.image}
                     alt="Question Diagram"
+                    draggable={false}
                     className="w-full object-contain"
                   />
                 </div>
@@ -548,7 +793,7 @@ export default function OlympiadExamEngine({
                             isMulti,
                           )
                         }
-                        className={`w-full p-4 rounded-xl border text-left flex items-center gap-3 transition ${
+                        className={`w-full p-4 rounded-xl border text-left flex items-center gap-3 transition select-none ${
                           isSelected
                             ? "bg-primary/5 border-primary text-gray-900 shadow-sm"
                             : "bg-gray-50/40 border-gray-200 text-gray-700 hover:bg-gray-50"
@@ -727,6 +972,35 @@ export default function OlympiadExamEngine({
           </div>
         </div>
       </div>
+
+      {/* Mandatory full-screen gate */}
+      {supportsFullscreen && !fullscreenActive && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl text-center space-y-5">
+            <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto">
+              <Lock className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Full-Screen Mode Required
+              </h3>
+              <p className="text-xs text-gray-600 mt-2">
+                The examination is locked until full-screen mode is active.
+                Exiting full-screen at any point will submit your exam
+                immediately.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={enterFullscreen}
+              className="w-full py-3 rounded-xl text-white font-bold text-sm shadow-md transition hover:opacity-95 flex items-center justify-center gap-2"
+              style={{ backgroundColor: themeColor }}
+            >
+              <Maximize className="w-4 h-4" /> Enter Full-Screen &amp; Continue
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       {showConfirmModal && (

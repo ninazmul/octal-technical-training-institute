@@ -3,6 +3,31 @@ import { connectToDatabase } from "@/lib/database";
 import OlympiadNotificationLog from "@/lib/database/models/olympiad-notification.model";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 
+/**
+ * Builds a single SMTP transport. Bulk dispatchers create this once and reuse
+ * it across every recipient instead of opening a fresh connection per email.
+ * Returns null when SMTP credentials are not configured.
+ */
+export function createOlympiadTransporter() {
+  const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+  const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
+  const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+
+  if (!SMTP_USER || !SMTP_PASS) return null;
+
+  return nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465,
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+    tls: { rejectUnauthorized: false },
+  });
+}
+
 function escapeHtml(unsafe: string) {
   return unsafe
     .replaceAll("&", "&amp;")
@@ -125,6 +150,7 @@ export async function sendOlympiadEmail({
   htmlContent,
   type,
   idempotencyKey,
+  transporter: sharedTransporter,
 }: {
   olympiadId: string;
   email: string;
@@ -140,6 +166,7 @@ export async function sendOlympiadEmail({
     | "SCHEDULE_CHANGE"
     | "CUSTOM";
   idempotencyKey: string;
+  transporter?: NonNullable<ReturnType<typeof createOlympiadTransporter>>;
 }): Promise<boolean> {
   try {
     await connectToDatabase();
@@ -151,12 +178,10 @@ export async function sendOlympiadEmail({
       return true;
     }
 
-    const SMTP_HOST = process.env.SMTP_HOST;
-    const SMTP_PORT = Number(process.env.SMTP_PORT);
     const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
-    const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+    const transporter = sharedTransporter || createOlympiadTransporter();
 
-    if (!SMTP_USER || !SMTP_PASS) {
+    if (!SMTP_USER || !transporter) {
       console.warn("[Olympiad Email] SMTP not configured. Logging notification state.");
       await OlympiadNotificationLog.findOneAndUpdate(
         { idempotencyKey },
@@ -176,17 +201,6 @@ export async function sendOlympiadEmail({
       );
       return false;
     }
-
-    const transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_PORT === 465,
-      auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
-      },
-      tls: { rejectUnauthorized: false },
-    });
 
     await transporter.sendMail({
       from: `"Octal Olympiad" <${SMTP_USER}>`,

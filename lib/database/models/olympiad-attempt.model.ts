@@ -11,6 +11,18 @@ export interface IAttemptAnswer {
   manualFeedback?: string;
 }
 
+export interface IProctoringViolation {
+  type: string;
+  detail?: string;
+  at: Date;
+}
+
+export interface IAttemptProctoring {
+  violations: IProctoringViolation[];
+  terminated: boolean;
+  terminationReason?: string;
+}
+
 export interface IOlympiadAttempt extends Document {
   _id: Types.ObjectId;
   olympiadId: Types.ObjectId;
@@ -36,6 +48,7 @@ export interface IOlympiadAttempt extends Document {
   gradedBy?: string;
   gradedAt?: Date;
   rank?: number;
+  proctoring?: IAttemptProctoring;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +63,24 @@ const AttemptAnswerSchema = new Schema<IAttemptAnswer>(
     marksAwarded: { type: Number },
     isCorrect: { type: Boolean },
     manualFeedback: { type: String },
+  },
+  { _id: false },
+);
+
+const ProctoringViolationSchema = new Schema<IProctoringViolation>(
+  {
+    type: { type: String, required: true },
+    detail: { type: String },
+    at: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
+
+const AttemptProctoringSchema = new Schema<IAttemptProctoring>(
+  {
+    violations: { type: [ProctoringViolationSchema], default: [] },
+    terminated: { type: Boolean, default: false },
+    terminationReason: { type: String },
   },
   { _id: false },
 );
@@ -93,6 +124,10 @@ const OlympiadAttemptSchema = new Schema<IOlympiadAttempt>(
     gradedBy: { type: String },
     gradedAt: { type: Date },
     rank: { type: Number },
+    proctoring: {
+      type: AttemptProctoringSchema,
+      default: () => ({ violations: [], terminated: false }),
+    },
   },
   { timestamps: true },
 );
