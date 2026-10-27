@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createQuestion,
@@ -63,6 +63,12 @@ export default function QuestionBuilder({
   // Selected correct answers (Option IDs for MCQ/TF, or accepted strings for Short Answer)
   const [correctAnswers, setCorrectAnswers] = useState<string[]>([]);
   const [shortAnswerInput, setShortAnswerInput] = useState("");
+
+  // Keep the local list in sync whenever the server component re-renders with
+  // fresh data (e.g. after router.refresh()), so no manual reload is needed.
+  useEffect(() => {
+    setQuestions(initialQuestions);
+  }, [initialQuestions]);
 
   const resetForm = () => {
     setEditingQuestionId(null);
@@ -236,10 +242,14 @@ export default function QuestionBuilder({
 
     try {
       if (editingQuestionId) {
-        await updateQuestion(editingQuestionId, payload);
+        const updated = await updateQuestion(editingQuestionId, payload);
+        setQuestions((prev) =>
+          prev.map((q) => (q._id === editingQuestionId ? updated : q)),
+        );
         toast.success("Question updated successfully.");
       } else {
-        await createQuestion(payload);
+        const created = await createQuestion(payload);
+        setQuestions((prev) => [...prev, created]);
         toast.success("Question added successfully.");
       }
       setIsModalOpen(false);
@@ -256,6 +266,7 @@ export default function QuestionBuilder({
     if (!confirm("Are you sure you want to delete this question?")) return;
     try {
       await deleteQuestion(questionId);
+      setQuestions((prev) => prev.filter((q) => q._id !== questionId));
       toast.success("Question deleted.");
       router.refresh();
     } catch (err: any) {
