@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, type Resolver } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,9 +28,9 @@ import { RichTextEditor } from "@/components/shared/RichTextEditor";
 const courseFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   category: z.string().min(1, "Category is required"),
-  mode: z.enum(["Online", "Offline"], { required_error: "Mode is required" }),
+  mode: z.enum(["Online", "Offline"], { error: "Mode is required" }),
   certification: z.enum(["NSDA", "BITM", "Institution"], {
-    required_error: "Certification is required",
+    error: "Certification is required",
   }),
   photo: z.string().min(1, "Course photo is required"),
   description: z.string().min(1, "Description is required"),
@@ -115,7 +115,11 @@ const CourseForm = ({ type, course, courseId }: CourseFormProps) => {
   };
 
   const form = useForm<z.infer<typeof courseFormSchema>>({
-    resolver: zodResolver(courseFormSchema),
+    // zod v4 splits schema input/output types (e.g. z.coerce.number() and .default()),
+    // so the resolver is aligned to the parsed output type used by the form fields.
+    resolver: zodResolver(courseFormSchema) as unknown as Resolver<
+      z.infer<typeof courseFormSchema>
+    >,
     defaultValues: initialValues,
   });
 

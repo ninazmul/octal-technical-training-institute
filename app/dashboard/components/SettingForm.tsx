@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, Path } from "react-hook-form";
+import { useForm, useFieldArray, Path, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -300,7 +300,9 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   }, [initialData]);
 
   const form = useForm<SettingFormValues>({
-    resolver: zodResolver(settingSchema),
+    // zod v4 splits schema input/output types (e.g. z.coerce.number() and .default()),
+    // so the resolver is aligned to the parsed output type used by the form fields.
+    resolver: zodResolver(settingSchema) as unknown as Resolver<SettingFormValues>,
     defaultValues: safeDefaultValues,
   });
 

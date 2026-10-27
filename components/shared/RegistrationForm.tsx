@@ -27,7 +27,7 @@ const registrationFormSchema = z.object({
   fathersName: z.string().min(1, "Father's name is required"),
   mothersName: z.string().min(1, "Mother's name is required"),
   gender: z.enum(["Male", "Female", "Other"], {
-    required_error: "Gender is required",
+    error: "Gender is required",
   }),
   email: z.string().email("Valid email is required"),
   number: z.string().min(1, "Phone number is required"),
