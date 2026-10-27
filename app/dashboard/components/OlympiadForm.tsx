@@ -20,6 +20,7 @@ import {
   Save,
 } from "lucide-react";
 import Link from "next/link";
+import { FileUploader } from "@/components/shared/FileUploader";
 
 interface OlympiadFormProps {
   type: "Create" | "Update";
@@ -68,6 +69,7 @@ export default function OlympiadForm({
   );
   const [description, setDescription] = useState(olympiad?.description || "");
   const [banner, setBanner] = useState(olympiad?.banner || "");
+  const [, setBannerFiles] = useState<File[]>([]);
   const [category, setCategory] = useState(olympiad?.category || "Mathematics");
   const [targetClasses, setTargetClasses] = useState<string[]>(
     olympiad?.targetClasses || ["Class 8", "Class 9", "Class 10"],
@@ -422,15 +424,24 @@ export default function OlympiadForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cover Banner URL
+            Cover Banner Image
           </label>
+          <FileUploader
+            imageUrl={banner}
+            setFiles={setBannerFiles}
+            onFieldChange={(url) => setBanner(url)}
+          />
           <input
             type="url"
             value={banner}
             onChange={(e) => setBanner(e.target.value)}
-            placeholder="https://example.com/banner.png or UploadThing URL"
-            className="w-full border rounded-lg px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+            placeholder="Or paste an image URL (https://...)"
+            className="mt-2 w-full border rounded-lg px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Upload a banner or paste a direct URL. Recommended 1200×630 for
+            social sharing previews.
+          </p>
         </div>
 
         {/* Target Classes */}
