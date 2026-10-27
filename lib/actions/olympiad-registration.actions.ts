@@ -26,6 +26,7 @@ export type RegistrationInput = {
   district?: string;
   dateOfBirth?: string;
   guardianPhone?: string;
+  photo?: string;
   customData?: Record<string, any>;
 };
 
@@ -128,6 +129,7 @@ export async function registerForOlympiad(data: RegistrationInput) {
       district: data.district?.trim(),
       dateOfBirth: data.dateOfBirth?.trim(),
       guardianPhone: data.guardianPhone?.trim(),
+      photo: data.photo?.trim(),
       customData: data.customData,
       clerkUserId,
       status: "Confirmed",

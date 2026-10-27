@@ -7,6 +7,7 @@ import {
   RegistrationInput,
 } from "@/lib/actions/olympiad-registration.actions";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
+import { FileUploader } from "@/components/shared/FileUploader";
 import toast from "react-hot-toast";
 import {
   Trophy,
@@ -44,6 +45,7 @@ export default function OlympiadRegistrationClient({
   const [district, setDistrict] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [guardianPhone, setGuardianPhone] = useState("");
+  const [photo, setPhoto] = useState("");
   const [customData, setCustomData] = useState<Record<string, any>>({});
 
   const handleCustomFieldChange = (key: string, val: any) => {
@@ -71,6 +73,7 @@ export default function OlympiadRegistrationClient({
       district: district.trim() || undefined,
       dateOfBirth: dateOfBirth.trim() || undefined,
       guardianPhone: guardianPhone.trim() || undefined,
+      photo: photo || undefined,
       customData,
     };
 
@@ -335,6 +338,23 @@ export default function OlympiadRegistrationClient({
               className="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-primary focus:outline-none"
             />
           </div>
+        </div>
+
+        {/* Participant Photo */}
+        <div className="pt-2 space-y-2 border-t">
+          <div>
+            <label className="block text-xs font-bold text-gray-700">
+              Participant Photo
+            </label>
+            <p className="text-[11px] text-gray-500 mt-0.5">
+              Upload a recent passport-size photograph (JPG or PNG, max 5MB).
+            </p>
+          </div>
+          <FileUploader
+            imageUrl={photo}
+            setFiles={() => {}}
+            onFieldChange={(url) => setPhoto(url)}
+          />
         </div>
 
         {/* Custom Form Fields configured by Admin */}

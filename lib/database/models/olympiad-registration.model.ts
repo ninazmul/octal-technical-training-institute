@@ -13,6 +13,7 @@ export interface IOlympiadRegistration extends Document {
   district?: string;
   dateOfBirth?: string;
   guardianPhone?: string;
+  photo?: string;
   customData?: Record<string, any>;
   clerkUserId?: string;
   status: "Confirmed" | "Cancelled";
@@ -43,6 +44,7 @@ const OlympiadRegistrationSchema = new Schema<IOlympiadRegistration>(
     district: { type: String, trim: true },
     dateOfBirth: { type: String, trim: true },
     guardianPhone: { type: String, trim: true },
+    photo: { type: String, trim: true },
     customData: { type: Schema.Types.Mixed },
     clerkUserId: { type: String, index: true },
     status: {

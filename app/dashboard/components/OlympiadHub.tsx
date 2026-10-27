@@ -15,6 +15,7 @@ import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 import { exportRowsToCsv } from "@/lib/export.client";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Trophy,
   BookOpen,
@@ -99,6 +100,7 @@ export default function OlympiadHub({
         { header: "Grade / Class", value: (r) => r.grade },
         { header: "Roll Number", value: (r) => r.rollNumber },
         { header: "District", value: (r) => r.district || "N/A" },
+        { header: "Photo URL", value: (r) => r.photo || "" },
         { header: "Status", value: (r) => r.status },
         {
           header: "Registered At",
@@ -435,7 +437,22 @@ export default function OlympiadHub({
                         {reg.registrationNumber}
                       </td>
                       <td className="py-3 px-4 font-medium text-gray-900">
-                        {reg.studentName}
+                        <div className="flex items-center gap-2.5">
+                          {reg.photo ? (
+                            <Image
+                              src={reg.photo}
+                              alt={reg.studentName}
+                              width={32}
+                              height={32}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs font-bold shrink-0">
+                              {reg.studentName?.charAt(0)?.toUpperCase() || "?"}
+                            </div>
+                          )}
+                          <span>{reg.studentName}</span>
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-xs text-gray-600">
                         <div>{reg.email}</div>
