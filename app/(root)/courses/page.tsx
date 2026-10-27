@@ -1,199 +1,99 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { getSetting } from "@/lib/actions";
-import Image from "next/image";
-import { ICourseSafe } from "@/lib/database/models/course.model";
+import { Metadata } from "next";
 import { getCourses } from "@/lib/actions/course.actions";
-import CountdownTimer from "@/components/shared/CountdownTimer";
-import Link from "next/link";
+import { getSetting } from "@/lib/actions/setting.actions";
+import CoursesClient from "@/components/shared/CoursesClient";
+import { generateCourseListSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 
-type TabKey = "all" | "upcoming" | "ongoing" | "old";
+export const revalidate = 60;
 
-export default function CoursesPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>("all");
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>("All Categories");
-  const [courses, setCourses] = useState<ICourseSafe[]>([]);
-  const [themeColor, setThemeColor] = useState("#0055CE");
-
-  const categories: string[] = [
-    "All Categories",
-    "Design",
-    "Front End Development",
-    "IT Security",
-    "Management",
-    "Mobile Application Development",
+export const metadata: Metadata = {
+  title: "কোর্স সমূহ | Octal Technical Training Institute",
+  description:
+    "NSDA ও BTEB অনুমোদিত কোর্সসমূহ ব্রাউজ করুন। ডিজাইন, ওয়েব ডেভেলপমেন্ট, প্রোগ্রামিং, নেটওয়ার্কিং সহ বিভিন্ন প্রযুক্তি বিষয়ক কোর্সে ভর্তি হোন।",
+  keywords: [
+    "Technical Courses",
+    "NSDA Courses",
+    "BTEB Courses",
     "Web Development",
     "Programming",
-    "Office Application",
-    "Video Editing & Motion",
-    "Marketing",
-    "Workshop",
-    "Networking",
-    "Database Administration",
-    "Freelancing",
-  ];
+    "IT Training Bangladesh",
+    "Octal Technical Training Institute",
+    "কোর্স",
+    "প্রশিক্ষণ",
+  ],
+  alternates: {
+    canonical: "https://octal.edu.bd/courses",
+  },
+  openGraph: {
+    title: "কোর্স সমূহ | Octal Technical Training Institute",
+    description:
+      "NSDA ও BTEB অনুমোদিত কোর্সসমূহ ব্রাউজ করুন। ডিজাইন, ওয়েব ডেভেলপমেন্ট, প্রোগ্রামিং, নেটওয়ার্কিং সহ বিভিন্ন প্রযুক্তি বিষয়ক কোর্সে ভর্তি হোন।",
+    url: "https://octal.edu.bd/courses",
+    siteName: "Octal Technical Training Institute",
+    images: [
+      {
+        url: "https://octal.edu.bd/assets/images/placeholder.png",
+        width: 1200,
+        height: 630,
+        alt: "Octal Technical Training Institute Courses",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "কোর্স সমূহ | Octal Technical Training Institute",
+    description:
+      "NSDA ও BTEB অনুমোদিত কোর্সসমূহ ব্রাউজ করুন।",
+    images: "/assets/images/placeholder.png",
+  },
+};
 
-  useEffect(() => {
-    async function loadSetting() {
-      const setting = await getSetting();
-      setThemeColor(setting?.theme || "#0055CE");
-    }
-    loadSetting();
-  }, []);
+export default async function CoursesPage() {
+  const [courses, setting] = await Promise.all([
+    getCourses({ status: "active" }),
+    getSetting(),
+  ]);
 
-  useEffect(() => {
-    async function loadCourses() {
-      const data = await getCourses({
-        tab: activeTab,
-        category: selectedCategory === "All Categories" ? "" : selectedCategory,
-      });
-      setCourses(data);
-    }
-    loadCourses();
-  }, [activeTab, selectedCategory]);
+  const themeColor = setting?.theme || "#0055CE";
+
+  // JSON-LD: Course list schema
+  const courseListSchema = generateCourseListSchema({
+    courses: courses.map((c) => ({
+      name: c.title,
+      description: c.description.replace(/<[^>]+>/g, "").slice(0, 160),
+      url: `https://octal.edu.bd/courses/${c._id}`,
+      image: c.photo,
+      price: c.discountPrice || c.price || c.rplPrice,
+    })),
+  });
+
+  // JSON-LD: Breadcrumb
+  const breadcrumbSchema = generateBreadcrumbSchema({
+    items: [
+      { name: "Home", url: "https://octal.edu.bd" },
+      { name: "Courses", url: "https://octal.edu.bd/courses" },
+    ],
+  });
 
   return (
-    <main className="w-full py-12 md:py-20 px-6 md:px-12">
-      <div className="text-center mb-12">
-        <h1
-          className="text-4xl md:text-5xl font-bold"
-          style={{ color: themeColor }}
-        >
-          আমাদের কোর্সসমূহ
-        </h1>
-        <p className="mt-4 text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
-          আপনার প্রয়োজন অনুযায়ী কোর্স নির্বাচন করুন।
-        </p>
-      </div>
-
-      {/* Tabs with All as dropdown */}
-      <div className="flex justify-center gap-4 mb-10 flex-wrap">
-        {/* All Courses Dropdown */}
-        <select
-          value={selectedCategory || "All Categories"}
-          onChange={(e) => {
-            setActiveTab("all");
-            setSelectedCategory(e.target.value);
-          }}
-          className={`px-4 py-2 rounded-xl font-semibold transition ${
-            activeTab === "all"
-              ? "text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-          style={activeTab === "all" ? { backgroundColor: themeColor } : {}}
-        >
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-
-        {/* Other Tabs */}
-        {(["upcoming", "ongoing", "old"] as TabKey[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setSelectedCategory(""); // reset category
-            }}
-            className={`px-4 py-2 rounded-xl font-semibold transition ${
-              activeTab === tab
-                ? "text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-            style={activeTab === tab ? { backgroundColor: themeColor } : {}}
-          >
-            {tab === "upcoming" && "Upcoming Courses"}
-            {tab === "ongoing" && "Ongoing Courses"}
-            {tab === "old" && "Old Courses"}
-          </button>
-        ))}
-      </div>
-
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        {courses.length > 0 ? (
-          courses.map((course, idx) => (
-            <div
-              key={idx}
-              className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white hover:scale-[1.02] transition"
-            >
-              <div className="relative w-full h-48">
-                <Link
-                  href={`/courses/${course._id.toString()}`}
-                  className="block w-full h-full"
-                >
-                  <Image
-                    src={course.photo}
-                    alt={course.title}
-                    fill
-                    className="object-cover"
-                  />
-                </Link>
-
-                {/* Timer badge */}
-                {course.registrationDeadline && (
-                  <div className="absolute top-2 left-0">
-                    <CountdownTimer deadline={course.registrationDeadline} />
-                  </div>
-                )}
-              </div>
-              <div className="p-5 flex flex-col flex-1 text-left">
-                <Link
-                  href={`/courses/${course._id.toString()}`}
-                  className="block"
-                >
-                  <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
-                    {course.title}
-                  </h3>
-                </Link>
-
-                <div className="mt-auto flex justify-between items-center">
-                  {course.discountPrice ? (
-                    <div className="flex items-center gap-2">
-                      {course.price && (
-                        <span className="text-red-500 line-through text-sm">
-                          টাকা {course.price}
-                        </span>
-                      )}
-                      <span className="font-bold text-lg text-primary">
-                        টাকা {course.discountPrice}
-                      </span>
-                    </div>
-                  ) : course.price ? (
-                    <span className="font-bold text-lg text-primary">
-                      টাকা {course.price}
-                    </span>
-                  ) : course.rplPrice ? (
-                    <span className="font-bold text-lg text-primary">
-                      টাকা {course.rplPrice}
-                    </span>
-                  ) : null}
-
-                  {course.certification && (
-                    <span
-                      className="text-xs font-semibold px-2 py-1 rounded-full"
-                      style={{
-                        backgroundColor: `${themeColor}20`,
-                        color: themeColor,
-                      }}
-                    >
-                      {course.certification}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 col-span-full">
-            এই ট্যাবে কোনো কোর্স নেই।
-          </p>
-        )}
-      </div>
-    </main>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(courseListSchema),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <CoursesClient
+        initialCourses={courses}
+        themeColor={themeColor}
+      />
+    </>
   );
 }

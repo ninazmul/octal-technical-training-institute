@@ -120,6 +120,17 @@ const CourseSchema = new Schema<ICourse>(
   { timestamps: true },
 );
 
+// -------------------- Indexes --------------------
+// Primary query: active courses filtered by category
+CourseSchema.index({ isActive: 1, category: 1 });
+// Sort by nearest date for course listing
+CourseSchema.index({ courseStartDate: 1 });
+CourseSchema.index({ registrationDeadline: 1 });
+// Text search on title for search functionality
+CourseSchema.index({ title: "text" });
+// Active courses title search/sorting
+CourseSchema.index({ isActive: 1, title: 1 });
+
 // -------------------- Model --------------------
 const Course = models.Course || model<ICourse>("Course", CourseSchema);
 

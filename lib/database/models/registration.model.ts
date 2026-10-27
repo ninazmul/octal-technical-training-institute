@@ -120,6 +120,17 @@ RegistrationSchema.pre<IRegistration>("save", async function (next) {
   next();
 });
 
+// -------------------- Indexes --------------------
+// Duplicate check: course + email combination
+RegistrationSchema.index({ course: 1, email: 1 });
+// Dashboard queries: sort by date with status/payment filters
+RegistrationSchema.index({ createdAt: -1 });
+RegistrationSchema.index({ status: 1, paymentStatus: 1 });
+// Email-based lookups
+RegistrationSchema.index({ email: 1 });
+// Course-based listing
+RegistrationSchema.index({ course: 1, createdAt: -1 });
+
 // -------------------- Model --------------------
 const Registration =
   models.Registration ||

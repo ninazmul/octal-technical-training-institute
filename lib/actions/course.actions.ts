@@ -30,56 +30,73 @@ export type CourseParams = {
   sessions?: string;
 };
 
-// -------------------- Helper: classify course --------------------
+// -------------------- Helpers: duration & classify --------------------
+function parseDurationDays(durationStr?: string | null): number {
+  if (!durationStr) return 0;
+  const match = durationStr.match(/(\d+)\s*(day|week|month|year)s?/i);
+  if (!match) {
+    const val = parseInt(durationStr, 10);
+    return isNaN(val) ? 0 : val;
+  }
+  const value = parseInt(match[1], 10);
+  const unit = match[2].toLowerCase();
+  switch (unit) {
+    case "day":
+      return value;
+    case "week":
+      return value * 7;
+    case "month":
+      return value * 30;
+    case "year":
+      return value * 365;
+    default:
+      return value;
+  }
+}
+
 function classifyCourse(
   course: ICourse,
+  nowMs: number = Date.now(),
 ): "upcoming" | "ongoing" | "old" | "unknown" {
   if (!course.courseStartDate || !course.duration) return "unknown";
 
-  const start = new Date(course.courseStartDate);
-  const now = new Date();
-  const durationDays = parseInt(course.duration); // assuming duration stored as string number of days
-  const end = new Date(start);
-  end.setDate(end.getDate() + durationDays);
+  const start = new Date(course.courseStartDate).getTime();
+  if (isNaN(start)) return "unknown";
 
-  if (now < start) return "upcoming";
-  if (now >= start && now <= end) return "ongoing";
-  if (now > end) return "old";
+  const durationDays = parseDurationDays(course.duration);
+  const end = start + durationDays * 24 * 60 * 60 * 1000;
+
+  if (nowMs < start) return "upcoming";
+  if (nowMs >= start && nowMs <= end) return "ongoing";
+  if (nowMs > end) return "old";
   return "unknown";
 }
 
 function sortCoursesByNearestDate(courses: ICourse[]): ICourse[] {
-  const today = new Date();
+  const todayMs = Date.now();
 
-  return [...courses].sort((a, b) => {
-    const aDate = a.courseStartDate
-      ? new Date(a.courseStartDate)
-      : a.registrationDeadline
-        ? new Date(a.registrationDeadline)
-        : null;
+  // Schwartzian transform: pre-calculate timestamps once (O(N)), avoiding repeated Date parsing inside sort (O(N log N))
+  const mapped = courses.map((course) => {
+    const rawDate = course.courseStartDate || course.registrationDeadline;
+    const time = rawDate ? new Date(rawDate).getTime() : NaN;
+    const isValid = !isNaN(time);
+    const distance = isValid ? Math.abs(time - todayMs) : Infinity;
 
-    const bDate = b.courseStartDate
-      ? new Date(b.courseStartDate)
-      : b.registrationDeadline
-        ? new Date(b.registrationDeadline)
-        : null;
-
-    // Courses without dates go last
-    if (!aDate && !bDate) return 0;
-    if (!aDate) return 1;
-    if (!bDate) return -1;
-
-    const aDistance = Math.abs(aDate.getTime() - today.getTime());
-    const bDistance = Math.abs(bDate.getTime() - today.getTime());
-
-    // Nearest date to today comes first
-    if (aDistance !== bDistance) {
-      return aDistance - bDistance;
-    }
-
-    // Tie-breaker: earlier date first
-    return aDate.getTime() - bDate.getTime();
+    return {
+      course,
+      distance,
+      time: isValid ? time : Infinity,
+    };
   });
+
+  mapped.sort((a, b) => {
+    if (a.distance !== b.distance) {
+      return a.distance - b.distance;
+    }
+    return a.time - b.time;
+  });
+
+  return mapped.map((item) => item.course);
 }
 
 // -------------------- Unified Action --------------------
@@ -101,8 +118,9 @@ export async function getCourses(options: {
 
       // Tab filter
       if (options.tab && options.tab !== "all") {
+        const nowMs = Date.now();
         filtered = filtered.filter(
-          (course) => classifyCourse(course) === options.tab,
+          (course) => classifyCourse(course, nowMs) === options.tab,
         );
       }
 
@@ -176,7 +194,8 @@ export const searchCourses = async (query: string): Promise<ICourseSafe[]> => {
 
   try {
     await connectToDatabase();
-    const regex = new RegExp(query, "i");
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escapedQuery, "i");
 
     const courses = await Course.find({
       isActive: true, // only search active courses

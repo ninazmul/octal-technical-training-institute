@@ -44,6 +44,10 @@ const ComplainSchema = new Schema<IComplain>(
   },
 );
 
+// -------------------- Indexes --------------------
+ComplainSchema.index({ email: 1 });
+ComplainSchema.index({ createdAt: -1 });
+
 const Complain =
   models.Complain || model<IComplain>("Complain", ComplainSchema);
 

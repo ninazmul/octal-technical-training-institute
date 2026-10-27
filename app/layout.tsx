@@ -1,6 +1,10 @@
 import { Metadata } from "next";
 import { Inter, DM_Serif_Display, Hind_Siliguri } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import {
+  generateOrganizationSchema,
+  generateWebSiteSchema,
+} from "@/lib/structured-data";
 
 import "./globals.css";
 
@@ -77,9 +81,45 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const organizationSchema = generateOrganizationSchema({
+    name: "Octal Technical Training Institute",
+    url: "https://octal.edu.bd",
+    logo: "https://octal.edu.bd/assets/images/placeholder.png",
+    description:
+      "NSDA & BTEB authorized assessment institute providing high-quality technical education, skills development, and certification services in Bangladesh.",
+    email: "info@octal.edu.bd",
+    socialLinks: [
+      "https://www.facebook.com/octaltti",
+    ],
+  });
+
+  const websiteSchema = generateWebSiteSchema({
+    siteUrl: "https://octal.edu.bd",
+    searchUrl: "https://octal.edu.bd/courses",
+  });
+
   return (
-    <ClerkProvider>
-      <html lang="en">
+    <ClerkProvider
+      publishableKey={
+        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+        "pk_test_Y2xlcmsuZXhhbXBsZS5jb20k"
+      }
+    >
+      <html lang="bn">
+        <head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(organizationSchema),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(websiteSchema),
+            }}
+          />
+        </head>
         <body
           className={`${inter.variable} ${dmSerif.variable} ${hindSiliguri.variable} font-sans`}
         >

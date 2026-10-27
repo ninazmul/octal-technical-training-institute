@@ -1,6 +1,10 @@
 import { Metadata } from "next";
 import { getCourseById } from "@/lib/actions/course.actions";
 import CourseDetailsClient from "@/components/shared/CourseDetailsClient";
+import {
+  generateCourseSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/structured-data";
 
 export const revalidate = 60;
 
@@ -26,6 +30,7 @@ export async function generateMetadata({
     description: course.description.replace(/<[^>]+>/g, "").slice(0, 160),
     keywords: [
       course.title,
+      course.category,
       "Octal Technical Training Institute",
       "NSDA",
       "BTEB",
@@ -70,7 +75,48 @@ const CoursePage = async ({ params }: PageProps) => {
     return <div>Course not found</div>;
   }
 
-  return <CourseDetailsClient course={course} />;
+  const courseSchema = generateCourseSchema({
+    name: course.title,
+    description: course.description.replace(/<[^>]+>/g, "").slice(0, 300),
+    provider: "Octal Technical Training Institute",
+    url: `https://octal.edu.bd/courses/${course._id}`,
+    image: course.photo,
+    price: course.discountPrice || course.price || course.rplPrice,
+    priceCurrency: "BDT",
+    mode: course.mode,
+    startDate: course.courseStartDate,
+    duration: course.duration,
+    category: course.category,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema({
+    items: [
+      { name: "Home", url: "https://octal.edu.bd" },
+      { name: "Courses", url: "https://octal.edu.bd/courses" },
+      {
+        name: course.title,
+        url: `https://octal.edu.bd/courses/${course._id}`,
+      },
+    ],
+  });
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(courseSchema),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <CourseDetailsClient course={course} />
+    </>
+  );
 };
 
 export default CoursePage;

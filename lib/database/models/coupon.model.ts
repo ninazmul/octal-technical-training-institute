@@ -39,6 +39,9 @@ const CouponSchema = new Schema<ICoupon>(
   { timestamps: true },
 );
 
+// -------------------- Indexes --------------------
+CouponSchema.index({ code: 1, isActive: 1 });
+
 const Coupon = models.Coupon || model<ICoupon>("Coupon", CouponSchema);
 
 export default Coupon;

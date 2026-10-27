@@ -1,0 +1,204 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ICourseSafe } from "@/lib/database/models/course.model";
+import { getCourses } from "@/lib/actions/course.actions";
+import CountdownTimer from "@/components/shared/CountdownTimer";
+
+type TabKey = "all" | "upcoming" | "ongoing" | "old";
+
+interface CoursesClientProps {
+  initialCourses: ICourseSafe[];
+  themeColor: string;
+}
+
+const categories: string[] = [
+  "All Categories",
+  "Design",
+  "Front End Development",
+  "IT Security",
+  "Management",
+  "Mobile Application Development",
+  "Web Development",
+  "Programming",
+  "Office Application",
+  "Video Editing & Motion",
+  "Marketing",
+  "Workshop",
+  "Networking",
+  "Database Administration",
+  "Freelancing",
+];
+
+export default function CoursesClient({
+  initialCourses,
+  themeColor,
+}: CoursesClientProps) {
+  const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>("All Categories");
+  const [courses, setCourses] = useState<ICourseSafe[]>(initialCourses);
+
+  useEffect(() => {
+    // Skip refetch on initial "all" + "All Categories" since we already have server data
+    if (activeTab === "all" && selectedCategory === "All Categories") {
+      setCourses(initialCourses);
+      return;
+    }
+
+    async function loadCourses() {
+      const data = await getCourses({
+        tab: activeTab,
+        category: selectedCategory === "All Categories" ? "" : selectedCategory,
+      });
+      setCourses(data);
+    }
+    loadCourses();
+  }, [activeTab, selectedCategory, initialCourses]);
+
+  return (
+    <main className="w-full py-12 md:py-20 px-6 md:px-12">
+      <div className="text-center mb-12">
+        <h1
+          className="text-4xl md:text-5xl font-bold"
+          style={{ color: themeColor }}
+        >
+          আমাদের কোর্সসমূহ
+        </h1>
+        <p className="mt-4 text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
+          আপনার প্রয়োজন অনুযায়ী কোর্স নির্বাচন করুন।
+        </p>
+      </div>
+
+      {/* Tabs with All as dropdown */}
+      <div className="flex justify-center gap-4 mb-10 flex-wrap">
+        {/* All Courses Dropdown */}
+        <select
+          value={selectedCategory || "All Categories"}
+          onChange={(e) => {
+            setActiveTab("all");
+            setSelectedCategory(e.target.value);
+          }}
+          className={`px-4 py-2 rounded-xl font-semibold transition ${
+            activeTab === "all"
+              ? "text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+          style={activeTab === "all" ? { backgroundColor: themeColor } : {}}
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+
+        {/* Other Tabs */}
+        {(["upcoming", "ongoing", "old"] as TabKey[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab);
+              setSelectedCategory(""); // reset category
+            }}
+            className={`px-4 py-2 rounded-xl font-semibold transition ${
+              activeTab === tab
+                ? "text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+            style={activeTab === tab ? { backgroundColor: themeColor } : {}}
+          >
+            {tab === "upcoming" && "Upcoming Courses"}
+            {tab === "ongoing" && "Ongoing Courses"}
+            {tab === "old" && "Old Courses"}
+          </button>
+        ))}
+      </div>
+
+      {/* Courses Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        {courses.length > 0 ? (
+          courses.map((course, idx) => (
+            <article
+              key={course._id || idx}
+              className="border rounded-2xl overflow-hidden shadow-md flex flex-col bg-white hover:scale-[1.02] transition"
+            >
+              <div className="relative w-full h-48">
+                <Link
+                  href={`/courses/${course._id.toString()}`}
+                  className="block w-full h-full"
+                >
+                  <Image
+                    src={course.photo}
+                    alt={course.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                </Link>
+
+                {/* Timer badge */}
+                {course.registrationDeadline && (
+                  <div className="absolute top-2 left-0">
+                    <CountdownTimer deadline={course.registrationDeadline} />
+                  </div>
+                )}
+              </div>
+              <div className="p-5 flex flex-col flex-1 text-left">
+                <Link
+                  href={`/courses/${course._id.toString()}`}
+                  className="block"
+                >
+                  <h2 className="text-lg md:text-xl font-bold mb-2 text-gray-900 line-clamp-2 hover:text-primary transition">
+                    {course.title}
+                  </h2>
+                </Link>
+
+                <div className="mt-auto flex justify-between items-center">
+                  {course.discountPrice ? (
+                    <div className="flex items-center gap-2">
+                      {course.price && (
+                        <span className="text-red-500 line-through text-sm">
+                          টাকা {course.price}
+                        </span>
+                      )}
+                      <span className="font-bold text-lg text-primary">
+                        টাকা {course.discountPrice}
+                      </span>
+                    </div>
+                  ) : course.price ? (
+                    <span className="font-bold text-lg text-primary">
+                      টাকা {course.price}
+                    </span>
+                  ) : course.rplPrice ? (
+                    <span className="font-bold text-lg text-primary">
+                      টাকা {course.rplPrice}
+                    </span>
+                  ) : null}
+
+                  {course.certification && (
+                    <span
+                      className="text-xs font-semibold px-2 py-1 rounded-full"
+                      style={{
+                        backgroundColor: `${themeColor}20`,
+                        color: themeColor,
+                      }}
+                    >
+                      {course.certification}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 col-span-full">
+            এই ট্যাবে কোনো কোর্স নেই।
+          </p>
+        )}
+      </div>
+    </main>
+  );
+}

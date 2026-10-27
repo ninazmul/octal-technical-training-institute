@@ -24,6 +24,11 @@ const ActivityLogSchema = new Schema<IActivityLog>(
   { timestamps: true }
 );
 
+// -------------------- Indexes --------------------
+ActivityLogSchema.index({ createdAt: -1 });
+ActivityLogSchema.index({ target: 1, action: 1 });
+ActivityLogSchema.index({ adminEmail: 1 });
+
 const ActivityLog = models.ActivityLog || model<IActivityLog>("ActivityLog", ActivityLogSchema);
 
 export default ActivityLog;

@@ -11,6 +11,16 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSetting } from "@/lib/actions";
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Enrollment Overview | Octal Technical Training Institute",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 function normalizeRegistration(r: SerializedRegistration) {
   const mapStr = (v: string | null) => (v == null ? undefined : v);
   const mapNum = (v: number | null) => (v == null ? undefined : v);
@@ -52,16 +62,17 @@ const Page = async () => {
 
   const registrations = registrationRaw.map((r) => normalizeRegistration(r));
 
-  const coursesMap: Record<string, ICourse | null> = {};
-
-  await Promise.all(
-    registrations.map(async (r) => {
-      if (r.courseId && !coursesMap[r.courseId]) {
-        const course = (await getCourseById(r.courseId)) as ICourse | null;
-        coursesMap[r.courseId] = course;
-      }
-    }),
+  // DSA optimization: Deduplicate course IDs via Set to avoid redundant database calls and race conditions
+  const uniqueCourseIds = Array.from(
+    new Set(registrations.map((r) => r.courseId).filter(Boolean) as string[]),
   );
+  const coursesList = await Promise.all(
+    uniqueCourseIds.map((id) => getCourseById(id)),
+  );
+  const coursesMap: Record<string, ICourse | null> = {};
+  uniqueCourseIds.forEach((id, index) => {
+    coursesMap[id] = coursesList[index] as ICourse | null;
+  });
 
   return (
     <section className="w-full py-16 min-h-screen px-6 md:px-12 max-w-7xl mx-auto">

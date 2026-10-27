@@ -1,9 +1,18 @@
+import { Metadata } from "next";
 import { getRegistrationById } from "@/lib/actions/registration.actions";
 import { getCourseById } from "@/lib/actions/course.actions";
 import { getSetting } from "@/lib/actions";
 import RegistrationDetailsClient from "@/app/dashboard/components/RegistrationDetailsClient";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Registration Details | Octal Technical Training Institute",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type PageProps = {
   params: Promise<{ id: string }>;

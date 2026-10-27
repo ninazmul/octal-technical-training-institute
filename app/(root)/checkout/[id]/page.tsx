@@ -1,8 +1,18 @@
+import { Metadata } from "next";
 import { getCourseById } from "@/lib/actions/course.actions";
 import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import Checkout from "@/components/shared/Checkout";
+
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Checkout | Octal Technical Training Institute",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type PageProps = {
   params: Promise<{ id: string }>;
