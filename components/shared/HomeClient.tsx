@@ -12,15 +12,18 @@ import Popup from "./Popup";
 import OurPartners from "./OurPartners";
 import { INotice } from "@/lib/database/models/notice.model";
 import NoticeHeading from "./NoticeHeading";
+import OlympiadSection from "./OlympiadSection";
 
 export default function Home({
   setting,
   courses,
   notices,
+  olympiads,
 }: {
   setting: ISettingSafe | null;
   courses?: ICourseSafe[];
   notices?: INotice[];
+  olympiads?: any[];
 }) {
   return (
     <main>
@@ -30,6 +33,7 @@ export default function Home({
       <section id="courses">
         <CoursesContent setting={setting} courses={courses} />
       </section>
+      <OlympiadSection olympiads={olympiads} themeColor={setting?.theme} />
       <LMSFeatures setting={setting} />
       <OurMentors setting={setting} />
       <OurPartners setting={setting} />

@@ -67,10 +67,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.4,
     },
+    {
+      url: `${baseUrl}/olympiads`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
   ];
 
-  // Dynamic course pages
+  // Dynamic course pages and olympiad pages
   let coursePages: MetadataRoute.Sitemap = [];
+  let olympiadPages: MetadataRoute.Sitemap = [];
   try {
     await connectToDatabase();
     const courses = await Course.find({ isActive: true })
@@ -83,9 +90,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }));
+
+    const Olympiad = (await import("@/lib/database/models/olympiad.model")).default;
+    const olympiads = await Olympiad.find({ status: { $in: ["Published", "Archived"] } })
+      .select("slug updatedAt")
+      .lean<{ slug: string; updatedAt: Date }[]>();
+
+    olympiadPages = olympiads.map((o) => ({
+      url: `${baseUrl}/olympiads/${o.slug}`,
+      lastModified: o.updatedAt || new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    }));
   } catch (error) {
-    console.error("Sitemap: Failed to fetch courses", error);
+    console.error("Sitemap: Failed to fetch courses or olympiads", error);
   }
 
-  return [...staticPages, ...coursePages];
+  return [...staticPages, ...coursePages, ...olympiadPages];
 }

@@ -26,6 +26,7 @@ import {
   ClipboardCheck,
   TicketPercent,
   History,
+  Trophy,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,6 +38,12 @@ const sidebarItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+    roles: ["admin", "moderator"],
+  },
+  {
+    title: "Olympiads",
+    url: "/dashboard/olympiads",
+    icon: Trophy,
     roles: ["admin", "moderator"],
   },
   {
@@ -124,7 +131,7 @@ const AdminSidebar = ({ role }: { role?: string }) => {
     })();
   }, []);
 
-  const moderatorAllowed = ["Dashboard", "Courses", "Registrations"];
+  const moderatorAllowed = ["Dashboard", "Olympiads", "Courses", "Registrations"];
 
   return (
     <Sidebar

@@ -2,6 +2,7 @@ import HomeClient from "@/components/shared/HomeClient";
 import { getCourses } from "@/lib/actions/course.actions";
 import { getAllNotices } from "@/lib/actions/notice.actions";
 import { getSetting } from "@/lib/actions/setting.actions";
+import { getPublishedOlympiads } from "@/lib/actions/olympiad.actions";
 import { generateFAQSchema } from "@/lib/structured-data";
 
 export const revalidate = 60;
@@ -10,6 +11,7 @@ export default async function Home() {
   const setting = await getSetting();
   const courses = await getCourses({ status: "active" }); // or "all"
   const notices = await getAllNotices();
+  const olympiads = await getPublishedOlympiads();
 
   const faqs = setting?.faqs?.items || [];
   const faqSchema = faqs.length > 0 ? generateFAQSchema({ items: faqs }) : null;
@@ -22,7 +24,12 @@ export default async function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
-      <HomeClient setting={setting} courses={courses} notices={notices} />
+      <HomeClient
+        setting={setting}
+        courses={courses}
+        notices={notices}
+        olympiads={olympiads}
+      />
     </>
   );
 }
