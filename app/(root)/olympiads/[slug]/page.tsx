@@ -17,6 +17,7 @@ import {
   AlertCircle,
   ArrowRight,
   ShieldAlert,
+  Lock,
 } from "lucide-react";
 
 type PageProps = {
@@ -239,12 +240,22 @@ export default async function OlympiadDetailsPage({ params }: PageProps) {
                   </span>
                 )}
 
-                <Link
-                  href={`/olympiads/${slug}/exam`}
-                  className="inline-flex items-center gap-1.5 px-6 py-3.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition text-sm"
-                >
-                  পরীক্ষার পোর্টাল প্রবেশ
-                </Link>
+                {isLive ? (
+                  <Link
+                    href={`/olympiads/${slug}/exam`}
+                    className="inline-flex items-center gap-1.5 px-6 py-3.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition text-sm"
+                  >
+                    পরীক্ষার পোর্টাল প্রবেশ
+                  </Link>
+                ) : (
+                  <span
+                    title="পরীক্ষার নির্ধারিত সময়ে খোলা হবে"
+                    aria-disabled="true"
+                    className="inline-flex items-center gap-1.5 px-6 py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 font-semibold text-sm cursor-not-allowed"
+                  >
+                    <Lock className="w-4 h-4" /> পরীক্ষার পোর্টাল প্রবেশ
+                  </span>
+                )}
               </div>
             </div>
           </div>
