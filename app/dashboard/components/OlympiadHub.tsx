@@ -10,7 +10,13 @@ import {
 import {
   updateOlympiad,
 } from "@/lib/actions/olympiad.actions";
-import { cancelRegistrationAdmin, sendBulkMessageToRegistrants } from "@/lib/actions/olympiad-registration.actions";
+import {
+  cancelRegistrationAdmin,
+  sendBulkMessageToRegistrants,
+  updateRegistrationAdmin,
+} from "@/lib/actions/olympiad-registration.actions";
+import { reserveRegistrationsToDirectory } from "@/lib/actions/olympiad-participant.actions";
+import OlympiadCertificateGenerator from "@/components/shared/OlympiadCertificateGenerator";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 import { exportRowsToCsv } from "@/lib/export.client";
 import {
@@ -44,6 +50,8 @@ import {
   MessageSquare,
   Send,
   ShieldAlert,
+  Pencil,
+  Archive,
 } from "lucide-react";
 
 interface OlympiadHubProps {
@@ -76,6 +84,22 @@ export default function OlympiadHub({
   const [emailHtml, setEmailHtml] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
   const [isSendingMsg, setIsSendingMsg] = useState(false);
+
+  // Participant directory reservation + registration editing
+  const [isReserving, setIsReserving] = useState(false);
+  const [editModalReg, setEditModalReg] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({
+    studentName: "",
+    email: "",
+    phoneNumber: "",
+    institution: "",
+    grade: "",
+    rollNumber: "",
+    district: "",
+    dateOfBirth: "",
+    guardianPhone: "",
+  });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Manual Grading State
   const [evaluatingAttemptId, setEvaluatingAttemptId] = useState<string | null>(
@@ -168,6 +192,56 @@ export default function OlympiadHub({
       toast.error(err.message || "Failed to send messages.");
     } finally {
       setIsSendingMsg(false);
+    }
+  };
+
+  const handleReserveDetails = async () => {
+    if (
+      !confirm(
+        "Reserve all confirmed registrations into the reusable participant directory? Details are stored separately so they survive even if this Olympiad is deleted.",
+      )
+    )
+      return;
+    setIsReserving(true);
+    try {
+      const res = await reserveRegistrationsToDirectory(olympiad._id);
+      toast.success(
+        `Reserved ${res.total} participant(s) — ${res.created} new, ${res.updated} updated.`,
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reserve registrations.");
+    } finally {
+      setIsReserving(false);
+    }
+  };
+
+  const openEditModal = (reg: any) => {
+    setEditModalReg(reg);
+    setEditForm({
+      studentName: reg.studentName || "",
+      email: reg.email || "",
+      phoneNumber: reg.phoneNumber || "",
+      institution: reg.institution || "",
+      grade: reg.grade || "",
+      rollNumber: reg.rollNumber || "",
+      district: reg.district || "",
+      dateOfBirth: reg.dateOfBirth || "",
+      guardianPhone: reg.guardianPhone || "",
+    });
+  };
+
+  const handleSaveRegistration = async () => {
+    if (!editModalReg) return;
+    setIsSavingEdit(true);
+    try {
+      await updateRegistrationAdmin(editModalReg._id, editForm);
+      toast.success("Registration details updated.");
+      setEditModalReg(null);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update registration.");
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -508,6 +582,16 @@ export default function OlympiadHub({
               </button>
 
               <button
+                onClick={handleReserveDetails}
+                disabled={isReserving || registrations.length === 0}
+                className="border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Save participant details into the reusable directory"
+              >
+                <Archive className="w-4 h-4" />
+                {isReserving ? "Reserving..." : "Reserve Details"}
+              </button>
+
+              <button
                 onClick={handleExportRegistrations}
                 className="border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1.5 transition"
               >
@@ -595,14 +679,22 @@ export default function OlympiadHub({
                         {formatDhakaDateTime(reg.createdAt)}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {reg.status === "Confirmed" && (
+                        <div className="flex items-center justify-end gap-3">
                           <button
-                            onClick={() => handleCancelReg(reg._id)}
-                            className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                            onClick={() => openEditModal(reg)}
+                            className="text-xs text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-1"
                           >
-                            Cancel
+                            <Pencil className="w-3 h-3" /> Edit
                           </button>
-                        )}
+                          {reg.status === "Confirmed" && (
+                            <button
+                              onClick={() => handleCancelReg(reg._id)}
+                              className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -911,7 +1003,13 @@ export default function OlympiadHub({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <OlympiadCertificateGenerator
+                olympiad={olympiad}
+                attempts={attempts}
+                registrations={registrations}
+              />
+
               <button
                 type="button"
                 onClick={handleRecalculateRanks}
@@ -1105,6 +1203,76 @@ export default function OlympiadHub({
               {isSendingMsg
                 ? "Sending..."
                 : `Send ${msgChannel === "email" ? "Email" : "SMS"}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Registration Dialog */}
+      <Dialog
+        open={!!editModalReg}
+        onOpenChange={(o) => !o && setEditModalReg(null)}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Registration Details</DialogTitle>
+          </DialogHeader>
+
+          {editModalReg && (
+            <div className="space-y-4">
+              <div className="text-xs text-gray-500 bg-gray-50 border rounded-lg px-3 py-2 font-mono">
+                {editModalReg.registrationNumber} • {editModalReg.status}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(
+                  [
+                    { key: "studentName", label: "Student Name" },
+                    { key: "email", label: "Email", type: "email" },
+                    { key: "phoneNumber", label: "Phone Number" },
+                    { key: "institution", label: "Institution" },
+                    { key: "grade", label: "Class / Grade" },
+                    { key: "rollNumber", label: "Roll / ID Number" },
+                    { key: "district", label: "District" },
+                    { key: "dateOfBirth", label: "Date of Birth" },
+                    { key: "guardianPhone", label: "Guardian Phone" },
+                  ] as const
+                ).map((f) => (
+                  <div key={f.key}>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      {f.label}
+                    </label>
+                    <Input
+                      type={"type" in f ? f.type : "text"}
+                      value={editForm[f.key]}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          [f.key]: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditModalReg(null)}
+              disabled={isSavingEdit}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSaveRegistration}
+              disabled={isSavingEdit}
+            >
+              {isSavingEdit ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

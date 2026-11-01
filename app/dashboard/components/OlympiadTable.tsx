@@ -7,6 +7,7 @@ import {
   duplicateOlympiad,
   cancelOlympiad,
   deleteOlympiad,
+  relaunchOlympiad,
 } from "@/lib/actions/olympiad.actions";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 import { exportRowsToCsv } from "@/lib/export.client";
@@ -26,7 +27,15 @@ import {
   AlertTriangle,
   XCircle,
   Users,
+  Rocket,
 } from "lucide-react";
+
+function toLocalInput(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate(),
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 interface OlympiadTableProps {
   initialData: {
@@ -49,6 +58,18 @@ export default function OlympiadTable({ initialData }: OlympiadTableProps) {
   const [cancelModalOlympiad, setCancelModalOlympiad] = useState<any>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Relaunch (new edition) state
+  const [relaunchModalOlympiad, setRelaunchModalOlympiad] = useState<any>(null);
+  const [relaunchForm, setRelaunchForm] = useState({
+    title: "",
+    slug: "",
+    registrationStartDate: "",
+    registrationDeadline: "",
+    examStartDate: "",
+    examEndDate: "",
+    resultsPublishDate: "",
+  });
 
   const filterRows = data.olympiads.filter((o) => {
     const matchesSearch =
@@ -116,6 +137,62 @@ export default function OlympiadTable({ initialData }: OlympiadTableProps) {
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to cancel Olympiad.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const openRelaunchModal = (o: any) => {
+    const shiftYears = (dateStr: string, years: number) => {
+      const d = new Date(dateStr);
+      d.setFullYear(d.getFullYear() + years);
+      return d;
+    };
+    // Push the whole schedule forward until the exam window lands in the future.
+    let years = 1;
+    while (shiftYears(o.examEndDate, years).getTime() < Date.now()) years++;
+    const nextYear = new Date(o.registrationStartDate).getFullYear() + years;
+
+    setRelaunchModalOlympiad(o);
+    setRelaunchForm({
+      title: `${o.title} ${nextYear}`,
+      slug: `${o.slug}-${nextYear}`,
+      registrationStartDate: toLocalInput(shiftYears(o.registrationStartDate, years)),
+      registrationDeadline: toLocalInput(shiftYears(o.registrationDeadline, years)),
+      examStartDate: toLocalInput(shiftYears(o.examStartDate, years)),
+      examEndDate: toLocalInput(shiftYears(o.examEndDate, years)),
+      resultsPublishDate: toLocalInput(shiftYears(o.resultsPublishDate, years)),
+    });
+  };
+
+  const handleConfirmRelaunch = async () => {
+    if (!relaunchModalOlympiad) return;
+    if (!relaunchForm.title.trim() || !relaunchForm.slug.trim()) {
+      toast.error("Edition title and slug are required.");
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await relaunchOlympiad(relaunchModalOlympiad._id, {
+        title: relaunchForm.title.trim(),
+        slug: relaunchForm.slug.trim(),
+        registrationStartDate: new Date(
+          relaunchForm.registrationStartDate,
+        ).toISOString(),
+        registrationDeadline: new Date(
+          relaunchForm.registrationDeadline,
+        ).toISOString(),
+        examStartDate: new Date(relaunchForm.examStartDate).toISOString(),
+        examEndDate: new Date(relaunchForm.examEndDate).toISOString(),
+        resultsPublishDate: new Date(
+          relaunchForm.resultsPublishDate,
+        ).toISOString(),
+      });
+      toast.success("New edition created as a draft with the same question bank!");
+      setRelaunchModalOlympiad(null);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to relaunch Olympiad.");
     } finally {
       setIsProcessing(false);
     }
@@ -360,6 +437,15 @@ export default function OlympiadTable({ initialData }: OlympiadTableProps) {
                             <Copy className="w-4 h-4" />
                           </button>
 
+                          <button
+                            onClick={() => openRelaunchModal(olympiad)}
+                            disabled={isProcessing}
+                            className="p-1.5 text-gray-600 hover:text-primary rounded hover:bg-gray-100"
+                            title="Relaunch as a new edition (clone config + questions)"
+                          >
+                            <Rocket className="w-4 h-4" />
+                          </button>
+
                           {olympiad.status !== "Cancelled" && (
                             <button
                               onClick={() => {
@@ -393,6 +479,103 @@ export default function OlympiadTable({ initialData }: OlympiadTableProps) {
           </table>
         </div>
       </div>
+
+      {/* Relaunch (New Edition) Modal */}
+      {relaunchModalOlympiad && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 text-primary">
+              <Rocket className="w-6 h-6" />
+              <h3 className="text-lg font-bold text-gray-900">
+                Relaunch as New Edition
+              </h3>
+            </div>
+
+            <p className="text-sm text-gray-600">
+              A fresh draft will be created, cloning the configuration and the
+              entire question bank of{" "}
+              <strong>&quot;{relaunchModalOlympiad.title}&quot;</strong>.
+              Registrations start empty. Adjust the new schedule below.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Edition Title *
+                </label>
+                <input
+                  type="text"
+                  value={relaunchForm.title}
+                  onChange={(e) =>
+                    setRelaunchForm({ ...relaunchForm, title: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  URL Slug *
+                </label>
+                <input
+                  type="text"
+                  value={relaunchForm.slug}
+                  onChange={(e) =>
+                    setRelaunchForm({ ...relaunchForm, slug: e.target.value })
+                  }
+                  className="w-full border rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+
+              {(
+                [
+                  { key: "registrationStartDate", label: "Registration Opens *" },
+                  { key: "registrationDeadline", label: "Registration Deadline *" },
+                  { key: "examStartDate", label: "Exam Starts *" },
+                  { key: "examEndDate", label: "Exam Ends *" },
+                  { key: "resultsPublishDate", label: "Results Publish Date *" },
+                ] as const
+              ).map((f) => (
+                <div key={f.key}>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {f.label}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={relaunchForm[f.key]}
+                    onChange={(e) =>
+                      setRelaunchForm({
+                        ...relaunchForm,
+                        [f.key]: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setRelaunchModalOlympiad(null)}
+                className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRelaunch}
+                disabled={isProcessing}
+                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Rocket className="w-4 h-4" />
+                {isProcessing ? "Creating..." : "Create New Edition"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cancellation Modal */}
       {cancelModalOlympiad && (

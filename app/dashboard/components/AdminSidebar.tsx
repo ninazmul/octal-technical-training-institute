@@ -27,6 +27,7 @@ import {
   TicketPercent,
   History,
   Trophy,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,6 +57,12 @@ const sidebarItems = [
     title: "Registrations",
     url: "/dashboard/registrations",
     icon: ClipboardList, // better for tracking entries
+    roles: ["admin", "moderator"],
+  },
+  {
+    title: "Participants",
+    url: "/dashboard/participants",
+    icon: Users, // reusable participant directory
     roles: ["admin", "moderator"],
   },
   {

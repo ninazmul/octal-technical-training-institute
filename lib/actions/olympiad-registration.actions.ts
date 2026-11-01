@@ -272,6 +272,114 @@ export async function cancelRegistrationAdmin(registrationId: string) {
   }
 }
 
+export type RegistrationUpdateInput = {
+  studentName?: string;
+  email?: string;
+  phoneNumber?: string;
+  institution?: string;
+  grade?: string;
+  rollNumber?: string;
+  district?: string;
+  dateOfBirth?: string;
+  guardianPhone?: string;
+  photo?: string;
+};
+
+/**
+ * Lets an admin correct a participant's registration details (typos, changed
+ * phone, etc.) after submission. Re-validates the same rules the public form
+ * enforces and guards the per-olympiad unique email constraint.
+ */
+export async function updateRegistrationAdmin(
+  registrationId: string,
+  data: RegistrationUpdateInput,
+) {
+  try {
+    const { sessionClaims } = await auth();
+    const userId = sessionClaims?.userId as string;
+    const email = await getUserEmailById(userId);
+    if (!email || !(await isAdmin(email))) throw new Error("Forbidden");
+
+    await connectToDatabase();
+
+    const registration = await OlympiadRegistration.findById(registrationId);
+    if (!registration) throw new Error("Registration not found");
+
+    if (data.studentName !== undefined) {
+      if (!data.studentName.trim()) throw new Error("Student name is required.");
+      registration.studentName = data.studentName.trim();
+    }
+
+    if (data.email !== undefined) {
+      const normalized = data.email.toLowerCase().trim();
+      if (!validateEmail(normalized)) {
+        throw new Error("A valid email address is required.");
+      }
+      if (normalized !== registration.email) {
+        const conflict = await OlympiadRegistration.findOne({
+          olympiadId: registration.olympiadId,
+          email: normalized,
+          status: "Confirmed",
+          _id: { $ne: registrationId },
+        });
+        if (conflict) {
+          throw new Error(
+            "Another confirmed registration already uses this email address.",
+          );
+        }
+      }
+      registration.email = normalized;
+    }
+
+    if (data.phoneNumber !== undefined) {
+      if (!validateBangladeshPhone(data.phoneNumber.trim())) {
+        throw new Error(
+          "A valid Bangladesh phone number is required (e.g. 017XXXXXXXX).",
+        );
+      }
+      registration.phoneNumber = data.phoneNumber.trim();
+    }
+
+    if (data.institution !== undefined) {
+      if (!data.institution.trim()) throw new Error("Institution is required.");
+      registration.institution = data.institution.trim();
+    }
+
+    if (data.grade !== undefined) {
+      if (!data.grade.trim()) throw new Error("Class/Grade is required.");
+      registration.grade = data.grade.trim();
+    }
+
+    if (data.rollNumber !== undefined) {
+      if (!data.rollNumber.trim()) throw new Error("Roll/ID number is required.");
+      registration.rollNumber = data.rollNumber.trim();
+    }
+
+    if (data.district !== undefined) registration.district = data.district.trim();
+    if (data.dateOfBirth !== undefined)
+      registration.dateOfBirth = data.dateOfBirth.trim();
+    if (data.guardianPhone !== undefined)
+      registration.guardianPhone = data.guardianPhone.trim();
+    if (data.photo !== undefined) registration.photo = data.photo.trim();
+
+    await registration.save();
+
+    await logActivity(
+      "UPDATE",
+      "OlympiadRegistration",
+      `Updated registration details for ${registration.registrationNumber} (${registration.studentName})`,
+    );
+
+    revalidatePath(`/dashboard/olympiads/${registration.olympiadId}`);
+    return {
+      success: true,
+      registration: JSON.parse(JSON.stringify(registration)),
+    };
+  } catch (error) {
+    handleError(error);
+  }
+}
+
 // -------------------- Admin Bulk Messaging --------------------
 
 /**

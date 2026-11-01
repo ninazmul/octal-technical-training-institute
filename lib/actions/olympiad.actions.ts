@@ -269,6 +269,109 @@ export async function cancelOlympiad(id: string, reason: string) {
   }
 }
 
+export type OlympiadRelaunchInput = {
+  title: string;
+  slug: string;
+  registrationStartDate: string;
+  registrationDeadline: string;
+  examStartDate: string;
+  examEndDate: string;
+  resultsPublishDate: string;
+};
+
+/**
+ * Re-runs an existing Olympiad as a brand new edition. The configuration and
+ * the whole question bank are cloned, but the new edition starts fresh:
+ * status Draft, results not public, and no registrations carried over.
+ */
+export async function relaunchOlympiad(id: string, data: OlympiadRelaunchInput) {
+  try {
+    const { email } = await verifyAdminAuth();
+    await connectToDatabase();
+
+    const original = await Olympiad.findById(id).lean<IOlympiad>();
+    if (!original) throw new Error("Original Olympiad not found");
+
+    if (!data.title?.trim()) throw new Error("An edition title is required.");
+    if (
+      !data.registrationStartDate ||
+      !data.registrationDeadline ||
+      !data.examStartDate ||
+      !data.examEndDate ||
+      !data.resultsPublishDate
+    ) {
+      throw new Error("All schedule dates are required to relaunch.");
+    }
+
+    const newSlug = data.slug.toLowerCase().trim();
+    const duplicate = await Olympiad.findOne({ slug: newSlug });
+    if (duplicate) {
+      throw new Error(`Slug "${newSlug}" is already in use by another Olympiad.`);
+    }
+
+    const relaunched = await Olympiad.create({
+      title: data.title.trim(),
+      slug: newSlug,
+      shortDescription: original.shortDescription,
+      description: original.description,
+      banner: original.banner,
+      category: original.category,
+      targetClasses: original.targetClasses,
+      eligibility: original.eligibility,
+      organizer: original.organizer,
+      registrationStartDate: new Date(data.registrationStartDate),
+      registrationDeadline: new Date(data.registrationDeadline),
+      examStartDate: new Date(data.examStartDate),
+      examEndDate: new Date(data.examEndDate),
+      durationMinutes: original.durationMinutes,
+      maxCapacity: original.maxCapacity,
+      totalMarks: original.totalMarks,
+      passingMarks: original.passingMarks,
+      negativeMarking: original.negativeMarking,
+      randomizeQuestions: original.randomizeQuestions,
+      randomizeOptions: original.randomizeOptions,
+      allowBackNavigation: original.allowBackNavigation,
+      allowReview: original.allowReview,
+      showResultsImmediately: original.showResultsImmediately,
+      resultsPublishDate: new Date(data.resultsPublishDate),
+      // Fresh edition: results are never public until re-published.
+      isResultsPublic: false,
+      instructions: original.instructions,
+      rules: original.rules,
+      prizes: original.prizes,
+      status: "Draft",
+      customFields: original.customFields,
+      createdBy: email,
+      updatedBy: email,
+    });
+
+    // Clone the question bank so the new edition is ready to run.
+    const questions = await OlympiadQuestion.find({ olympiadId: id }).lean();
+    if (questions.length > 0) {
+      const clonedQuestions = questions.map((q) => ({
+        ...q,
+        _id: undefined,
+        olympiadId: relaunched._id,
+        createdAt: undefined,
+        updatedAt: undefined,
+      }));
+      await OlympiadQuestion.insertMany(clonedQuestions);
+    }
+
+    await logActivity(
+      "CREATE",
+      "Olympiad",
+      `Relaunched Olympiad "${original.title}" as new edition "${relaunched.title}" (slug: ${relaunched.slug})`,
+    );
+
+    revalidatePath("/dashboard/olympiads");
+    revalidatePath("/olympiads");
+    return JSON.parse(JSON.stringify(relaunched));
+  } catch (error) {
+    handleError(error);
+  }
+}
+
 export async function getOlympiadsAdmin(options?: {
   search?: string;
   status?: string;
