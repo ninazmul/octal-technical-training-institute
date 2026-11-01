@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { Award } from "lucide-react";
 
+// Removed unused lucide-react Award import if not used elsewhere, 
+// but keeping it for now if needed, though I'll use emoji for the badge.
+
 export type OlympiadCertificateData = {
   studentName: string;
   olympiadTitle: string;
@@ -104,51 +107,43 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 80,
+          top: 60,
           left: 0,
           width: CERT_WIDTH,
-          height: 40,
+          height: 90,
           textAlign: "center",
         }}
       >
-        <table style={{ margin: "0 auto", borderCollapse: "collapse" }}>
-          <tbody>
-            <tr>
-              <td style={{ padding: 0, verticalAlign: "middle" }}>
-                <img
-                  src="/assets/images/logo.png"
-                  alt="Organizer logo"
-                  style={{
-                    height: 32,
-                    width: "auto",
-                    display: "block",
-                  }}
-                />
-              </td>
-              <td
-                style={{
-                  padding: "0 0 0 16px",
-                  verticalAlign: "middle",
-                  fontSize: 14,
-                  letterSpacing: "0.3em",
-                  textTransform: "uppercase",
-                  color: "#6b7280",
-                  fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {data.organizer}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div style={{ marginBottom: 12 }}>
+          <img
+            src="/assets/images/logo.png"
+            alt="Organizer logo"
+            style={{
+              height: 42,
+              width: "auto",
+              display: "inline-block",
+              objectFit: "contain",
+            }}
+          />
+        </div>
+        <div
+          style={{
+            fontSize: 14,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "#6b7280",
+            fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
+          }}
+        >
+          {data.organizer}
+        </div>
       </div>
 
       {/* Title */}
       <div
         style={{
           position: "absolute",
-          top: 140,
+          top: 160,
           left: 0,
           width: CERT_WIDTH,
           height: 70,
@@ -168,7 +163,7 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 215,
+          top: 235,
           left: 0,
           width: CERT_WIDTH,
           height: 20,
@@ -184,12 +179,12 @@ export default function OlympiadCertificateTemplate({
         Olympiad {data.category}
       </div>
 
-      {/* Award pill (winners) */}
+      {/* Award Badge (winners) */}
       {isWinner && (
         <div
           style={{
             position: "absolute",
-            top: 255,
+            top: 270,
             left: 0,
             width: CERT_WIDTH,
             height: 40,
@@ -198,27 +193,15 @@ export default function OlympiadCertificateTemplate({
         >
           <div
             style={{
-              display: "inline-block",
-              borderRadius: 9999,
-              border: "1px solid #fcd34d",
-              backgroundColor: "#fffbeb",
-              padding: "4px 24px",
+              fontSize: 18,
+              fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.2em",
               color: "#b45309",
-              height: 36,
-              lineHeight: "28px",
             }}
           >
-            <div
-              style={{
-                fontSize: 15,
-                fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.15em",
-              }}
-            >
-              🏆 {rankLabel(data.rank)}
-            </div>
+            🏆 {rankLabel(data.rank)}
           </div>
         </div>
       )}
@@ -227,7 +210,7 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 315,
+          top: 325,
           left: (CERT_WIDTH - 160) / 2,
           width: 160,
           height: 3,
@@ -239,7 +222,7 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 350,
+          top: 360,
           left: 0,
           width: CERT_WIDTH,
           height: 24,
@@ -257,7 +240,7 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 385,
+          top: 395,
           left: 0,
           width: CERT_WIDTH,
           height: 60,
@@ -276,7 +259,7 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 455,
+          top: 465,
           left: (CERT_WIDTH - 400) / 2,
           width: 400,
           height: 1,
@@ -288,7 +271,7 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 485,
+          top: 495,
           left: (CERT_WIDTH - 840) / 2,
           width: 840,
           height: 80,
