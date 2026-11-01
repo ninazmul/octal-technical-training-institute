@@ -116,7 +116,14 @@ export default function OlympiadCertificateGenerator({
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
-      scrollY: -window.scrollY,
+      width: CERT_WIDTH,
+      height: CERT_HEIGHT,
+      windowWidth: CERT_WIDTH,
+      windowHeight: CERT_HEIGHT,
+      x: 0,
+      y: 0,
+      scrollX: 0,
+      scrollY: 0,
       logging: false,
     });
     return canvas.toDataURL("image/jpeg", 0.95);
@@ -362,11 +369,25 @@ export default function OlympiadCertificateGenerator({
       {open && ranked.length > 0 && (
         <div
           ref={hiddenRef}
-          style={{ position: "fixed", top: -9999, left: -9999, zIndex: -1 }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: CERT_WIDTH,
+            height: 0,
+            overflow: "hidden",
+            pointerEvents: "none",
+            zIndex: -1,
+            opacity: 0,
+          }}
           aria-hidden
         >
           {recipients.map((att) => (
-            <div key={att._id} data-cert={att._id}>
+            <div
+              key={att._id}
+              data-cert={att._id}
+              style={{ width: CERT_WIDTH, height: CERT_HEIGHT }}
+            >
               <OlympiadCertificateTemplate data={buildData(att)} />
             </div>
           ))}
