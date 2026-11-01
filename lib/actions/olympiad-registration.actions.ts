@@ -7,7 +7,10 @@ import OlympiadRegistration, {
 } from "@/lib/database/models/olympiad-registration.model";
 import Olympiad, { IOlympiad } from "@/lib/database/models/olympiad.model";
 import Counter from "@/lib/database/models/counter.model";
-import { getOlympiadLifecycleState } from "@/lib/olympiad-lifecycle";
+import {
+  formatDhakaDateTime,
+  getOlympiadLifecycleState,
+} from "@/lib/olympiad-lifecycle";
 import {
   createOlympiadTransporter,
   dispatchRegistrationConfirmation,
@@ -435,6 +438,8 @@ export async function sendBulkMessageToRegistrants({
     // Unique per dispatch so admins can legitimately re-send the same message.
     const batchKey = Date.now();
     let sent = 0;
+    // First provider error, surfaced to the admin when deliveries fail.
+    let firstError: string | undefined;
 
     if (channel === "email") {
       if (!subject?.trim() || !html?.trim()) {
@@ -468,16 +473,20 @@ export async function sendBulkMessageToRegistrants({
 
       const targetMessage = message.trim();
 
-      sent = await runInBatches(recipients, 10, (reg) =>
-        sendOlympiadSMS({
+      sent = await runInBatches(recipients, 10, async (reg) => {
+        const result = await sendOlympiadSMS({
           olympiadId,
           number: reg.phoneNumber,
           message: targetMessage,
           type: "CUSTOM",
           idempotencyKey: `CUSTOM_SMS_${String(reg._id)}_${batchKey}`,
           recipientName: reg.studentName,
-        }),
-      );
+        });
+        if (!result.success && result.error && !firstError) {
+          firstError = `${reg.phoneNumber}: ${result.error}`;
+        }
+        return result.success;
+      });
     }
 
     await logActivity(
@@ -491,6 +500,7 @@ export async function sendBulkMessageToRegistrants({
       sent,
       failed: recipients.length - sent,
       total: recipients.length,
+      error: firstError,
     };
   } catch (error: any) {
     handleError(error);
@@ -500,6 +510,86 @@ export async function sendBulkMessageToRegistrants({
       failed: 0,
       total: 0,
       error: error?.message || "Failed to send bulk message.",
+    };
+  }
+}
+
+/**
+ * Manual "exam starts in 1 hour" SMS blast to every confirmed registrant.
+ * Invoked by an admin from the Olympiad hub; each dispatch gets a fresh
+ * idempotency key so an intentional re-send is possible.
+ */
+export async function sendExamReminderSmsToAllRegistrants(olympiadId: string): Promise<{
+  success: boolean;
+  sent: number;
+  failed: number;
+  total: number;
+  error?: string;
+}> {
+  try {
+    const { sessionClaims } = await auth();
+    const userId = sessionClaims?.userId as string;
+    const adminEmail = await getUserEmailById(userId);
+    if (!adminEmail || !(await isAdmin(adminEmail))) {
+      throw new Error("Forbidden: Admin privileges required");
+    }
+
+    await connectToDatabase();
+
+    const olympiad = await Olympiad.findById(olympiadId).lean<IOlympiad>();
+    if (!olympiad) throw new Error("Olympiad not found.");
+
+    const recipients = await OlympiadRegistration.find({
+      olympiadId,
+      status: "Confirmed",
+    }).lean<IOlympiadRegistration[]>();
+
+    if (recipients.length === 0) {
+      throw new Error("There are no confirmed registrants to notify.");
+    }
+
+    const formattedExamTime = formatDhakaDateTime(olympiad.examStartDate);
+    const examUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || "https://octal.edu.bd"}/olympiads/${olympiad.slug}/exam`;
+    const batchKey = Date.now();
+    let firstError: string | undefined;
+
+    const sent = await runInBatches(recipients, 10, async (reg) => {
+      const message = `Dear ${reg.studentName}, your ${olympiad.title} exam starts in 1 hour at ${formattedExamTime} (Dhaka). Reg No: ${reg.registrationNumber}. Join: ${examUrl} - Octal TTI`;
+      const result = await sendOlympiadSMS({
+        olympiadId,
+        number: reg.phoneNumber,
+        message,
+        type: "REMINDER_1H",
+        idempotencyKey: `REMINDER_1H_SMS_${String(reg._id)}_${batchKey}`,
+        recipientName: reg.studentName,
+      });
+      if (!result.success && result.error && !firstError) {
+        firstError = `${reg.phoneNumber}: ${result.error}`;
+      }
+      return result.success;
+    });
+
+    await logActivity(
+      "UPDATE",
+      "OlympiadRegistration",
+      `Sent 1-hour exam reminder SMS to ${sent}/${recipients.length} registrant(s) of Olympiad ${olympiadId}`,
+    );
+
+    return {
+      success: true,
+      sent,
+      failed: recipients.length - sent,
+      total: recipients.length,
+      error: firstError,
+    };
+  } catch (error: any) {
+    handleError(error);
+    return {
+      success: false,
+      sent: 0,
+      failed: 0,
+      total: 0,
+      error: error?.message || "Failed to send exam reminder SMS.",
     };
   }
 }

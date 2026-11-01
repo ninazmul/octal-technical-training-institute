@@ -13,6 +13,7 @@ import {
 import {
   cancelRegistrationAdmin,
   sendBulkMessageToRegistrants,
+  sendExamReminderSmsToAllRegistrants,
   updateRegistrationAdmin,
 } from "@/lib/actions/olympiad-registration.actions";
 import { reserveRegistrationsToDirectory } from "@/lib/actions/olympiad-participant.actions";
@@ -52,6 +53,7 @@ import {
   ShieldAlert,
   Pencil,
   Archive,
+  BellRing,
 } from "lucide-react";
 
 interface OlympiadHubProps {
@@ -84,6 +86,7 @@ export default function OlympiadHub({
   const [emailHtml, setEmailHtml] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
   const [isSendingMsg, setIsSendingMsg] = useState(false);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
 
   // Participant directory reservation + registration editing
   const [isReserving, setIsReserving] = useState(false);
@@ -183,6 +186,9 @@ export default function OlympiadHub({
           msgChannel === "email" ? "email(s)" : "SMS"
         }${res.failed ? ` • ${res.failed} failed` : ""}`,
       );
+      if (res.failed && res.error) {
+        toast.error(res.error, { duration: 6000 });
+      }
       setMsgModalOpen(false);
       setEmailSubject("");
       setEmailHtml("");
@@ -192,6 +198,37 @@ export default function OlympiadHub({
       toast.error(err.message || "Failed to send messages.");
     } finally {
       setIsSendingMsg(false);
+    }
+  };
+
+  const handleSendExamReminderSms = async () => {
+    if (
+      !confirm(
+        `Send the "exam starts in 1 hour" SMS to all ${registrations.length} confirmed registrant(s)?`,
+      )
+    )
+      return;
+
+    setIsSendingReminder(true);
+    try {
+      const res = await sendExamReminderSmsToAllRegistrants(olympiad._id);
+
+      if (!res?.success) {
+        throw new Error(res?.error || "Failed to send reminder SMS.");
+      }
+
+      toast.success(
+        `Reminder SMS sent to ${res.sent}/${res.total} registrant(s)${
+          res.failed ? ` • ${res.failed} failed` : ""
+        }`,
+      );
+      if (res.failed && res.error) {
+        toast.error(res.error, { duration: 6000 });
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reminder SMS.");
+    } finally {
+      setIsSendingReminder(false);
     }
   };
 
@@ -579,6 +616,16 @@ export default function OlympiadHub({
                 className="bg-primary text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" /> Bulk Message ({selectedRegs.length})
+              </button>
+
+              <button
+                onClick={handleSendExamReminderSms}
+                disabled={isSendingReminder || registrations.length === 0}
+                className="border border-amber-300 bg-amber-50 text-amber-800 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-amber-100 flex items-center gap-1.5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Send a 'exam starts in 1 hour' SMS to every confirmed registrant"
+              >
+                <BellRing className="w-4 h-4" />
+                {isSendingReminder ? "Sending..." : "1-Hour Reminder SMS"}
               </button>
 
               <button

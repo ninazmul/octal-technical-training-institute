@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { connectToDatabase } from "@/lib/database";
 import OlympiadNotificationLog from "@/lib/database/models/olympiad-notification.model";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
+import { sendBulkSmsBd, toBulkSmsBdNumber } from "@/lib/mailer/bulksms";
 
 /**
  * Builds a single SMTP transport. Bulk dispatchers create this once and reuse
@@ -37,19 +38,10 @@ function escapeHtml(unsafe: string) {
     .replaceAll("'", "&#039;");
 }
 
-function normalizePhoneNumber(raw: string): string {
-  let cleaned = raw.trim().replace(/\s+/g, "");
-  if (/^0\d{9,}$/.test(cleaned)) {
-    cleaned = "+880" + cleaned.slice(1);
-  }
-  if (!cleaned.startsWith("+")) {
-    cleaned = "+" + cleaned;
-  }
-  return cleaned;
-}
-
 /**
- * Reusable SMS sender leveraging existing BulksmsBD integration
+ * Reusable SMS sender leveraging existing BulksmsBD integration.
+ * Returns the provider's reason when a message could not be delivered so the
+ * admin UI can surface it instead of a bare failure count.
  */
 export async function sendOlympiadSMS({
   olympiadId,
@@ -72,49 +64,21 @@ export async function sendOlympiadSMS({
     | "CUSTOM";
   idempotencyKey: string;
   recipientName?: string;
-}): Promise<boolean> {
+}): Promise<{ success: boolean; error?: string }> {
   try {
     await connectToDatabase();
 
     // Idempotency check: don't send duplicate SMS
     const existing = await OlympiadNotificationLog.findOne({ idempotencyKey });
     if (existing && existing.status === "SENT") {
-      console.log(`[Olympiad SMS] Skipping duplicate notification for key: ${idempotencyKey}`);
-      return true;
-    }
-
-    const apiKey = process.env.SMS_API_KEY;
-    if (!apiKey) {
-      console.warn("[Olympiad SMS] SMS_API_KEY is not set. Logging simulated SMS.");
-      await OlympiadNotificationLog.findOneAndUpdate(
-        { idempotencyKey },
-        {
-          olympiadId,
-          recipientPhone: number,
-          recipientName,
-          channel: "SMS",
-          type,
-          message,
-          status: "FAILED",
-          error: "SMS_API_KEY is not configured",
-          sentAt: new Date(),
-        },
-        { upsert: true, new: true },
+      console.log(
+        `[Olympiad SMS] Skipping duplicate notification for key: ${idempotencyKey}`,
       );
-      return false;
+      return { success: true };
     }
 
-    const normalizedNumber = normalizePhoneNumber(number);
-    const senderId = "Octal TTI";
-    const smsUrl = `http://bulksmsbd.net/api/smsapi?api_key=${apiKey}&type=text&number=${encodeURIComponent(
-      normalizedNumber,
-    )}&senderid=${encodeURIComponent(senderId)}&message=${encodeURIComponent(
-      message,
-    )}`;
-
-    const res = await fetch(smsUrl, { method: "GET" });
-    const text = await res.text();
-    const isSuccess = text.includes("202");
+    const normalizedNumber = toBulkSmsBdNumber(number);
+    const result = await sendBulkSmsBd({ number, message });
 
     await OlympiadNotificationLog.findOneAndUpdate(
       { idempotencyKey },
@@ -125,17 +89,24 @@ export async function sendOlympiadSMS({
         channel: "SMS",
         type,
         message,
-        status: isSuccess ? "SENT" : "FAILED",
-        providerResponse: text,
+        status: result.ok ? "SENT" : "FAILED",
+        providerResponse: result.providerResponse,
         sentAt: new Date(),
+        ...(result.ok ? {} : { error: result.error }),
       },
       { upsert: true, new: true },
     );
 
-    return isSuccess;
+    if (!result.ok) {
+      console.error(
+        `[Olympiad SMS] Delivery failed for ${normalizedNumber}: ${result.error}`,
+      );
+    }
+
+    return { success: result.ok, error: result.error };
   } catch (err: any) {
     console.error("[Olympiad SMS Error]:", err);
-    return false;
+    return { success: false, error: err?.message || "Failed to send SMS" };
   }
 }
 
