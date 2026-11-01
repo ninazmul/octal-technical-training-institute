@@ -246,13 +246,13 @@ export default function OlympiadCertificateGenerator({
                 </span>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="flex flex-col gap-5">
                 {/* Recipient list */}
-                <div className="border rounded-lg overflow-hidden">
+                <div className="border rounded-lg overflow-hidden bg-white">
                   <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600 border-b">
                     Recipients
                   </div>
-                  <div className="max-h-[360px] overflow-y-auto divide-y">
+                  <div className="max-h-[300px] overflow-y-auto divide-y">
                     {recipients.map((att, idx) => (
                       <div
                         key={att._id}
@@ -297,14 +297,19 @@ export default function OlympiadCertificateGenerator({
                 </div>
 
                 {/* Preview */}
-                <div className="border rounded-lg bg-gray-50 p-3 overflow-hidden">
-                  <div className="text-xs font-semibold text-gray-600 mb-2">
-                    Preview — {activeRecipient?.studentName}
+                <div className="border rounded-lg bg-gray-50 p-4 overflow-hidden">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs font-semibold text-gray-600">
+                      Preview — {activeRecipient?.studentName}
+                    </div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider">
+                      Landscape A4
+                    </div>
                   </div>
-                  <div ref={previewBoxRef} className="w-full">
+                  <div ref={previewBoxRef} className="w-full flex justify-center">
                     {activeRecipient && (
                       <div
-                        className="overflow-hidden rounded shadow-sm bg-white mx-auto"
+                        className="overflow-hidden rounded-md shadow-lg bg-white"
                         style={{
                           width: CERT_WIDTH * previewScale,
                           height: CERT_HEIGHT * previewScale,
