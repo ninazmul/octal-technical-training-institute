@@ -68,80 +68,97 @@ export default function OlympiadCertificateTemplate({
       />
 
       {/* Watermark logo */}
-      <img
-        src="/assets/images/logo.png"
-        alt="Watermark"
+      <div
         style={{
           position: "absolute",
-          top: (CERT_HEIGHT - 300) / 2,
-          left: (CERT_WIDTH - 600) / 2,
-          width: 600,
-          height: 300,
+          top: (CERT_HEIGHT - 400) / 2,
+          left: (CERT_WIDTH - 800) / 2,
+          width: 800,
+          height: 400,
           opacity: 0.04,
-          objectFit: "contain",
           pointerEvents: "none",
         }}
-      />
+      >
+        <table style={{ width: "100%", height: "100%", borderCollapse: "collapse" }}>
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "center", verticalAlign: "middle", padding: 0 }}>
+                <img
+                  src="/assets/images/logo.png"
+                  alt="Watermark"
+                  style={{
+                    maxWidth: 700,
+                    maxHeight: 350,
+                    width: "auto",
+                    height: "auto",
+                    display: "inline-block",
+                  }}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       {/* Organizer logo + name */}
       <div
         style={{
           position: "absolute",
-          top: 84,
+          top: 80,
           left: 0,
           width: CERT_WIDTH,
+          height: 40,
           textAlign: "center",
         }}
       >
-        <div
-          style={{
-            display: "inline-block",
-            position: "relative",
-            height: 40,
-            lineHeight: "40px",
-          }}
-        >
-          <img
-            src="/assets/images/logo.png"
-            alt="Organizer logo"
-            style={{
-              height: 36,
-              width: "auto",
-              display: "inline-block",
-              verticalAlign: "middle",
-              objectFit: "contain",
-            }}
-          />
-          <div
-            style={{
-              display: "inline-block",
-              marginLeft: 16,
-              fontSize: 14,
-              letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              color: "#6b7280",
-              fontFamily: "sans-serif",
-              verticalAlign: "middle",
-            }}
-          >
-            {data.organizer}
-          </div>
-        </div>
+        <table style={{ margin: "0 auto", borderCollapse: "collapse" }}>
+          <tbody>
+            <tr>
+              <td style={{ padding: 0, verticalAlign: "middle" }}>
+                <img
+                  src="/assets/images/logo.png"
+                  alt="Organizer logo"
+                  style={{
+                    height: 32,
+                    width: "auto",
+                    display: "block",
+                  }}
+                />
+              </td>
+              <td
+                style={{
+                  padding: "0 0 0 16px",
+                  verticalAlign: "middle",
+                  fontSize: 14,
+                  letterSpacing: "0.3em",
+                  textTransform: "uppercase",
+                  color: "#6b7280",
+                  fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {data.organizer}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Title */}
       <div
         style={{
           position: "absolute",
-          top: 150,
+          top: 140,
           left: 0,
           width: CERT_WIDTH,
+          height: 70,
           textAlign: "center",
-          fontSize: 56,
-          lineHeight: "64px",
+          fontSize: 54,
+          lineHeight: "70px",
           fontWeight: "bold",
           color: "#0055CE",
           letterSpacing: "0.02em",
+          fontFamily: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
         }}
       >
         Certificate of Achievement
@@ -151,15 +168,17 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 220,
+          top: 215,
           left: 0,
           width: CERT_WIDTH,
+          height: 20,
           textAlign: "center",
-          fontSize: 13,
+          fontSize: 12,
+          lineHeight: "20px",
           letterSpacing: "0.4em",
           textTransform: "uppercase",
           color: "#9ca3af",
-          fontFamily: "sans-serif",
+          fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
         }}
       >
         Olympiad {data.category}
@@ -170,9 +189,10 @@ export default function OlympiadCertificateTemplate({
         <div
           style={{
             position: "absolute",
-            top: 252,
+            top: 255,
             left: 0,
             width: CERT_WIDTH,
+            height: 40,
             textAlign: "center",
           }}
         >
@@ -182,19 +202,16 @@ export default function OlympiadCertificateTemplate({
               borderRadius: 9999,
               border: "1px solid #fcd34d",
               backgroundColor: "#fffbeb",
-              padding: "6px 20px",
+              padding: "4px 24px",
               color: "#b45309",
-              position: "relative",
-              height: 32,
-              lineHeight: "20px",
+              height: 36,
+              lineHeight: "28px",
             }}
           >
             <div
               style={{
-                display: "inline-block",
-                verticalAlign: "middle",
                 fontSize: 15,
-                fontFamily: "sans-serif",
+                fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
                 fontWeight: 600,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
@@ -210,11 +227,11 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 312,
+          top: 315,
           left: (CERT_WIDTH - 160) / 2,
           width: 160,
           height: 3,
-          backgroundColor: "rgba(0, 85, 206, 0.3)",
+          backgroundColor: "rgba(0, 85, 206, 0.2)",
         }}
       />
 
@@ -222,13 +239,15 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 348,
+          top: 350,
           left: 0,
           width: CERT_WIDTH,
+          height: 24,
           textAlign: "center",
           fontSize: 16,
+          lineHeight: "24px",
           color: "#6b7280",
-          fontFamily: "sans-serif",
+          fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
         }}
       >
         This certificate is proudly presented to
@@ -238,14 +257,16 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 378,
+          top: 385,
           left: 0,
           width: CERT_WIDTH,
+          height: 60,
           textAlign: "center",
-          fontSize: 52,
-          lineHeight: "64px",
+          fontSize: 48,
+          lineHeight: "60px",
           fontWeight: "bold",
           color: "#111827",
+          fontFamily: "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
         }}
       >
         {data.studentName}
@@ -255,11 +276,11 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 452,
-          left: (CERT_WIDTH - 480) / 2,
-          width: 480,
+          top: 455,
+          left: (CERT_WIDTH - 400) / 2,
+          width: 400,
           height: 1,
-          backgroundColor: "#d1d5db",
+          backgroundColor: "#e5e7eb",
         }}
       />
 
@@ -267,14 +288,15 @@ export default function OlympiadCertificateTemplate({
       <div
         style={{
           position: "absolute",
-          top: 476,
-          left: (CERT_WIDTH - 800) / 2,
-          width: 800,
+          top: 485,
+          left: (CERT_WIDTH - 840) / 2,
+          width: 840,
+          height: 80,
           textAlign: "center",
           fontSize: 18,
           lineHeight: "28px",
-          color: "#374151",
-          fontFamily: "sans-serif",
+          color: "#4b5563",
+          fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
         }}
       >
         for outstanding performance in{" "}
