@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
@@ -35,7 +35,8 @@ type Props = {
   registrations: any[];
 };
 
-const PREVIEW_SCALE = 0.5;
+const CERT_WIDTH = 1123;
+const CERT_HEIGHT = 794;
 
 export default function OlympiadCertificateGenerator({
   olympiad,
@@ -47,7 +48,23 @@ export default function OlympiadCertificateGenerator({
   const [activeIndex, setActiveIndex] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [isExportingAll, setIsExportingAll] = useState(false);
+  const [previewScale, setPreviewScale] = useState(0.5);
   const hiddenRef = useRef<HTMLDivElement>(null);
+  const previewBoxRef = useRef<HTMLDivElement>(null);
+
+  // Fit the preview inside whatever width the dialog column gives us.
+  useEffect(() => {
+    const el = previewBoxRef.current;
+    if (!el) return;
+    const update = () => {
+      const width = el.clientWidth;
+      if (width > 0) setPreviewScale(Math.min(1, width / CERT_WIDTH));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [open]);
 
   const ranked = useMemo(
     () =>
@@ -99,6 +116,7 @@ export default function OlympiadCertificateGenerator({
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
+      scrollY: -window.scrollY,
       logging: false,
     });
     return canvas.toDataURL("image/jpeg", 0.95);
@@ -168,7 +186,7 @@ export default function OlympiadCertificateGenerator({
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-5xl">
+        <DialogContent className="max-w-5xl w-[96vw] max-h-[92vh] overflow-y-auto bg-white text-gray-900">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Award className="w-5 h-5 text-primary" /> Generate Olympiad
@@ -279,27 +297,30 @@ export default function OlympiadCertificateGenerator({
                 </div>
 
                 {/* Preview */}
-                <div className="border rounded-lg bg-gray-50 p-3">
+                <div className="border rounded-lg bg-gray-50 p-3 overflow-hidden">
                   <div className="text-xs font-semibold text-gray-600 mb-2">
                     Preview — {activeRecipient?.studentName}
                   </div>
-                  <div
-                    className="overflow-hidden rounded shadow-sm bg-white mx-auto"
-                    style={{
-                      width: 1123 * PREVIEW_SCALE,
-                      height: 794 * PREVIEW_SCALE,
-                    }}
-                  >
+                  <div ref={previewBoxRef} className="w-full">
                     {activeRecipient && (
                       <div
+                        className="overflow-hidden rounded shadow-sm bg-white mx-auto"
                         style={{
-                          transform: `scale(${PREVIEW_SCALE})`,
-                          transformOrigin: "top left",
+                          width: CERT_WIDTH * previewScale,
+                          height: CERT_HEIGHT * previewScale,
                         }}
                       >
-                        <OlympiadCertificateTemplate
-                          data={buildData(activeRecipient)}
-                        />
+                        <div
+                          style={{
+                            width: CERT_WIDTH,
+                            transform: `scale(${previewScale})`,
+                            transformOrigin: "top left",
+                          }}
+                        >
+                          <OlympiadCertificateTemplate
+                            data={buildData(activeRecipient)}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -336,7 +357,7 @@ export default function OlympiadCertificateGenerator({
       {open && ranked.length > 0 && (
         <div
           ref={hiddenRef}
-          style={{ position: "fixed", top: 0, left: -100000, zIndex: -1 }}
+          style={{ position: "fixed", top: -9999, left: -9999, zIndex: -1 }}
           aria-hidden
         >
           {recipients.map((att) => (
