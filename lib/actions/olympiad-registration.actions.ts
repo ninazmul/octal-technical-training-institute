@@ -6,6 +6,8 @@ import OlympiadRegistration, {
   IOlympiadRegistration,
 } from "@/lib/database/models/olympiad-registration.model";
 import Olympiad, { IOlympiad } from "@/lib/database/models/olympiad.model";
+import OlympiadNotificationLog from "@/lib/database/models/olympiad-notification.model";
+import { toBulkSmsBdNumber } from "@/lib/mailer/bulksms";
 import Counter from "@/lib/database/models/counter.model";
 import {
   formatDhakaDateTime,
@@ -234,8 +236,33 @@ export async function getOlympiadRegistrationsAdmin(
       OlympiadRegistration.countDocuments(query),
     ]);
 
+    // Fetch latest notification logs for these registrants to show delivery status
+    const phoneNumbers = registrations.map((r) => toBulkSmsBdNumber(r.phoneNumber));
+    const latestLogs = await OlympiadNotificationLog.find({
+      olympiadId,
+      recipientPhone: { $in: phoneNumbers },
+    })
+      .sort({ sentAt: -1 })
+      .lean();
+
+    const registrationsWithStatus = registrations.map((reg) => {
+      const normalized = toBulkSmsBdNumber(reg.phoneNumber);
+      const lastLog = latestLogs.find((l) => l.recipientPhone === normalized);
+      return {
+        ...reg,
+        lastNotification: lastLog
+          ? {
+              status: lastLog.status,
+              error: lastLog.error,
+              sentAt: lastLog.sentAt,
+              type: lastLog.type,
+            }
+          : null,
+      };
+    });
+
     return {
-      registrations: JSON.parse(JSON.stringify(registrations)),
+      registrations: JSON.parse(JSON.stringify(registrationsWithStatus)),
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,

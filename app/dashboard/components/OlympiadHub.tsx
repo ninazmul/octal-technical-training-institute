@@ -664,6 +664,7 @@ export default function OlympiadHub({
                   <th className="py-3 px-4">Student Name</th>
                   <th className="py-3 px-4">Contact Info</th>
                   <th className="py-3 px-4">Institution & Class</th>
+                  <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Registered Date</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -721,6 +722,40 @@ export default function OlympiadHub({
                         <div>
                           Class: {reg.grade} • Roll: {reg.rollNumber}
                         </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {reg.lastNotification ? (
+                          <div className="flex flex-col gap-1">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                reg.lastNotification.status === "SENT"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                              title={reg.lastNotification.error || ""}
+                            >
+                              {reg.lastNotification.status === "SENT" ? (
+                                <CheckCircle className="w-3 h-3" />
+                              ) : (
+                                <ShieldAlert className="w-3 h-3" />
+                              )}
+                              SMS {reg.lastNotification.status}
+                            </span>
+                            {reg.lastNotification.status === "FAILED" &&
+                              reg.lastNotification.error && (
+                                <div
+                                  className="text-[9px] text-red-500 font-medium leading-tight max-w-[120px]"
+                                  title={reg.lastNotification.error}
+                                >
+                                  {reg.lastNotification.error}
+                                </div>
+                              )}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                            No SMS Sent
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-xs text-gray-500">
                         {formatDhakaDateTime(reg.createdAt)}
