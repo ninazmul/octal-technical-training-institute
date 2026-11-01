@@ -71,20 +71,24 @@ export default function OlympiadCertificateTemplate({
       <div
         className="absolute pointer-events-none"
         style={{
-          top: (CERT_HEIGHT - 420) / 2,
-          left: (CERT_WIDTH - 420) / 2,
-          width: 420,
-          height: 420,
-          opacity: 0.03,
+          top: (CERT_HEIGHT - 300) / 2,
+          left: (CERT_WIDTH - 600) / 2,
+          width: 600,
+          height: 300,
+          opacity: 0.04,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <Image
+        <img
           src="/assets/images/logo.png"
           alt="Watermark"
-          width={420}
-          height={420}
-          className="w-full h-full object-contain"
-          unoptimized
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+          }}
         />
       </div>
 
@@ -98,22 +102,36 @@ export default function OlympiadCertificateTemplate({
           textAlign: "center",
         }}
       >
-        <Image
+        <img
           src="/assets/images/logo.png"
           alt="Organizer logo"
-          width={52}
-          height={52}
-          className="inline-block align-middle object-contain"
-          unoptimized
+          style={{
+            display: "inline-block",
+            verticalAlign: "middle",
+            height: 36,
+            width: "auto",
+            objectFit: "contain",
+          }}
         />
-        <span className="inline-block align-middle ml-3 text-[13px] tracking-[0.34em] uppercase text-gray-500 font-sans">
+        <span
+          style={{
+            display: "inline-block",
+            verticalAlign: "middle",
+            marginLeft: 16,
+            fontSize: 14,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "#6b7280",
+            fontFamily: "sans-serif",
+          }}
+        >
           {data.organizer}
         </span>
       </div>
 
       {/* Title */}
       <div
-        className="text-[52px] leading-none font-bold text-primary tracking-wide"
+        className="text-[56px] leading-none font-bold text-primary tracking-wide"
         style={{
           position: "absolute",
           top: 150,
@@ -127,7 +145,7 @@ export default function OlympiadCertificateTemplate({
 
       {/* Category */}
       <div
-        className="text-[12px] tracking-[0.4em] uppercase text-gray-400 font-sans"
+        className="text-[13px] tracking-[0.4em] uppercase text-gray-400 font-sans"
         style={{
           position: "absolute",
           top: 220,
@@ -150,9 +168,36 @@ export default function OlympiadCertificateTemplate({
             textAlign: "center",
           }}
         >
-          <span className="inline-block rounded-full border border-amber-300 bg-amber-50 px-4 py-1.5 text-amber-700">
-            <Award className="inline-block align-middle w-4 h-4 mr-2" />
-            <span className="inline-block align-middle text-[13px] font-sans font-semibold uppercase tracking-widest">
+          <span
+            style={{
+              display: "inline-block",
+              borderRadius: 9999,
+              border: "1px solid #fcd34d",
+              backgroundColor: "#fffbeb",
+              padding: "6px 20px",
+              color: "#b45309",
+            }}
+          >
+            <Award
+              style={{
+                display: "inline-block",
+                verticalAlign: "middle",
+                width: 18,
+                height: 18,
+                marginRight: 8,
+              }}
+            />
+            <span
+              style={{
+                display: "inline-block",
+                verticalAlign: "middle",
+                fontSize: 15,
+                fontFamily: "sans-serif",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+              }}
+            >
               {rankLabel(data.rank)}
             </span>
           </span>
@@ -167,7 +212,7 @@ export default function OlympiadCertificateTemplate({
 
       {/* Presented to */}
       <div
-        className="text-[15px] text-gray-500 font-sans"
+        className="text-[16px] text-gray-500 font-sans"
         style={{
           position: "absolute",
           top: 348,
@@ -181,7 +226,7 @@ export default function OlympiadCertificateTemplate({
 
       {/* Student name */}
       <div
-        className="text-[42px] leading-tight font-bold text-gray-900"
+        className="text-[52px] leading-tight font-bold text-gray-900"
         style={{
           position: "absolute",
           top: 378,
@@ -196,17 +241,17 @@ export default function OlympiadCertificateTemplate({
       {/* Name underline */}
       <div
         className="absolute h-[1px] bg-gray-300"
-        style={{ top: 442, left: (CERT_WIDTH - 320) / 2, width: 320 }}
+        style={{ top: 452, left: (CERT_WIDTH - 480) / 2, width: 480 }}
       />
 
       {/* Description */}
       <div
-        className="text-[17px] leading-relaxed text-gray-700 font-sans"
+        className="text-[18px] leading-relaxed text-gray-700 font-sans"
         style={{
           position: "absolute",
-          top: 466,
-          left: (CERT_WIDTH - 760) / 2,
-          width: 760,
+          top: 476,
+          left: (CERT_WIDTH - 800) / 2,
+          width: 800,
           textAlign: "center",
         }}
       >
