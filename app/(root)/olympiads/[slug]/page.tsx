@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getOlympiadBySlugPublic } from "@/lib/actions/olympiad.actions";
+import { getPublicLeaderboard } from "@/lib/actions/olympiad-exam.actions";
 import { getSetting } from "@/lib/actions/setting.actions";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 import { generateBreadcrumbSchema } from "@/lib/structured-data";
+import OlympiadRankingsTable from "@/components/shared/OlympiadRankingsTable";
 import {
   Trophy,
   Calendar,
@@ -90,6 +92,12 @@ export default async function OlympiadDetailsPage({ params }: PageProps) {
   const isOpen = lifecycle?.state === "registration_open";
   const isLive = lifecycle?.state === "exam_live";
   const isResultsOut = lifecycle?.state === "results_published";
+
+  const leaderboard = lifecycle?.canViewResults
+    ? await getPublicLeaderboard(slug)
+    : null;
+  const publicRankings =
+    leaderboard && leaderboard.isPublic ? leaderboard : null;
 
   const breadcrumbSchema = generateBreadcrumbSchema({
     items: [
@@ -259,6 +267,45 @@ export default async function OlympiadDetailsPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+
+          {/* Published Results / Leaderboard */}
+          {publicRankings && (
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="p-6 md:p-8 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                    style={{
+                      backgroundColor: `${themeColor}15`,
+                      color: themeColor,
+                    }}
+                  >
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      অফিশিয়াল ফলাফল ও র‍্যাঙ্কিং
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      মোট অংশগ্রহণকারী: {publicRankings.totalParticipants || 0} জন
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/olympiads/${slug}/leaderboard`}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition text-sm"
+                >
+                  সম্পূর্ণ র‍্যাঙ্কিং <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              <OlympiadRankingsTable
+                rows={publicRankings.leaderboard || []}
+                limit={10}
+              />
+            </div>
+          )}
 
           {/* Details Content Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
