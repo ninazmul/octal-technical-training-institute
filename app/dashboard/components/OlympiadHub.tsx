@@ -762,6 +762,12 @@ export default function OlympiadHub({
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-3">
+                          <Link
+                            href={`/dashboard/olympiads/${olympiad._id}/registrations/${reg._id}`}
+                            className="text-xs text-gray-700 hover:text-primary hover:underline inline-flex items-center gap-1"
+                          >
+                            <ExternalLink className="w-3 h-3" /> View details
+                          </Link>
                           <button
                             onClick={() => openEditModal(reg)}
                             className="text-xs text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-1"

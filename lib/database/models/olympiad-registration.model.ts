@@ -14,6 +14,7 @@ export interface IOlympiadRegistration extends Document {
   dateOfBirth?: string;
   guardianPhone?: string;
   photo?: string;
+  idCardPhoto?: string;
   customData?: Record<string, any>;
   clerkUserId?: string;
   status: "Confirmed" | "Cancelled";
@@ -45,6 +46,8 @@ const OlympiadRegistrationSchema = new Schema<IOlympiadRegistration>(
     dateOfBirth: { type: String, trim: true },
     guardianPhone: { type: String, trim: true },
     photo: { type: String, trim: true },
+    // Optional for legacy registrations created before ID card uploads were added.
+    idCardPhoto: { type: String, trim: true },
     customData: { type: Schema.Types.Mixed },
     clerkUserId: { type: String, index: true },
     status: {

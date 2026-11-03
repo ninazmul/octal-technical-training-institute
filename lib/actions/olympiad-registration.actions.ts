@@ -33,10 +33,11 @@ export type RegistrationInput = {
   institution: string;
   grade: string;
   rollNumber: string;
-  district?: string;
-  dateOfBirth?: string;
-  guardianPhone?: string;
-  photo?: string;
+  district: string;
+  dateOfBirth: string;
+  guardianPhone: string;
+  photo: string;
+  idCardPhoto: string;
   customData?: Record<string, any>;
 };
 
@@ -82,6 +83,13 @@ export async function registerForOlympiad(data: RegistrationInput) {
     if (!data.institution?.trim()) throw new Error("Institution/School name is required.");
     if (!data.grade?.trim()) throw new Error("Class/Grade is required.");
     if (!data.rollNumber?.trim()) throw new Error("Roll/ID number is required.");
+    if (!data.district?.trim()) throw new Error("District is required.");
+    if (!data.dateOfBirth?.trim()) throw new Error("Date of birth is required.");
+    if (!data.guardianPhone?.trim() || !validateBangladeshPhone(data.guardianPhone.trim())) {
+      throw new Error("A valid Bangladesh guardian phone number is required.");
+    }
+    if (!data.photo?.trim()) throw new Error("Participant photo is required.");
+    if (!data.idCardPhoto?.trim()) throw new Error("Student ID card image is required.");
 
     const normalizedEmail = data.email.toLowerCase().trim();
     const normalizedPhone = data.phoneNumber.trim();
@@ -157,6 +165,7 @@ export async function registerForOlympiad(data: RegistrationInput) {
       dateOfBirth: data.dateOfBirth?.trim(),
       guardianPhone: data.guardianPhone?.trim(),
       photo: data.photo?.trim(),
+      idCardPhoto: data.idCardPhoto.trim(),
       customData: data.customData,
       clerkUserId,
       status: "Confirmed",
@@ -270,6 +279,29 @@ export async function getOlympiadRegistrationsAdmin(
   } catch (error) {
     handleError(error);
     return { registrations: [], totalCount: 0, totalPages: 0, currentPage: 1 };
+  }
+}
+
+export async function getOlympiadRegistrationAdmin(
+  olympiadId: string,
+  registrationId: string,
+) {
+  try {
+    const { sessionClaims } = await auth();
+    const userId = sessionClaims?.userId as string;
+    if (!userId) throw new Error("Unauthorized");
+    const email = await getUserEmailById(userId);
+    if (!email || !(await isAdmin(email))) throw new Error("Forbidden");
+
+    await connectToDatabase();
+    const registration = await OlympiadRegistration.findOne({
+      _id: registrationId,
+      olympiadId,
+    }).lean<IOlympiadRegistration>();
+    return registration ? JSON.parse(JSON.stringify(registration)) : null;
+  } catch (error) {
+    handleError(error);
+    return null;
   }
 }
 

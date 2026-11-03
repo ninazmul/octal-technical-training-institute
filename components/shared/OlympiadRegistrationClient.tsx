@@ -46,6 +46,7 @@ export default function OlympiadRegistrationClient({
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [guardianPhone, setGuardianPhone] = useState("");
   const [photo, setPhoto] = useState("");
+  const [idCardPhoto, setIdCardPhoto] = useState("");
   const [customData, setCustomData] = useState<Record<string, any>>({});
 
   const handleCustomFieldChange = (key: string, val: any) => {
@@ -55,8 +56,8 @@ export default function OlympiadRegistrationClient({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!studentName.trim() || !email.trim() || !phoneNumber.trim()) {
-      toast.error("Please fill in all required contact information.");
+    if (!studentName.trim() || !email.trim() || !phoneNumber.trim() || !institution.trim() || !grade.trim() || !rollNumber.trim() || !district.trim() || !dateOfBirth.trim() || !guardianPhone.trim() || !photo || !idCardPhoto) {
+      toast.error("Please complete all required fields and upload both images.");
       return;
     }
 
@@ -70,10 +71,11 @@ export default function OlympiadRegistrationClient({
       institution: institution.trim(),
       grade,
       rollNumber: rollNumber.trim(),
-      district: district.trim() || undefined,
-      dateOfBirth: dateOfBirth.trim() || undefined,
-      guardianPhone: guardianPhone.trim() || undefined,
-      photo: photo || undefined,
+      district: district.trim(),
+      dateOfBirth: dateOfBirth.trim(),
+      guardianPhone: guardianPhone.trim(),
+      photo,
+      idCardPhoto,
       customData,
     };
 
@@ -266,6 +268,7 @@ export default function OlympiadRegistrationClient({
               Class / Grade *
             </label>
             <select
+              required
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
               className="w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary focus:outline-none"
@@ -300,10 +303,11 @@ export default function OlympiadRegistrationClient({
 
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">
-              District
+              District *
             </label>
             <input
               type="text"
+              required
               value={district}
               onChange={(e) => setDistrict(e.target.value)}
               placeholder="e.g. Dhaka, Chittagong"
@@ -316,10 +320,11 @@ export default function OlympiadRegistrationClient({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">
-              Date of Birth
+              Date of Birth *
             </label>
             <input
               type="date"
+              required
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
               className="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-primary focus:outline-none"
@@ -328,10 +333,11 @@ export default function OlympiadRegistrationClient({
 
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">
-              Guardian Contact Number
+              Guardian Contact Number *
             </label>
             <input
               type="tel"
+              required
               value={guardianPhone}
               onChange={(e) => setGuardianPhone(e.target.value)}
               placeholder="018XXXXXXXX"
@@ -344,7 +350,7 @@ export default function OlympiadRegistrationClient({
         <div className="pt-2 space-y-2 border-t">
           <div>
             <label className="block text-xs font-bold text-gray-700">
-              Participant Photo
+              Participant Photo *
             </label>
             <p className="text-[11px] text-gray-500 mt-0.5">
               Upload a recent passport-size photograph (JPG or PNG, max 5MB).
@@ -355,6 +361,20 @@ export default function OlympiadRegistrationClient({
             setFiles={() => {}}
             onFieldChange={(url) => setPhoto(url)}
           />
+          {!photo && <p className="text-xs text-red-600">Participant photo is required.</p>}
+        </div>
+
+        <div className="pt-2 space-y-2 border-t">
+          <div>
+            <label className="block text-xs font-bold text-gray-700">Student ID Card Image *</label>
+            <p className="text-[11px] text-gray-500 mt-0.5">Upload a clear image of the student ID card (JPG or PNG, max 5MB).</p>
+          </div>
+          <FileUploader
+            imageUrl={idCardPhoto}
+            setFiles={() => {}}
+            onFieldChange={(url) => setIdCardPhoto(url)}
+          />
+          {!idCardPhoto && <p className="text-xs text-red-600">Student ID card image is required.</p>}
         </div>
 
         {/* Custom Form Fields configured by Admin */}
