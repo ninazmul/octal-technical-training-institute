@@ -288,7 +288,7 @@ export default function OlympiadExamEngine({
         return;
       }
 
-      if (!res.olympiadId || !res.attemptId) {
+      if (!res.olympiadId || !res.attemptId || !res.accessToken) {
         throw new Error("Invalid session details received from server.");
       }
 
@@ -473,7 +473,10 @@ export default function OlympiadExamEngine({
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
         }
-        setSubmittedAttempt(res.attempt);
+        setSubmittedAttempt({
+          status: res.status,
+          submittedAt: res.submittedAt,
+        });
         setStage("submitted");
       }
     } catch (err: any) {
