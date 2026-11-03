@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/database";
 import Olympiad, { IOlympiad } from "@/lib/database/models/olympiad.model";
@@ -19,14 +20,29 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
 
+function hashAttemptToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function verifyAttemptToken(attempt: any, token?: string) {
+  if (!token || !attempt.accessTokenHash) throw new Error("Invalid exam session. Re-enter your registration details.");
+  const actual = Buffer.from(hashAttemptToken(token), "hex");
+  const expected = Buffer.from(attempt.accessTokenHash, "hex");
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+    throw new Error("Invalid exam session. Re-enter your registration details.");
+  }
+}
+
 // -------------------- Exam Access & Authoritative Timing --------------------
 
 export async function startOrResumeExam({
   olympiadSlug,
   registrationIdentifier, // Can be email or registrationNumber
+  accessToken,
 }: {
   olympiadSlug: string;
   registrationIdentifier: string;
+  accessToken?: string;
 }) {
   try {
     await connectToDatabase();
@@ -74,7 +90,7 @@ export async function startOrResumeExam({
     let attempt = await OlympiadAttempt.findOne({
       olympiadId: olympiad._id,
       registrationId: registration._id,
-    });
+    }).select("+accessTokenHash");
 
     if (attempt) {
       if (attempt.status !== "in_progress") {
@@ -85,6 +101,15 @@ export async function startOrResumeExam({
           attemptId: String(attempt._id),
           isCompleted: true,
         };
+      }
+
+      if (attempt.accessTokenHash) {
+        verifyAttemptToken(attempt, accessToken);
+      } else {
+        // Upgrade attempts created before session tokens were introduced.
+        accessToken = randomBytes(32).toString("hex");
+        attempt.accessTokenHash = hashAttemptToken(accessToken);
+        await attempt.save();
       }
 
       // Align the attempt to the shared examination window so every
@@ -115,6 +140,7 @@ export async function startOrResumeExam({
         success: true,
         isCompleted: false,
         attemptId: String(attempt._id),
+        accessToken,
         olympiadId: String(olympiad._id),
         olympiadTitle: olympiad.title,
         studentName: attempt.studentName,
@@ -134,6 +160,7 @@ export async function startOrResumeExam({
     // closes at examEndDate — late entrants simply have less time remaining.
     const effectiveDeadline = new Date(olympiad.examEndDate);
 
+    accessToken = randomBytes(32).toString("hex");
     attempt = await OlympiadAttempt.create({
       olympiadId: olympiad._id,
       registrationId: registration._id,
@@ -143,6 +170,7 @@ export async function startOrResumeExam({
       studentGrade: registration.grade,
       startedAt: now,
       effectiveDeadline,
+      accessTokenHash: hashAttemptToken(accessToken),
       status: "in_progress",
       answers: [],
     });
@@ -151,6 +179,7 @@ export async function startOrResumeExam({
       success: true,
       isCompleted: false,
       attemptId: String(attempt._id),
+      accessToken,
       olympiadId: String(olympiad._id),
       olympiadTitle: olympiad.title,
       studentName: attempt.studentName,
@@ -172,12 +201,14 @@ export async function startOrResumeExam({
 
 export async function autosaveAnswer({
   attemptId,
+  accessToken,
   questionId,
   selectedOptions,
   textAnswer,
   isMarkedForReview,
 }: {
   attemptId: string;
+  accessToken: string;
   questionId: string;
   selectedOptions?: string[];
   textAnswer?: string;
@@ -185,8 +216,9 @@ export async function autosaveAnswer({
 }) {
   try {
     await connectToDatabase();
-    const attempt = await OlympiadAttempt.findById(attemptId);
+    const attempt = await OlympiadAttempt.findById(attemptId).select("+accessTokenHash");
     if (!attempt) throw new Error("Attempt not found");
+    verifyAttemptToken(attempt, accessToken);
 
     if (attempt.status !== "in_progress") {
       throw new Error("Cannot save: Attempt is already finalized.");
@@ -197,6 +229,32 @@ export async function autosaveAnswer({
     if (Date.now() > new Date(attempt.effectiveDeadline).getTime() + graceMs) {
       await finalizeAttemptInternal(attemptId, "timed_out");
       throw new Error("Examination deadline has passed.");
+    }
+
+    const olympiad = await Olympiad.findById(attempt.olympiadId).lean<IOlympiad>();
+    const question = await OlympiadQuestion.findOne({
+      _id: questionId,
+      olympiadId: attempt.olympiadId,
+      isActive: true,
+    }).select("options questionType").lean<IOlympiadQuestion>();
+    if (!olympiad || !question || !attempt.questionOrder.includes(questionId)) {
+      throw new Error("Invalid question for this exam session.");
+    }
+    if (new Date() < new Date(olympiad.examStartDate) || new Date() > new Date(olympiad.examEndDate)) {
+      throw new Error("The examination window is closed.");
+    }
+    if (!Array.isArray(selectedOptions) || selectedOptions.length > 20 || selectedOptions.some((v) => typeof v !== "string" || v.length > 100)) {
+      throw new Error("Invalid answer payload.");
+    }
+    const validOptionIds = new Set((question.options || []).map((option) => option.id));
+    if (new Set(selectedOptions).size !== selectedOptions.length || selectedOptions.some((optionId) => !validOptionIds.has(optionId))) {
+      throw new Error("Answer contains an invalid option.");
+    }
+    if ((question.questionType === "single_choice" || question.questionType === "true_false") && selectedOptions.length > 1) {
+      throw new Error("Only one option can be selected for this question.");
+    }
+    if (typeof textAnswer === "string" && textAnswer.length > 20000) {
+      throw new Error("Answer is too long.");
     }
 
     const now = new Date();
@@ -233,10 +291,18 @@ export async function autosaveAnswer({
 
 // -------------------- Final Submit & Automated Evaluation --------------------
 
-export async function submitExamAttempt(attemptId: string) {
+export async function submitExamAttempt(attemptId: string, accessToken: string) {
   try {
     await connectToDatabase();
-    return await finalizeAttemptInternal(attemptId, "submitted");
+    const attempt = await OlympiadAttempt.findById(attemptId).select("+accessTokenHash");
+    if (!attempt) throw new Error("Attempt not found");
+    verifyAttemptToken(attempt, accessToken);
+    const result = await finalizeAttemptInternal(attemptId, "submitted");
+    return {
+      success: Boolean((result as any)?.success),
+      submittedAt: (result as any)?.attempt?.submittedAt,
+      status: (result as any)?.attempt?.status,
+    };
   } catch (error) {
     handleError(error);
   }
@@ -250,15 +316,21 @@ export async function submitExamAttempt(attemptId: string) {
  */
 export async function logProctoringViolation({
   attemptId,
+  accessToken,
   type,
   detail,
 }: {
   attemptId: string;
+  accessToken: string;
   type: string;
   detail?: string;
 }) {
   try {
     await connectToDatabase();
+
+    const attempt = await OlympiadAttempt.findById(attemptId).select("+accessTokenHash");
+    if (!attempt) throw new Error("Attempt not found");
+    verifyAttemptToken(attempt, accessToken);
 
     const updated = await OlympiadAttempt.findOneAndUpdate(
       { _id: attemptId, status: "in_progress" },
@@ -287,15 +359,21 @@ export async function logProctoringViolation({
  */
 export async function terminateAttemptForViolation({
   attemptId,
+  accessToken,
   type,
   detail,
 }: {
   attemptId: string;
+  accessToken: string;
   type: string;
   detail?: string;
 }) {
   try {
     await connectToDatabase();
+
+    const attempt = await OlympiadAttempt.findById(attemptId).select("+accessTokenHash");
+    if (!attempt) throw new Error("Attempt not found");
+    verifyAttemptToken(attempt, accessToken);
 
     const flagged = await OlympiadAttempt.findOneAndUpdate(
       { _id: attemptId, status: "in_progress" },

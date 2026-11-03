@@ -33,6 +33,7 @@ export interface IOlympiadAttempt extends Document {
   studentGrade?: string;
   startedAt: Date;
   effectiveDeadline: Date;
+  accessTokenHash?: string;
   submittedAt?: Date;
   status: "in_progress" | "submitted" | "timed_out" | "evaluated";
   questionOrder: string[]; // Snapshot of question IDs in assigned sequence
@@ -105,6 +106,7 @@ const OlympiadAttemptSchema = new Schema<IOlympiadAttempt>(
     studentGrade: { type: String, trim: true },
     startedAt: { type: Date, required: true },
     effectiveDeadline: { type: Date, required: true },
+    accessTokenHash: { type: String, select: false },
     submittedAt: { type: Date },
     status: {
       type: String,

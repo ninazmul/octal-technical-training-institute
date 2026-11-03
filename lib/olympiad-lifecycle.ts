@@ -92,7 +92,13 @@ export function getOlympiadLifecycleState(
   }
 
   // 2. Registration is Open
-  if (nowMs >= regStartMs && nowMs < regDeadlineMs) {
+  // Registration must stop at the earlier of its deadline and exam start,
+  // even if an Olympiad was configured with overlapping dates.
+  if (
+    nowMs >= regStartMs &&
+    nowMs < regDeadlineMs &&
+    nowMs < examStartMs
+  ) {
     return {
       state: "registration_open",
       label: "নিবন্ধন চলছে (Reg. Open)",

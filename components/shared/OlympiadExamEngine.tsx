@@ -98,7 +98,7 @@ export default function OlympiadExamEngine({
       terminatedRef.current = true;
 
       try {
-        await terminateAttemptForViolation({ attemptId, type, detail });
+        await terminateAttemptForViolation({ attemptId, accessToken: sessionData.accessToken, type, detail });
       } catch {
         // Attempt is already finalised server-side.
       } finally {
@@ -110,7 +110,7 @@ export default function OlympiadExamEngine({
         toast.error(detail);
       }
     },
-    [sessionData?.attemptId],
+    [sessionData?.attemptId, sessionData?.accessToken],
   );
 
   // Enforce the examination integrity rules while the test is live.
@@ -126,7 +126,7 @@ export default function OlympiadExamEngine({
       lastLoggedRef.current[type] = now;
       const attemptId = sessionData?.attemptId;
       if (attemptId) {
-        logProctoringViolation({ attemptId, type, detail }).catch(() => {});
+        logProctoringViolation({ attemptId, accessToken: sessionData?.accessToken, type, detail }).catch(() => {});
       }
       setViolationNotice(detail);
       setTimeout(() => setViolationNotice(""), 4000);
@@ -272,6 +272,7 @@ export default function OlympiadExamEngine({
       const res = await startOrResumeExam({
         olympiadSlug,
         registrationIdentifier: identifier.trim(),
+        accessToken: sessionStorage.getItem(`olympiad-session:${olympiadSlug}`) || undefined,
       });
 
       if (!res) {
@@ -292,11 +293,13 @@ export default function OlympiadExamEngine({
       }
 
       setSessionData(res);
+      if (res.accessToken) sessionStorage.setItem(`olympiad-session:${olympiadSlug}`, res.accessToken);
 
       // Fetch sanitized question set
       const qList = await getQuestionsForExamStudent(
         res.olympiadId,
         res.attemptId,
+        res.accessToken,
       );
       setQuestions(qList);
 
@@ -373,6 +376,7 @@ export default function OlympiadExamEngine({
       try {
         await autosaveAnswer({
           attemptId: sessionData.attemptId,
+          accessToken: sessionData.accessToken,
           questionId: qId,
           selectedOptions,
           textAnswer,
@@ -385,7 +389,7 @@ export default function OlympiadExamEngine({
         setIsSaving(false);
       }
     },
-    [sessionData?.attemptId],
+    [sessionData?.attemptId, sessionData?.accessToken],
   );
 
   const handleOptionSelect = (qId: string, optId: string, isMulti: boolean) => {
@@ -457,7 +461,7 @@ export default function OlympiadExamEngine({
     setShowConfirmModal(false);
 
     try {
-      const res = await submitExamAttempt(sessionData.attemptId);
+      const res = await submitExamAttempt(sessionData.attemptId, sessionData.accessToken);
       if (res && res.success) {
         toast.success(
           isAutoTimeout

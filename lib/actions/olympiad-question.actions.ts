@@ -16,6 +16,7 @@ import { handleError } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
+import { createHash, timingSafeEqual } from "crypto";
 
 async function verifyAdminAuth(): Promise<{ email: string }> {
   const { sessionClaims } = await auth();
@@ -181,21 +182,36 @@ export async function reorderQuestions(
 export async function getQuestionsForExamStudent(
   olympiadId: string,
   attemptId: string,
+  accessToken: string,
 ) {
   try {
     await connectToDatabase();
 
     const [olympiad, attempt] = await Promise.all([
       Olympiad.findById(olympiadId).lean<IOlympiad>(),
-      OlympiadAttempt.findById(attemptId).lean<IOlympiadAttempt>(),
+      OlympiadAttempt.findById(attemptId).select("+accessTokenHash").lean<IOlympiadAttempt>(),
     ]);
 
     if (!olympiad || !attempt) {
       throw new Error("Invalid examination or attempt session.");
     }
+    if (String(attempt.olympiadId) !== olympiadId) {
+      throw new Error("Invalid examination session.");
+    }
+
+    const tokenHash = createHash("sha256").update(accessToken || "").digest("hex");
+    const actual = Buffer.from(tokenHash, "hex");
+    const expected = Buffer.from(attempt.accessTokenHash || "", "hex");
+    if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+      throw new Error("Invalid exam session.");
+    }
 
     if (attempt.status !== "in_progress") {
       throw new Error("Examination attempt is already finalized.");
+    }
+    const now = Date.now();
+    if (now < new Date(olympiad.examStartDate).getTime() || now > new Date(olympiad.examEndDate).getTime()) {
+      throw new Error("The examination window is closed.");
     }
 
     const allQuestions = await OlympiadQuestion.find({
