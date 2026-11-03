@@ -757,7 +757,7 @@ export async function verifyOlympiadCertificate(input: {
       registrationId: registration._id,
       status: { $in: ["submitted", "evaluated"] },
       rank: { $exists: true, $gt: 0 },
-    }).select("rank totalScore maxScore percentage").lean();
+    }).select("rank totalScore maxScore percentage").lean<IOlympiadAttempt>();
     if (!attempt) return { verified: false, message: "No published winner result matches this registration." };
 
     return {
