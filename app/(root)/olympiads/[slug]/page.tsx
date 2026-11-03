@@ -8,6 +8,7 @@ import { getSetting } from "@/lib/actions/setting.actions";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
 import { generateBreadcrumbSchema } from "@/lib/structured-data";
 import OlympiadRankingsTable from "@/components/shared/OlympiadRankingsTable";
+import OlympiadCertificateVerification from "@/components/shared/OlympiadCertificateVerification";
 import {
   Trophy,
   Calendar,
@@ -306,6 +307,8 @@ export default async function OlympiadDetailsPage({ params }: PageProps) {
               />
             </div>
           )}
+
+          <OlympiadCertificateVerification slug={slug} compact />
 
           {/* Details Content Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

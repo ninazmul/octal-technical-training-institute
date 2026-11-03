@@ -719,6 +719,65 @@ export async function getPublicLeaderboard(olympiadSlug: string) {
   }
 }
 
+export async function verifyOlympiadCertificate(input: {
+  olympiadSlug: string;
+  registrationNumber: string;
+  studentName?: string;
+  institution?: string;
+}) {
+  try {
+    const registrationNumber = input.registrationNumber?.trim().toUpperCase();
+    if (!registrationNumber) return { verified: false, message: "Enter the certificate registration number." };
+
+    await connectToDatabase();
+    const olympiad = await Olympiad.findOne({
+      slug: input.olympiadSlug.toLowerCase().trim(),
+      status: { $in: ["Published", "Archived"] },
+    }).lean<IOlympiad>();
+    if (!olympiad) return { verified: false, message: "Olympiad not found." };
+    if (!getOlympiadLifecycleState(olympiad).canViewResults) {
+      return { verified: false, message: "Official results have not been published." };
+    }
+
+    const registration = await OlympiadRegistration.findOne({
+      olympiadId: olympiad._id,
+      registrationNumber,
+      status: "Confirmed",
+    }).lean<IOlympiadRegistration>();
+    if (!registration) return { verified: false, message: "No valid certificate record was found." };
+    if (input.studentName?.trim() && registration.studentName.toLocaleLowerCase() !== input.studentName.trim().toLocaleLowerCase()) {
+      return { verified: false, message: "The name does not match this certificate." };
+    }
+    if (input.institution?.trim() && registration.institution.toLocaleLowerCase() !== input.institution.trim().toLocaleLowerCase()) {
+      return { verified: false, message: "The school or institution does not match this certificate." };
+    }
+
+    const attempt = await OlympiadAttempt.findOne({
+      olympiadId: olympiad._id,
+      registrationId: registration._id,
+      status: { $in: ["submitted", "evaluated"] },
+      rank: { $exists: true, $gt: 0 },
+    }).select("rank totalScore maxScore percentage").lean();
+    if (!attempt) return { verified: false, message: "No published winner result matches this registration." };
+
+    return {
+      verified: true,
+      olympiadTitle: olympiad.title,
+      studentName: registration.studentName,
+      institution: registration.institution,
+      grade: registration.grade,
+      registrationNumber: registration.registrationNumber,
+      rank: attempt.rank,
+      totalScore: attempt.totalScore,
+      maxScore: attempt.maxScore,
+      percentage: attempt.percentage,
+    };
+  } catch (error) {
+    handleError(error);
+    return { verified: false, message: "Certificate verification is temporarily unavailable." };
+  }
+}
+
 export async function getOlympiadAttemptsAdmin(
   olympiadId: string,
   options?: {

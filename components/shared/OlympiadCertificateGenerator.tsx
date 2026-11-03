@@ -37,6 +37,7 @@ type Props = {
 
 const CERT_WIDTH = 1123;
 const CERT_HEIGHT = 794;
+const PUBLIC_BASE_URL = (process.env.NEXT_PUBLIC_SERVER_URL || "https://octal.edu.bd").replace(/\/+$/, "");
 
 export default function OlympiadCertificateGenerator({
   olympiad,
@@ -108,6 +109,7 @@ export default function OlympiadCertificateGenerator({
     registrationNumber: att.registrationId
       ? regNumberById[String(att.registrationId)]
       : undefined,
+    verificationUrl: `${PUBLIC_BASE_URL}/olympiads/${olympiad.slug}/verify?registration=${encodeURIComponent(regNumberById[String(att.registrationId)] || "")}`,
     issuedAt,
   });
 

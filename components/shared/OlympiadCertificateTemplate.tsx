@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Award } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 
 // Removed unused lucide-react Award import if not used elsewhere, 
 // but keeping it for now if needed, though I'll use emoji for the badge.
@@ -16,6 +17,7 @@ export type OlympiadCertificateData = {
   maxScore: number;
   percentage: number;
   registrationNumber?: string;
+  verificationUrl: string;
   issuedAt: string;
 };
 
@@ -342,6 +344,10 @@ export default function OlympiadCertificateTemplate({
           Registration No: {data.registrationNumber}
         </div>
       )}
+      <div style={{ position: "absolute", right: 58, bottom: 44, width: 88, textAlign: "center", fontFamily: "ui-sans-serif, system-ui, sans-serif", color: "#6b7280", fontSize: 9 }}>
+        <QRCodeCanvas value={data.verificationUrl} size={68} level="M" marginSize={1} />
+        <div style={{ marginTop: 3 }}>Scan to verify</div>
+      </div>
     </div>
   );
 }
