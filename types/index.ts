@@ -93,7 +93,9 @@ export interface Hero {
 }
 
 export interface Popup {
+  title?: string;
   image?: string;
+  link?: string;
   offerStartDate?: string;
   offerEndDate?: string;
 }
@@ -159,6 +161,7 @@ export interface SettingParams {
 
   // ===== Popup Section =====
   popup?: Popup;
+  popups?: Popup[];
 
   certificate?: string;
 

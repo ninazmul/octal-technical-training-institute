@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/accordion";
 import { HexColorPicker } from "react-colorful";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, ExternalLink } from "lucide-react";
 
 import { useMemo, useEffect } from "react";
 
@@ -59,6 +61,14 @@ const optionalUrl = z.preprocess((v) => {
   }
   return v;
 }, z.string().url("Invalid URL").optional().or(z.literal("")));
+
+const optionalPopupLink = z.preprocess(
+  (v) => (v === null || v === undefined ? "" : typeof v === "string" ? v.trim() : v),
+  z.string().refine(
+    (value) => !value || (/^https?:\/\//i.test(value) && !/[\\\u0000-\u001f]/.test(value)) || (value.startsWith("/") && !value.startsWith("//") && !/[\\\u0000-\u001f]/.test(value)),
+    "Enter an http(s) address or a site path beginning with /.",
+  ),
+);
 
 // ================= Zod Schema =================
 export const settingSchema = z.object({
@@ -101,13 +111,13 @@ export const settingSchema = z.object({
     })
     .optional(),
 
-  popup: z
-    .object({
-      image: optionalString,
-      offerStartDate: optionalString,
-      offerEndDate: optionalString,
-    })
-    .optional(),
+  popups: z.array(z.object({
+    title: optionalString,
+    image: optionalString,
+    link: optionalPopupLink,
+    offerStartDate: optionalString,
+    offerEndDate: optionalString,
+  })).default([]),
 
   certificate: optionalString,
 
@@ -253,7 +263,9 @@ export const settingSchema = z.object({
 export type SettingFormValues = z.infer<typeof settingSchema>;
 
 type Props = {
-  initialData?: Partial<SettingFormValues>;
+  initialData?: Partial<SettingFormValues> & {
+    popup?: { title?: string; image?: string; link?: string; offerStartDate?: string; offerEndDate?: string };
+  };
   onSubmit: (data: SettingFormValues) => Promise<void>;
 };
 
@@ -287,7 +299,11 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
         privacyPolicy: initialData?.privacyPolicy || "",
         ceo: initialData?.ceo || { name: "", photo: "", about: "" },
         hero: initialData?.hero || { title: "", description: "", image: "", offerStartDate: "", offerEndDate: "" },
-        popup: initialData?.popup || { image: "", offerStartDate: "", offerEndDate: "" },
+        popups: initialData?.popups?.length
+          ? initialData.popups
+          : initialData?.popup?.image
+            ? [initialData.popup]
+            : [],
         certificate: initialData?.certificate || "",
         features: initialData?.features || { badge: "", title: "", description: "", items: [] },
         testimonials: initialData?.testimonials || { badge: "", title: "", description: "", totalEnrollment: 0, totalSucceededStudents: 0, totalIndustryExperts: 0, feedbacks: [] },
@@ -374,6 +390,15 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
   } = useFieldArray({
     control: form.control,
     name: "links",
+  });
+
+  const {
+    fields: popupFields,
+    append: appendPopup,
+    remove: removePopup,
+  } = useFieldArray({
+    control: form.control,
+    name: "popups",
   });
 
   return (
@@ -825,65 +850,60 @@ export default function SettingForm({ initialData, onSubmit }: Props) {
 
           {/* ===== Popup Section ===== */}
           <AccordionItem value="popup">
-            <AccordionTrigger>Popup Section</AccordionTrigger>
-            <AccordionContent className="space-y-4">
-              {(["image"] as const).map((key) => (
-                <FormField
-                  key={key}
-                  control={form.control}
-                  name={`popup.${key}`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image</FormLabel>
-                      <FormControl>
-                        <FileUploader
-                          imageUrl={field.value || ""}
-                          onFieldChange={async (_blobUrl, files) => {
-                            if (files?.length) {
-                              const uploaded = await startUpload(files);
-                              if (uploaded?.[0]) {
-                                form.setValue(`popup.${key}`, uploaded[0].url, {
-                                  shouldValidate: true,
-                                });
-                              }
-                            }
-                          }}
-                          setFiles={() => {}}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
+            <AccordionTrigger>Homepage Popups</AccordionTrigger>
+            <AccordionContent className="space-y-5">
+              <div className="flex flex-col gap-3 rounded-xl border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold">Promotional popups</p>
+                  <p className="text-sm text-muted-foreground">Add multiple campaigns. Visitors will see each active popup in sequence.</p>
+                </div>
+                <Button type="button" variant="outline" onClick={() => appendPopup({ title: "", image: "", link: "", offerStartDate: "", offerEndDate: "" })}>
+                  <Plus className="mr-2 h-4 w-4" /> Add popup
+                </Button>
+              </div>
 
-              {(["offerStartDate", "offerEndDate"] as const).map((key) => (
-                <FormField
-                  key={key}
-                  control={form.control}
-                  name={`popup.${key}`}
-                  render={({ field }) => {
-                    // Convert string to yyyy-MM-dd format for date input
-                    const dateValue =
-                      field.value && !isNaN(Date.parse(field.value))
-                        ? new Date(field.value).toISOString().split("T")[0]
-                        : "";
+              {popupFields.length === 0 ? (
+                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">No homepage popups added yet.</div>
+              ) : popupFields.map((popup, index) => (
+                <section key={popup.id} className="space-y-4 rounded-xl border bg-card p-4 shadow-sm sm:p-5">
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <div>
+                      <h3 className="font-semibold">Popup {index + 1}</h3>
+                      <p className="text-xs text-muted-foreground">Image, destination, and optional display dates</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => removePopup(index)}>
+                      <Trash2 className="mr-2 h-4 w-4" /> Remove
+                    </Button>
+                  </div>
 
-                    return (
-                      <FormItem>
-                        <FormLabel>{key}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={dateValue}
-                            onChange={(e) => field.onChange(e.target.value)} // Keep string
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
+                  <FormField control={form.control} name={`popups.${index}.title`} render={({ field }) => (
+                    <FormItem><FormLabel>Campaign name</FormLabel><FormControl><Input placeholder="e.g. Winter admission offer" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                  )} />
+
+                  <FormField control={form.control} name={`popups.${index}.image`} render={({ field }) => (
+                    <FormItem><FormLabel>Popup image</FormLabel><FormControl>
+                      <FileUploader imageUrl={field.value || ""} onFieldChange={async (_blobUrl, files) => {
+                        if (files?.length) {
+                          const uploaded = await startUpload(files);
+                          if (uploaded?.[0]) form.setValue(`popups.${index}.image`, uploaded[0].url, { shouldValidate: true, shouldDirty: true });
+                        }
+                      }} setFiles={() => {}} />
+                    </FormControl><FormMessage /></FormItem>
+                  )} />
+
+                  <FormField control={form.control} name={`popups.${index}.link`} render={({ field }) => (
+                    <FormItem><FormLabel>Click destination</FormLabel><FormControl><div className="relative"><ExternalLink className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input className="pl-9" placeholder="https://example.com/offer or /courses" {...field} value={field.value || ""} /></div></FormControl><p className="text-xs text-muted-foreground">When clicked, the popup opens this page or address.</p><FormMessage /></FormItem>
+                  )} />
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {(["offerStartDate", "offerEndDate"] as const).map((key) => (
+                      <FormField key={key} control={form.control} name={`popups.${index}.${key}`} render={({ field }) => {
+                        const dateValue = field.value && !isNaN(Date.parse(field.value)) ? new Date(field.value).toISOString().split("T")[0] : "";
+                        return <FormItem><FormLabel>{key === "offerStartDate" ? "Start date (optional)" : "End date (optional)"}</FormLabel><FormControl><Input type="date" value={dateValue} onChange={(e) => field.onChange(e.target.value)} /></FormControl><FormMessage /></FormItem>;
+                      }} />
+                    ))}
+                  </div>
+                </section>
               ))}
             </AccordionContent>
           </AccordionItem>

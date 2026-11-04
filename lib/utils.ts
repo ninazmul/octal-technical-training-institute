@@ -200,11 +200,24 @@ export function sanitizeSetting(setting: ISetting | null): ISettingSafe | null {
       : undefined,
     popup: setting.popup
       ? {
+          title: setting.popup.title ?? "",
           image: setting.popup.image ?? "",
+          link: setting.popup.link ?? "",
           offerStartDate: setting.popup.offerStartDate ?? "",
           offerEndDate: setting.popup.offerEndDate ?? "",
         }
       : undefined,
+    popups: (setting.popups?.length
+      ? setting.popups
+      : setting.popup?.image
+        ? [setting.popup]
+        : []).map((popup) => ({
+          title: popup.title ?? "",
+          image: popup.image ?? "",
+          link: popup.link ?? "",
+          offerStartDate: popup.offerStartDate ?? "",
+          offerEndDate: popup.offerEndDate ?? "",
+        })),
     certificate: setting.certificate ?? "",
     features: setting.features
       ? {

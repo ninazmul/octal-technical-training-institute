@@ -23,7 +23,10 @@ export const createSetting = async (
       throw new Error("Settings already exist");
     }
 
-    const newSetting = await Setting.create(params);
+    const newSetting = await Setting.create({
+      ...params,
+      popups: validatePopupLinks(params.popups),
+    });
     return sanitizeSetting(newSetting.toObject() as ISetting);
   } catch (error) {
     handleError(error);
@@ -57,6 +60,7 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   privacyPolicy: "",
   hero: { title: "", description: "", image: "" },
   popup: { image: "" },
+  popups: [],
   certificate: "",
   features: { badge: "", title: "", description: "", items: [] },
   testimonials: {
@@ -81,6 +85,17 @@ const DEFAULT_SETTING: Partial<ISetting> = {
   createdAt: new Date(),
   updatedAt: new Date(),
 };
+
+function validatePopupLinks(popups: SettingParams["popups"] = []) {
+  return (popups || []).map((popup) => {
+    const link = popup.link?.trim() || "";
+    const safe = !link ||
+      (/^https?:\/\//i.test(link) && !/[\\\u0000-\u001f]/.test(link)) ||
+      (link.startsWith("/") && !link.startsWith("//") && !/[\\\u0000-\u001f]/.test(link));
+    if (!safe) throw new Error("Popup links must use http(s) or a site-relative path.");
+    return { ...popup, link };
+  });
+}
 
 // ====== GET SETTING WITH CACHE ======
 export const getSetting = async (): Promise<ISettingSafe | null> => {
@@ -116,9 +131,15 @@ export const upsertSetting = async (
   try {
     await connectToDatabase();
 
+    const safeUpdateData: Partial<SettingParams> = { ...updateData };
+    if (updateData.popups) {
+      safeUpdateData.popups = validatePopupLinks(updateData.popups);
+      safeUpdateData.popup = { image: "", link: "", offerStartDate: "", offerEndDate: "" };
+    }
+
     const setting = await Setting.findOneAndUpdate(
       {},
-      { $set: updateData },
+      { $set: safeUpdateData },
       {
         new: true,
         upsert: true,

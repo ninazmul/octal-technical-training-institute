@@ -122,10 +122,19 @@ export interface ISetting extends Document {
 
   // PopUp Section
   popup?: {
+    title?: string;
     image?: string;
+    link?: string;
     offerStartDate?: string;
     offerEndDate?: string;
   };
+  popups?: Array<{
+    title?: string;
+    image?: string;
+    link?: string;
+    offerStartDate?: string;
+    offerEndDate?: string;
+  }>;
 
   certificate?: string;
 
@@ -197,10 +206,19 @@ export interface ISettingSafe {
 
   // PopUp Section
   popup?: {
+    title?: string;
     image?: string;
+    link?: string;
     offerStartDate?: string;
     offerEndDate?: string;
   };
+  popups?: Array<{
+    title?: string;
+    image?: string;
+    link?: string;
+    offerStartDate?: string;
+    offerEndDate?: string;
+  }>;
 
   certificate?: string;
 
@@ -292,6 +310,17 @@ const FeatureItemSchema = new Schema(
   { _id: false },
 );
 
+const PopupItemSchema = new Schema(
+  {
+    title: { type: String, default: "" },
+    image: { type: String, default: "" },
+    link: { type: String, default: "" },
+    offerStartDate: { type: String, default: "" },
+    offerEndDate: { type: String, default: "" },
+  },
+  { _id: true },
+);
+
 const SettingSchema = new Schema<ISetting>(
   {
     logo: { type: String },
@@ -329,10 +358,13 @@ const SettingSchema = new Schema<ISetting>(
     },
 
     popup: {
+      title: { type: String, default: "" },
       image: { type: String },
+      link: { type: String, default: "" },
       offerStartDate: { type: String, default: "" },
       offerEndDate: { type: String, default: "" },
     },
+    popups: { type: [PopupItemSchema], default: [] },
 
     certificate: { type: String },
 
