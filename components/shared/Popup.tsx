@@ -97,13 +97,13 @@ export default function Popup({ setting }: { setting: ISettingSafe | null }) {
   const popup = popups[activeIndex];
   const href = safePopupHref(popup.link);
   const image = (
-    <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 sm:aspect-[16/10]">
+    <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
       <Image
         src={popup.image!}
         alt={popup.title || "Homepage promotion"}
         fill
         sizes="(max-width: 640px) 92vw, 640px"
-        className="object-contain"
+        className="object-cover"
         priority
       />
       {href && (
@@ -129,7 +129,7 @@ export default function Popup({ setting }: { setting: ISettingSafe | null }) {
         role="dialog"
         aria-modal="true"
         aria-label={popup.title || "Homepage promotion"}
-        className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl animate-in zoom-in-95 duration-200"
       >
         <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
           {popups.length > 1 && (
@@ -155,14 +155,7 @@ export default function Popup({ setting }: { setting: ISettingSafe | null }) {
 
         {image}
 
-        <div className="h-1 w-full bg-slate-100">
-          <div key={activeIndex} className="h-full origin-left animate-popup-progress bg-blue-700" />
-        </div>
       </section>
-      <style jsx>{`
-        .animate-popup-progress { animation: popup-progress ${DISPLAY_MS}ms linear forwards; }
-        @keyframes popup-progress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-      `}</style>
     </div>
   );
 }
