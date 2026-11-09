@@ -60,6 +60,12 @@ Make sure you have Node.js installed (v18.x or later is recommended).
    # MongoDB
    MONGODB_URI=""
 
+   # Meta Pixel stats dashboard (server-only token with access to the Pixel)
+   META_PIXEL_ACCESS_TOKEN=""
+   # Optional overrides; the Pixel ID defaults to the site's configured Pixel.
+   META_PIXEL_ID="1991224284569638"
+   META_GRAPH_API_VERSION="v27.0"
+
    # UploadThing
    UPLOADTHING_SECRET=""
    UPLOADTHING_APP_ID=""

@@ -24,6 +24,7 @@ import {
 import { SerializedTrainer } from "@/lib/actions/trainer.actions";
 import { SerializedComplain } from "@/lib/actions/complain.actions";
 import { SerializedApply } from "@/lib/actions/apply.actions";
+import MetaPixelStatsCard from "./MetaPixelStatsCard";
 import {
   ExportColumn,
   exportRowsToCsv,
@@ -523,6 +524,10 @@ export default function DashboardClient({
           <MetricCard title="Not Certified" value={metrics.notCertifiedCount} />
           <MetricCard title="Admins" value={admins.length} />
           <MetricCard title="Courses" value={courses.length} />
+        </div>
+
+        <div className="mt-4">
+          <MetaPixelStatsCard />
         </div>
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
