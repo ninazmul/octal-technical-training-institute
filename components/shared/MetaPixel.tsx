@@ -5,6 +5,36 @@ import { usePathname } from "next/navigation";
 import Script from "next/script";
 
 const PIXEL_ID = "1991224284569638";
+const sentCourseEnrollmentEvents = new Set<string>();
+
+function trackCourseEnrollmentFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("course_enrollment") !== "success") return;
+
+  const eventId = params.get("event_id");
+  if (!eventId || !window.fbq) return;
+  if (sentCourseEnrollmentEvents.has(eventId)) return;
+
+  const storageKey = `meta-course-enrollment-${eventId}`;
+  try {
+    if (window.sessionStorage.getItem(storageKey)) return;
+  } catch {
+    // Continue tracking when browser storage is unavailable.
+  }
+
+  window.fbq(
+    "track",
+    "CompleteRegistration",
+    { content_category: "Course" },
+    { eventID: eventId },
+  );
+  sentCourseEnrollmentEvents.add(eventId);
+  try {
+    window.sessionStorage.setItem(storageKey, "sent");
+  } catch {
+    // In-memory deduplication still prevents repeat events on this page.
+  }
+}
 
 declare global {
   interface Window {
@@ -30,11 +60,14 @@ export default function MetaPixel() {
     window.fbq?.("track", "PageView");
   }, [pathname]);
 
+  useEffect(trackCourseEnrollmentFromUrl, []);
+
   return (
     <>
       <Script
         id="meta-pixel"
         strategy="afterInteractive"
+        onReady={trackCourseEnrollmentFromUrl}
         dangerouslySetInnerHTML={{
           __html: `
             !function(f,b,e,v,n,t,s){

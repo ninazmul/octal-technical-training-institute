@@ -82,6 +82,10 @@ export default function OlympiadRegistrationClient({
     try {
       const res = await registerForOlympiad(payload);
       if (res && res.success) {
+        window.fbq?.("track", "CompleteRegistration", {
+          content_name: olympiad.title,
+          content_category: "Olympiad",
+        });
         toast.success("Registration successful!");
         setConfirmationData(res);
       }

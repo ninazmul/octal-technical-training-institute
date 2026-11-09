@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    let enrollmentCompleted = false;
     if (status === "successful") {
       // 🔒 If trx_id is missing, query PayStation transaction-status API
       if (!trx_id || trx_id === "N/A") {
@@ -70,15 +71,24 @@ export async function GET(req: NextRequest) {
         paymentMethod: "Mobile Payment",
       });
       console.log("Registration updated:", confirmed);
+      enrollmentCompleted =
+        registration.paymentStatus !== "Paid" &&
+        confirmed?.paymentStatus === "Paid";
     } else {
       registration.paymentStatus = "Failed";
       await registration.save();
       console.error("Payment not successful:", invoice_number, status);
     }
 
-    return NextResponse.redirect(
-      new URL("/registration", process.env.NEXT_PUBLIC_SERVER_URL),
+    const destination = new URL(
+      "/registration",
+      process.env.NEXT_PUBLIC_SERVER_URL,
     );
+    if (enrollmentCompleted) {
+      destination.searchParams.set("course_enrollment", "success");
+      destination.searchParams.set("event_id", String(registration._id));
+    }
+    return NextResponse.redirect(destination);
   } catch (err) {
     console.error("Payment callback error:", err);
     return NextResponse.redirect(

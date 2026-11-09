@@ -53,6 +53,7 @@ interface DashboardClientProps {
   trainers: SerializedTrainer[];
   complains: SerializedComplain[];
   applies: SerializedApply[];
+  olympiadRegistrations: number;
   dateFilter: DashboardDateFilterResolved;
 }
 
@@ -227,6 +228,7 @@ export default function DashboardClient({
   trainers,
   complains,
   applies,
+  olympiadRegistrations,
   dateFilter,
 }: DashboardClientProps) {
   const router = useRouter();
@@ -503,7 +505,16 @@ export default function DashboardClient({
             title="Revenue"
             value={`BDT ${formatCurrency(metrics.totalRevenue)}`}
           />
-          <MetricCard title="Paid Registrations" value={metrics.paidCount} />
+          <MetricCard
+            title="Completed Course Enrollments"
+            value={metrics.paidCount}
+            helper="Paid or zero-cost enrollments."
+          />
+          <MetricCard
+            title="Confirmed Olympiad Registrations"
+            value={olympiadRegistrations}
+            helper="In the selected date range."
+          />
           <MetricCard
             title="Pending Payments"
             value={metrics.pendingPaymentsCount}

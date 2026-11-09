@@ -14,6 +14,7 @@ import { SerializedRegistration } from "@/lib/actions/registration.actions";
 import { resolveDashboardDateFilter } from "@/lib/dashboard-date-filter";
 import { SerializedTrainer } from "@/lib/actions/trainer.actions";
 import { SerializedComplain } from "@/lib/actions/complain.actions";
+import { getConfirmedOlympiadRegistrationCount } from "@/lib/actions/olympiad-registration.actions";
 
 export default async function DashboardPage({
   searchParams,
@@ -33,7 +34,7 @@ export default async function DashboardPage({
     endDate: Array.isArray(endDateValue) ? endDateValue[0] : endDateValue,
   });
 
-  const [setting, admins, courses, registrations, trainers, complains, applies] =
+  const [setting, admins, courses, registrations, trainers, complains, applies, olympiadRegistrations] =
     await Promise.all([
       getSetting(),
       getAllAdmins(),
@@ -42,6 +43,7 @@ export default async function DashboardPage({
       getAllTrainers({ dateFilter }),
       getComplains({ dateFilter }),
       getAllApplies({ dateFilter }),
+      getConfirmedOlympiadRegistrationCount(dateFilter),
     ]);
 
   return (
@@ -53,6 +55,7 @@ export default async function DashboardPage({
       trainers={(trainers ?? []) as SerializedTrainer[]}
       complains={(complains ?? []) as SerializedComplain[]}
       applies={(applies ?? []) as SerializedApply[]}
+      olympiadRegistrations={olympiadRegistrations}
       dateFilter={dateFilter}
     />
   );

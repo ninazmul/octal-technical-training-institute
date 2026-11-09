@@ -24,6 +24,26 @@ import { handleError } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
+import type { DashboardDateFilterResolved } from "@/lib/dashboard-date-filter";
+
+export async function getConfirmedOlympiadRegistrationCount(
+  dateFilter?: DashboardDateFilterResolved,
+): Promise<number> {
+  try {
+    await connectToDatabase();
+
+    const query: Record<string, unknown> = { status: "Confirmed" };
+    const createdAt: Record<string, Date> = {};
+    if (dateFilter?.startDate) createdAt.$gte = dateFilter.startDate;
+    if (dateFilter?.endDate) createdAt.$lte = dateFilter.endDate;
+    if (Object.keys(createdAt).length > 0) query.createdAt = createdAt;
+
+    return await OlympiadRegistration.countDocuments(query);
+  } catch (error) {
+    console.error("Failed to load Olympiad registration count:", error);
+    return 0;
+  }
+}
 
 export type RegistrationInput = {
   olympiadId: string;

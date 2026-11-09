@@ -222,7 +222,7 @@ export default function RegistrationForm({
 
       if (!data.paymentRequired) {
         toast.success("Registration completed");
-        window.location.href = "/registration";
+        window.location.href = `/registration?course_enrollment=success&event_id=${encodeURIComponent(data.registrationId)}`;
         return;
       }
 
