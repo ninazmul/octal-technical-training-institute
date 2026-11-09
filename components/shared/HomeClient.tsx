@@ -1,5 +1,3 @@
-"use client";
-
 import { ISettingSafe } from "@/lib/database/models/setting.model";
 import Hero from "./Hero";
 import LMSFeatures from "./LMSFeatures";
