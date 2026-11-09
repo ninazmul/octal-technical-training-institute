@@ -203,7 +203,7 @@ export default function Header({ openSearch }: HeaderProps) {
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
           <Image
-            src={"/assets/images/logo.png"}
+            src={settings?.logo || "/assets/images/logo.png"}
             width={150}
             height={66}
             className="object-contain rounded-md h-10 w-auto"
