@@ -127,6 +127,18 @@ export default function OlympiadCertificateGenerator({
       scrollX: 0,
       scrollY: 0,
       logging: false,
+      onclone: (clonedDoc) => {
+        const clonedNode = clonedDoc.querySelector(
+          `[data-cert="${node.getAttribute("data-cert")}"]`,
+        ) as HTMLElement;
+        if (clonedNode) {
+          clonedNode.style.position = "relative";
+          clonedNode.style.top = "0";
+          clonedNode.style.left = "0";
+          clonedNode.style.margin = "0";
+          clonedNode.style.padding = "0";
+        }
+      },
     });
     return canvas.toDataURL("image/jpeg", 0.95);
   };
@@ -374,10 +386,9 @@ export default function OlympiadCertificateGenerator({
           style={{
             position: "absolute",
             top: 0,
-            left: 0,
+            left: -CERT_WIDTH * 2,
             width: CERT_WIDTH,
-            height: 0,
-            overflow: "hidden",
+            height: "auto",
             pointerEvents: "none",
             zIndex: -1,
             opacity: 0,
@@ -388,7 +399,11 @@ export default function OlympiadCertificateGenerator({
             <div
               key={att._id}
               data-cert={att._id}
-              style={{ width: CERT_WIDTH, height: CERT_HEIGHT }}
+              style={{
+                width: CERT_WIDTH,
+                height: CERT_HEIGHT,
+                marginBottom: 50,
+              }}
             >
               <OlympiadCertificateTemplate data={buildData(att)} />
             </div>
