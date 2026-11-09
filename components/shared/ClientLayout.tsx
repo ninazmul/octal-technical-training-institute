@@ -8,6 +8,7 @@ import Footer from "@/components/shared/Footer";
 import SearchDrawer from "@/components/shared/SearchDrawer";
 import BengaliFontDetector from "@/components/shared/BengaliFontDetector";
 import Script from "next/script";
+import MetaPixel from "@/components/shared/MetaPixel";
 
 export default function ClientLayout({
   children,
@@ -34,6 +35,7 @@ export default function ClientLayout({
   return (
     <div className="flex h-screen flex-col">
       <Toaster />
+      <MetaPixel />
       <ScrollHeaderWrapper>
         <div ref={headerRef}>
           <Header openSearch={() => setSearchOpen(true)} />
