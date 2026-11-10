@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { createEmailTransporter, sendEmailWithTransporter, type EmailDeliveryResult } from "@/lib/mailer/email";
 import { connectToDatabase } from "@/lib/database";
 import OlympiadNotificationLog from "@/lib/database/models/olympiad-notification.model";
 import { formatDhakaDateTime } from "@/lib/olympiad-lifecycle";
@@ -10,23 +10,7 @@ import { sendBulkSmsBd, toBulkSmsBdNumber } from "@/lib/mailer/bulksms";
  * Returns null when SMTP credentials are not configured.
  */
 export function createOlympiadTransporter() {
-  const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
-  const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
-  const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
-
-  if (!SMTP_USER || !SMTP_PASS) return null;
-
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_PORT === 465,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-    tls: { rejectUnauthorized: false },
-  });
+  return createEmailTransporter();
 }
 
 function escapeHtml(unsafe: string) {
@@ -138,7 +122,7 @@ export async function sendOlympiadEmail({
     | "CUSTOM";
   idempotencyKey: string;
   transporter?: NonNullable<ReturnType<typeof createOlympiadTransporter>>;
-}): Promise<boolean> {
+}): Promise<EmailDeliveryResult> {
   try {
     await connectToDatabase();
 
@@ -146,13 +130,12 @@ export async function sendOlympiadEmail({
     const existing = await OlympiadNotificationLog.findOne({ idempotencyKey });
     if (existing && existing.status === "SENT") {
       console.log(`[Olympiad Email] Skipping duplicate email for key: ${idempotencyKey}`);
-      return true;
+      return { success: true };
     }
 
-    const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
     const transporter = sharedTransporter || createOlympiadTransporter();
 
-    if (!SMTP_USER || !transporter) {
+    if (!transporter) {
       console.warn("[Olympiad Email] SMTP not configured. Logging notification state.");
       await OlympiadNotificationLog.findOneAndUpdate(
         { idempotencyKey },
@@ -170,15 +153,36 @@ export async function sendOlympiadEmail({
         },
         { upsert: true, new: true },
       );
-      return false;
+      return { success: false, error: "EMAIL_USER and EMAIL_PASS are not configured on the server." };
     }
 
-    await transporter.sendMail({
-      from: `"Octal Olympiad" <${SMTP_USER}>`,
+    const delivery = await sendEmailWithTransporter({
+      transporter,
       to: email,
       subject,
       html: htmlContent,
+      fromName: "Octal Olympiad",
     });
+
+    if (!delivery.success) {
+      await OlympiadNotificationLog.findOneAndUpdate(
+        { idempotencyKey },
+        {
+          olympiadId,
+          recipientEmail: email,
+          recipientName,
+          channel: "EMAIL",
+          type,
+          subject,
+          message: htmlContent.slice(0, 500),
+          status: "FAILED",
+          error: delivery.error,
+          sentAt: new Date(),
+        },
+        { upsert: true, new: true },
+      );
+      return delivery;
+    }
 
     await OlympiadNotificationLog.findOneAndUpdate(
       { idempotencyKey },
@@ -196,10 +200,10 @@ export async function sendOlympiadEmail({
       { upsert: true, new: true },
     );
 
-    return true;
+    return { success: true };
   } catch (err: any) {
     console.error("[Olympiad Email Error]:", err);
-    return false;
+    return { success: false, error: err?.message || "Failed to send email." };
   }
 }
 

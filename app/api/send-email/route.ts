@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import nodemailer from "nodemailer";
+import { createEmailTransporter, sendEmailWithTransporter } from "@/lib/mailer/email";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -9,21 +9,16 @@ export const POST = async (req: NextRequest) => {
       return new Response("Recipients are required", { status: 400 });
     }
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const transporter = createEmailTransporter();
+    if (!transporter) {
+      return new Response("EMAIL_USER and EMAIL_PASS are not configured", { status: 500 });
+    }
 
     // 🚀 Send emails in parallel
-    await Promise.all(
+    const results = await Promise.all(
       recipients.map((r) =>
-        transporter.sendMail({
-          from: `"Octal TTI"`,
+        sendEmailWithTransporter({
+          transporter,
           to: r.email,
           subject: r.subject || "Message from Octal Technical Training Institute",
           html:
@@ -33,7 +28,20 @@ export const POST = async (req: NextRequest) => {
       ),
     );
 
-    return new Response("Emails sent successfully!", { status: 200 });
+    const failed = results.filter((result) => !result.success);
+    if (failed.length > 0) {
+      return Response.json(
+        {
+          success: false,
+          sent: results.length - failed.length,
+          failed: failed.length,
+          error: failed[0].error,
+        },
+        { status: 502 },
+      );
+    }
+
+    return Response.json({ success: true, sent: results.length, failed: 0 });
   } catch (error) {
     console.error("Send message error:", error);
     return new Response("Failed to send email", { status: 500 });

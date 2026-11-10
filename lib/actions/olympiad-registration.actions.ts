@@ -543,6 +543,11 @@ export async function sendBulkMessageToRegistrants({
           type: "CUSTOM",
           idempotencyKey: `CUSTOM_EMAIL_${String(reg._id)}_${batchKey}`,
           transporter,
+        }).then((result) => {
+          if (!result.success && result.error && !firstError) {
+            firstError = `${reg.email}: ${result.error}`;
+          }
+          return result.success;
         }),
       );
     } else {
@@ -575,20 +580,25 @@ export async function sendBulkMessageToRegistrants({
     );
 
     return {
-      success: true,
+      success: sent > 0,
       sent,
       failed: recipients.length - sent,
       total: recipients.length,
       error: firstError,
     };
   } catch (error: any) {
-    handleError(error);
+    console.error("Failed to send bulk Olympiad message:", error);
     return {
       success: false,
       sent: 0,
       failed: 0,
       total: 0,
-      error: error?.message || "Failed to send bulk message.",
+      error:
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Failed to send bulk message.",
     };
   }
 }
@@ -655,20 +665,25 @@ export async function sendExamReminderSmsToAllRegistrants(olympiadId: string): P
     );
 
     return {
-      success: true,
+      success: sent > 0,
       sent,
       failed: recipients.length - sent,
       total: recipients.length,
       error: firstError,
     };
   } catch (error: any) {
-    handleError(error);
+    console.error("Failed to send Olympiad exam reminder:", error);
     return {
       success: false,
       sent: 0,
       failed: 0,
       total: 0,
-      error: error?.message || "Failed to send exam reminder SMS.",
+      error:
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Failed to send exam reminder SMS.",
     };
   }
 }
