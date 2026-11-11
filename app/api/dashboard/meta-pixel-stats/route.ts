@@ -3,7 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import { getUserEmailById } from "@/lib/actions/user.actions";
 import { isAdmin } from "@/lib/actions/admin.actions";
 
-const DEFAULT_PIXEL_ID = "1991224284569638";
 const ALLOWED_RANGES = [7, 30, 90] as const;
 
 type MetaPixelEventRow = {
@@ -25,11 +24,12 @@ export async function GET(request: NextRequest) {
   }
 
   const accessToken = process.env.META_PIXEL_ACCESS_TOKEN;
-  if (!accessToken) {
+  const pixelId = process.env.META_PIXEL_ID;
+  if (!accessToken || !pixelId) {
     return NextResponse.json(
       {
         configured: false,
-        message: "Add META_PIXEL_ACCESS_TOKEN to the server environment to load Meta Pixel stats.",
+        message: "Add META_PIXEL_ID and META_PIXEL_ACCESS_TOKEN to the server environment to load Meta Pixel stats.",
       },
       { status: 200 },
     );
@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
     : 7;
   const now = new Date();
   const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  const pixelId = process.env.META_PIXEL_ID || DEFAULT_PIXEL_ID;
   const graphVersion = process.env.META_GRAPH_API_VERSION || "v27.0";
   const url = new URL(
     `https://graph.facebook.com/${graphVersion}/${encodeURIComponent(pixelId)}/stats`,

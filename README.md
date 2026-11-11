@@ -62,7 +62,7 @@ Make sure you have Node.js installed (v18.x or later is recommended).
 
    # Meta Pixel stats dashboard (server-only token with access to the Pixel)
    META_PIXEL_ACCESS_TOKEN=""
-   # Optional overrides; the Pixel ID defaults to the site's configured Pixel.
+   # Meta Pixel ID to query through the stats dashboard API
    META_PIXEL_ID="1991224284569638"
    META_GRAPH_API_VERSION="v27.0"
 

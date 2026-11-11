@@ -75,7 +75,7 @@ export default function MetaPixelStatsCard() {
           <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">{error}</p>
         ) : !stats?.configured ? (
           <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-            {stats?.message || "Configure META_PIXEL_ACCESS_TOKEN on the server to load Meta data."}
+            {stats?.message || "Configure META_PIXEL_ID and META_PIXEL_ACCESS_TOKEN on the server to load Meta data."}
           </p>
         ) : (
           <>
